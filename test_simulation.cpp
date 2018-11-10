@@ -198,9 +198,6 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(sim.is_in_domain(sim.positions(0, 0), sim.positions(0, 1)));
         sim.update();
         BOOST_CHECK(sim.is_in_domain(sim.positions(0, 0), sim.positions(0, 1)));
-
-//        BOOST_CHECK_CLOSE(time, sim.bridge_height, 0.01);
-//        BOOST_CHECK_CLOSE(angle, pi / 2, 0.01);
     }
 
     BOOST_AUTO_TEST_CASE(test_bridge_coupling) {
@@ -361,7 +358,24 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_CLOSE(sim.positions(0, 0), -sim.left_center_x - side, eps);
         BOOST_CHECK_CLOSE(sim.positions(0, 1), -side, eps);
         BOOST_CHECK_CLOSE(sim.directions(0), pi / 2, eps);
+    }
 
+
+    BOOST_AUTO_TEST_CASE(test_long_term_consistency) {
+        auto sim = get_sim(1000);
+        double pi = 3.141592653589793;
+        sim.bridge_height = 0.1;
+        sim.circle_distance = 0.5;
+        sim.setup();
+        sim.start();
+        bool all_correct = true;
+        while (sim.time < 100) {
+            sim.update();
+            for (int i = 0; i < sim.num_particles; i++) {
+                all_correct = all_correct and sim.is_in_domain(sim.positions(i, 0), sim.positions(i, 1));
+            }
+            BOOST_CHECK(all_correct);
+        }
     }
 
 
