@@ -16,14 +16,14 @@ void write_results(std::string &id, std::vector<double> &x, std::vector<double> 
 }
 
 void run_domain() {
-    Simulation simulation = Simulation(10, 0.3);
+    Simulation simulation = Simulation(1000, 0.3);
     simulation.setup();
     simulation.start();
-    for (int i = 0; i < 40; i++) {
-        simulation.print_status();
+    while (simulation.time < 100) {
+        //simulation.print_status();
         simulation.update();
     }
-
+    simulation.finish();
 }
 
 int main(int argc, char *argv[]) {
