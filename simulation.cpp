@@ -76,7 +76,7 @@ void Simulation::update() {
     double next_impact = next_impact_times(0);
     int particle = 0;
     for (int p = 0; p < num_particles; p++) {
-        if (next_impact < next_impact_times(p)) {
+        if (next_impact > next_impact_times(p)) {
             next_impact = next_impact_times(p);
             particle = p;
         }
@@ -97,15 +97,14 @@ void Simulation::update() {
     } else {
         in_gate(particle) = 0;
     }
-    time += next_impact;
-    next_impact_times -= next_impact; // Faster if we only rewrite time?
+    time = next_impact;
     compute_next_impact(particle);
     measure();
 }
 
 void Simulation::check_gate_explosion() {
     if (in_gate.sum() > gate_capacity) {
-        printf("Explosion! Over %d particles in the gate\n", gate_capacity);
+        // printf("Explosion! Over %d particles in the gate\n", gate_capacity);
     }
 }
 
@@ -116,7 +115,9 @@ void Simulation::measure() {
 }
 
 void Simulation::finish() {
-
+    for (unsigned long i = 0; i < measuring_times.size(); i++) {
+        printf("Time: %.2f\tLeft:%d\tRight:%d\n", measuring_times.at(i), total_left.at(i), total_right.at(i));
+    }
 }
 
 void Simulation::couple_bridge() {
@@ -209,7 +210,7 @@ void Simulation::compute_next_impact(const int particle) {
     }
     next_positions(particle, 0) = positions(particle, 0) + next_time * cos(directions(particle));
     next_positions(particle, 1) = positions(particle, 1) + next_time * sin(directions(particle));
-    next_impact_times(particle) = next_time;
+    next_impact_times(particle) = time + next_time;
     next_directions(particle) = next_angle;
 }
 

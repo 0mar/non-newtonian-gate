@@ -77,11 +77,11 @@ public:
 
     double get_reflection_angle(double angle_in, double normal_angle);
 
+    void finish();
 
 private:
     void couple_bridge();
 
-    void finish();
 
     std::shared_ptr<std::random_device> rd;
     std::shared_ptr<std::mt19937> rng;
