@@ -81,6 +81,8 @@ public:
 
     double get_reflection_angle(double angle_in, double normal_angle);
 
+    double get_retraction_angle(const int particle);
+
     void finish();
 
 private:

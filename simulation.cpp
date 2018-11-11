@@ -341,6 +341,20 @@ double Simulation::get_reflection_angle(const double angle_in, const double norm
     return fmod(2 * normal_angle - angle_in + PI, 2 * PI);
 }
 
+double Simulation::get_retraction_angle(const int particle) {
+    int original_side = -sgn(cos(directions(particle)));
+    // -1 is left, +1 is right
+    double direction;
+    if (is_in_bridge(px, py) or px * original_side > 0) {
+        // If it is in the bridge, or hasn't entered the bridge yet, any antidirection is okay
+        direction = ((*unif_real)(*rng) - 0.5) * PI + (1 - original_side) * PI / 2;
+    } else {
+        // Otherwise, we must direct it to the bridge.
+        direction = atan2(-py, -px);
+    }
+    return direction;
+}
+
 double Simulation::time_to_hit_gate(const int particle) {
     if (gate_radius > 0) {
         double add_x = max_path * cos(directions(particle));

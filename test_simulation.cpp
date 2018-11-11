@@ -378,5 +378,41 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         }
     }
 
+    BOOST_AUTO_TEST_CASE(test_retraction_angle) {
+        auto sim = get_sim(1);
+        double pi = 3.141592653589793;
+        sim.circle_distance = 0.5;
+        sim.gate_radius = 0.3;
+        sim.setup();
+        sim.start();
+        // in left
+        sim.positions(0, 0) = -0.27;
+        sim.positions(0, 1) = 0.02;
+        sim.directions(0) = -0.1;
+        double angle = sim.get_retraction_angle(0);
+        BOOST_CHECK(angle > pi / 2 and angle < pi * 3 / 2);
+        // in right
+        sim.positions(0, 0) = 0.26;
+        sim.directions(0) = -pi;
+        angle = sim.get_retraction_angle(0);
+        BOOST_CHECK(abs(angle) < pi);
+        // in bridge
+        sim.positions(0, 0) = -0.22;
+        sim.directions(0) = -pi;
+        angle = sim.get_retraction_angle(0);
+        BOOST_CHECK(abs(angle) < pi);
+        // past bridge
+        sim.positions(0, 0) = 0.22;
+        sim.positions(0, 1) = 0.22;
+        sim.directions(0) = pi / 6;
+        angle = sim.get_retraction_angle(0);
+        BOOST_CHECK(cos(angle) < 0);
+        // or, more precisely
+        BOOST_CHECK_CLOSE(angle, -pi * 3 / 4, eps);
+
+    }
+
+
+
 
 BOOST_AUTO_TEST_SUITE_END();
