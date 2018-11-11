@@ -19,12 +19,31 @@ void run_domain() {
     Simulation simulation = Simulation(1000, 0.3);
     simulation.setup();
     simulation.start();
-    while (simulation.time < 100) {
+    simulation.write_to_file(false);
+    while (simulation.time < 50) {
         //simulation.print_status();
         simulation.update();
+        simulation.write_to_file(false);
     }
     simulation.finish();
 }
+
+void write_domain(double dt) {
+    Simulation simulation = Simulation(100, 0.3);
+    simulation.setup();
+    simulation.start();
+    simulation.write_to_file(true);
+    int iteration = 0;
+    while (simulation.time < 50) {
+        iteration++;
+        while (simulation.time < iteration * dt) {
+            simulation.update();
+        }
+        simulation.write_to_file(true);
+    }
+    //simulation.finish();
+}
+
 
 int main(int argc, char *argv[]) {
     int mode = 0;
@@ -38,7 +57,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         default: {
-            run_domain();
+            write_domain(0.05);
             break;
         }
     }

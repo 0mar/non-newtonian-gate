@@ -7,6 +7,7 @@
 
 #include <Eigen/Dense>
 #include <iostream>
+#include <fstream>
 #include <random>
 #include <memory>
 #include <cmath>
@@ -25,9 +26,9 @@ public:
     double circle_radius;
     double circle_distance;
     double bridge_height;
+    // Computed quantities
     double left_center_x;
     double right_center_x;
-    // Computed quantities
     double max_path;
     double bridge_size;
 
@@ -53,6 +54,7 @@ public:
 
     double time;
     Eigen::ArrayXd next_impact_times;
+    Eigen::ArrayXd impact_times;
     Eigen::ArrayXXd next_positions;
     Eigen::ArrayXXd positions;
     Eigen::ArrayXd next_directions;
@@ -74,6 +76,8 @@ public:
     void measure();
 
     void print_status();
+
+    void write_to_file(bool interpolate);
 
     double get_reflection_angle(double angle_in, double normal_angle);
 

@@ -30,6 +30,7 @@ Simulation::Simulation(int num_particles, double gate_radius) : num_particles(nu
 void Simulation::setup() {
     max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
     next_impact_times = Eigen::ArrayXd::Zero(num_particles); // Todo: This should be a heap
+    impact_times = Eigen::ArrayXd::Zero(num_particles);
     in_gate = Eigen::ArrayXi::Zero(num_particles);
     in_left = Eigen::ArrayXi::Ones(num_particles);
     in_right = Eigen::ArrayXi::Zero(num_particles);
@@ -81,6 +82,7 @@ void Simulation::update() {
             particle = p;
         }
     }
+    impact_times(particle) = time;
     positions(particle, 0) = next_positions(particle, 0);
     positions(particle, 1) = next_positions(particle, 1);
     directions(particle) = next_directions(particle);
@@ -112,6 +114,55 @@ void Simulation::measure() {
     measuring_times.push_back(time);
     total_left.push_back(in_left.sum());
     total_right.push_back(in_right.sum());
+}
+
+void Simulation::print_status() {
+    printf("Time passed: %.2f\n", time);
+    for (int particle = 0; particle < num_particles; particle++) {
+        printf("Particle %d at position (%.2f, %.2f) at Dt %.2f, angle %.2f pi\n", particle, px, py,
+               next_impact_times(particle), directions(particle) / PI);
+    }
+    printf("Particles left: %d, particles right: %d\n", in_left.sum(), in_right.sum());
+    printf("Particles in gate: %d\n", in_gate.sum());
+}
+
+void Simulation::write_to_file(bool interpolate) {
+    std::string filename = "results.dat";
+    std::ofstream file;
+    if (time == 0) {
+        file.open(filename, std::ofstream::out | std::ofstream::trunc);
+        file << "num_particles\tgate_radius\tcircle_radius\tcircle_distance\tbridge_height\tbridge_size\n";
+        file << num_particles << " " << gate_radius << " " << circle_radius << " " << circle_distance << " "
+             << bridge_height << " " << bridge_size << std::endl;
+        file.close();
+    }
+    file.open(filename, std::ios_base::app);
+    file << time << std::endl;
+    if (interpolate) {
+        for (int particle = 0; particle < num_particles; particle++) {
+            file << px + (next_positions(particle, 0) - px) * (impact_times(particle) - time) /
+                         (impact_times(particle) - next_impact_times(particle)) << " ";
+        }
+        file << std::endl;
+        for (int particle = 0; particle < num_particles; particle++) {
+            file << py + (next_positions(particle, 1) - py) * (impact_times(particle) - time) /
+                         (impact_times(particle) - next_impact_times(particle)) << " ";
+        }
+    } else {
+        for (int particle = 0; particle < num_particles; particle++) {
+            file << px << " ";
+        }
+        file << std::endl;
+        for (int particle = 0; particle < num_particles; particle++) {
+            file << py << " ";
+        }
+    }
+    file << std::endl;
+    for (int particle = 0; particle < num_particles; particle++) {
+        file << directions(particle) << " ";
+    }
+    file << std::endl;
+    file.close();
 }
 
 void Simulation::finish() {
@@ -288,16 +339,6 @@ double Simulation::time_to_hit_circle(const int particle, const double center_x,
 
 double Simulation::get_reflection_angle(const double angle_in, const double normal_angle) {
     return fmod(2 * normal_angle - angle_in + PI, 2 * PI);
-}
-
-void Simulation::print_status() {
-    printf("Time passed: %.2f\n", time);
-    for (int particle = 0; particle < num_particles; particle++) {
-        printf("Particle %d at position (%.2f, %.2f) at Dt %.2f, angle %.2f pi\n", particle, px, py,
-               next_impact_times(particle), directions(particle) / PI);
-    }
-    printf("Particles left: %d, particles right: %d\n", in_left.sum(), in_right.sum());
-    printf("Particles in gate: %d\n", in_gate.sum());
 }
 
 double Simulation::time_to_hit_gate(const int particle) {
