@@ -12,6 +12,7 @@
 #include <memory>
 #include <cmath>
 #include <stdexcept>
+#include <algorithm>
 
 
 class Simulation {
@@ -59,15 +60,18 @@ public:
     Eigen::ArrayXXd positions;
     Eigen::ArrayXd next_directions;
     Eigen::ArrayXd directions;
-    Eigen::ArrayXi in_gate;
+    Eigen::ArrayXi in_gate; // todo: Remove these 3 arrays
     Eigen::ArrayXi in_left;
     Eigen::ArrayXi in_right;
 
     std::vector<double> measuring_times;
     std::vector<int> total_left;
+    std::vector<int> currently_in_gate;
     std::vector<int> total_right;
 
     void compute_next_impact(int particle);
+
+    void get_current_position(int particle, double &x, double &y);
 
     void check_gate_explosion();
 

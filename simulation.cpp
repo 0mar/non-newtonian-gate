@@ -86,6 +86,7 @@ void Simulation::update() {
     positions(particle, 0) = next_positions(particle, 0);
     positions(particle, 1) = next_positions(particle, 1);
     directions(particle) = next_directions(particle);
+    time = next_impact;
     in_left(particle) = 0;
     in_right(particle) = 0;
     if (is_in_left_circle(px, py)) {
@@ -95,18 +96,30 @@ void Simulation::update() {
     }
     if (is_in_gate_radius(px, py)) {
         in_gate(particle) = 1;
-        check_gate_explosion();
+        std::cout << in_gate.sum() << std::endl;
+        currently_in_gate.push_back(particle);
+        // check_gate_explosion(); // fixme
     } else {
         in_gate(particle) = 0;
+        currently_in_gate.erase(std::remove(currently_in_gate.begin(), currently_in_gate.end(), particle), currently_in_gate.end());
     }
-    time = next_impact;
     compute_next_impact(particle);
     measure();
 }
 
 void Simulation::check_gate_explosion() {
-    if (in_gate.sum() > gate_capacity) {
-        // printf("Explosion! Over %d particles in the gate\n", gate_capacity);
+    if (currently_in_gate.size() > gate_capacity) {
+        std::cout << "Explosion at "<< time << std::endl;
+        for (int particle: currently_in_gate) {
+            double x,y;
+            get_current_position(particle,x,y);
+            px = x;
+            py = y;
+            directions(particle) = get_retraction_angle(particle);
+            compute_next_impact(particle);
+
+        }
+        currently_in_gate.clear();
     }
 }
 
@@ -263,6 +276,14 @@ void Simulation::compute_next_impact(const int particle) {
     next_positions(particle, 1) = positions(particle, 1) + next_time * sin(directions(particle));
     next_impact_times(particle) = time + next_time;
     next_directions(particle) = next_angle;
+}
+
+void Simulation::get_current_position(int particle, double &x, double &y) {
+    x = px + (next_positions(particle, 0) - px) * (impact_times(particle) - time) /
+            (impact_times(particle) - next_impact_times(particle));
+
+    y = py + (next_positions(particle, 1) - py) * (impact_times(particle) - time) /
+             (impact_times(particle) - next_impact_times(particle));
 }
 
 double Simulation::time_to_hit_bridge(const int particle, double &normal_angle) {

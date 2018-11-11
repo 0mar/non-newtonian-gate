@@ -132,10 +132,11 @@ class VisualScene:
 
     def draw_outline(self):
         x_centers = [-(self.data_reader.circle_radius + self.data_reader.circle_distance / 2),
-                     (self.data_reader.circle_radius + self.data_reader.circle_distance / 2)]
-        for x_center in x_centers:
+                     (self.data_reader.circle_radius + self.data_reader.circle_distance / 2),0]
+        radii = [self.data_reader.circle_radius,self.data_reader.circle_radius,self.data_reader.gate_radius]
+        for x_center,radius in zip(x_centers,radii):
             rel_pos_array = np.array([x_center, 0]) / self.data_reader.size
-            rel_size_array = self.data_reader.circle_radius / self.data_reader.size * self.size
+            rel_size_array = radius / self.data_reader.size * self.size
             vis_pos_array = np.array([rel_pos_array[0] / 2 + 0.5, 1 - (rel_pos_array[1] / 2 + 0.5)]) * self.size
             start_pos_array = vis_pos_array - 0.5 * rel_size_array
             end_pos_array = vis_pos_array + 0.5 * rel_size_array
