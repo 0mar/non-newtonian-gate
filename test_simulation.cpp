@@ -412,6 +412,21 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
 
     }
 
+    BOOST_AUTO_TEST_CASE(test_get_current_position) {
+        auto sim = get_sim(1);
+        double pi = 3.141592653589793;
+        sim.setup();
+        sim.start();
+        sim.positions(0, 0) = 0;
+        sim.positions(0, 1) = 0;
+        sim.time = sim.next_impact_times(0) / 2;
+        double x, y;
+        sim.get_current_position(0, x, y);
+        BOOST_CHECK_CLOSE(x, sim.next_positions(0, 0) / 2, eps);
+        BOOST_CHECK_CLOSE(y, sim.next_positions(0, 1) / 2, eps);
+
+    }
+
 
 
 
