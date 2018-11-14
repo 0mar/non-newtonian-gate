@@ -24,12 +24,12 @@ Simulation::Simulation(int num_particles, double gate_radius) : num_particles(nu
     circle_distance = 0.5;
     bridge_height = 0.3;
     this->gate_radius = gate_radius;
-    gate_capacity = 5;
+    gate_capacity = 3;
 }
 
 void Simulation::setup() {
     max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
-    next_impact_times = Eigen::ArrayXd::Zero(num_particles); // Todo: This should be a heap
+    next_impact_times = Eigen::ArrayXd::Zero(num_particles);
     impact_times = Eigen::ArrayXd::Zero(num_particles);
     in_gate = Eigen::ArrayXi::Zero(num_particles);
     in_left = Eigen::ArrayXi::Ones(num_particles);
@@ -40,7 +40,6 @@ void Simulation::setup() {
     next_positions = Eigen::ArrayXXd::Zero(num_particles, 2);
     directions = Eigen::ArrayXd::Zero(num_particles);
     next_directions = Eigen::ArrayXd::Zero(num_particles);
-    impact_object = Eigen::ArrayXi::Zero(num_particles);
     couple_bridge();
 }
 
@@ -113,7 +112,6 @@ void Simulation::update(double write_at) {
                                         currently_in_gate.end());
                 in_gate(particle) = 0;
             }
-
         }
     } else {
         if (in_gate(particle) == 1) {
@@ -128,7 +126,7 @@ void Simulation::update(double write_at) {
 
 bool Simulation::check_gate_explosion() {
     if (currently_in_gate.size() > gate_capacity) {
-        std::cout << "Explosion at " << time << std::endl;
+//        std::cout << "Explosion at " << time << std::endl;
         for (int particle: currently_in_gate) {
 //            printf("Bouncing particle %d\n", particle);
             double x, y;
@@ -163,10 +161,9 @@ void Simulation::print_status() {
     for (int particle = 0; particle < num_particles; particle++) {
         printf("Particle %d at \nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi\n", particle, px, py,
                impact_times(particle), directions(particle) / PI);
-        printf("Planned impact at\nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi, impacting with %d\n",
+        printf("Planned impact at\nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi\n",
                next_positions(particle, 0),
-               next_positions(particle, 1), next_impact_times(particle), next_directions(particle) / PI,
-               impact_object(particle));
+               next_positions(particle, 1), next_impact_times(particle), next_directions(particle) / PI);
     }
     printf("Particles left: %d, particles right: %d\n", in_left.sum(), in_right.sum());
     printf("Particles in gate: %d\n", in_gate.sum());
@@ -287,31 +284,27 @@ void Simulation::compute_next_impact(const int particle) {
     double to_bridge = time_to_hit_bridge(particle, angle);
     // this flow is not supah dupah
     if (to_bridge < next_time) {
-        impact_object(particle) = 0;
         next_time = to_bridge;
         next_angle = get_reflection_angle(directions(particle), angle);
     }
     double to_left = time_to_hit_circle(particle, left_center_x, angle);
     if (to_left < next_time) {
-        impact_object(particle) = 1;
         next_time = to_left;
         next_angle = get_reflection_angle(directions(particle), angle);
     }
     double to_right = time_to_hit_circle(particle, right_center_x, angle);
     if (to_right < next_time) {
-        impact_object(particle) = 2;
         next_time = to_right;
         next_angle = get_reflection_angle(directions(particle), angle);
     }
     double to_gate = time_to_hit_gate(particle);
     if (to_gate < next_time) {
-        impact_object(particle) = 3;
         next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
         next_angle = directions(particle);
         double nx = positions(particle, 0) + next_time * cos(directions(particle));
         double ny = positions(particle, 1) + next_time * sin(directions(particle));
         if (is_in_gate_radius(px, py) and is_in_gate_radius(nx, ny)) {
-            printf("Particle %d with movement %.2e still in circle...\n", particle, next_time);
+            printf("Small movement (%.3e) for particle %d detected\n", next_time, particle);
         }
     }
     if (angle == 0) {
@@ -324,6 +317,9 @@ void Simulation::compute_next_impact(const int particle) {
 }
 
 void Simulation::get_current_position(int particle, double &x, double &y) {
+    /**
+     * Interpolate position at the current time. Returns in referenced variables
+     */
     x = px + (next_positions(particle, 0) - px) * (impact_times(particle) - time) /
              (impact_times(particle) - next_impact_times(particle));
 

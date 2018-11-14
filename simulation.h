@@ -60,10 +60,9 @@ public:
     Eigen::ArrayXXd positions;
     Eigen::ArrayXd next_directions;
     Eigen::ArrayXd directions;
-    Eigen::ArrayXi in_gate; // todo: Remove these 3 arrays
+    Eigen::ArrayXi in_gate;
     Eigen::ArrayXi in_left;
     Eigen::ArrayXi in_right;
-    Eigen::ArrayXi impact_object; // debug
 
     std::vector<double> measuring_times;
     std::vector<int> total_left;
