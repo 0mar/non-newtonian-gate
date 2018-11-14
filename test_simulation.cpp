@@ -192,11 +192,11 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start();
-        sim.update();
+        sim.update(0);
         BOOST_CHECK(sim.is_in_domain(sim.positions(0, 0), sim.positions(0, 1)));
-        sim.update();
+        sim.update(0);
         BOOST_CHECK(sim.is_in_domain(sim.positions(0, 0), sim.positions(0, 1)));
-        sim.update();
+        sim.update(0);
         BOOST_CHECK(sim.is_in_domain(sim.positions(0, 0), sim.positions(0, 1)));
     }
 
@@ -293,6 +293,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.positions(0, 1) = 0;
         sim.directions(0) = -pi / 2;
         sim.compute_next_impact(0);
+        sim.compute_next_impact(0);
         BOOST_CHECK_CLOSE(sim.next_impact_times(0), sim.circle_radius, eps);
         BOOST_CHECK_CLOSE(sim.next_directions(0), pi / 2, eps);
         // from center of circle to
@@ -300,6 +301,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.positions(0, 1) = 0;
         sim.directions(0) = 0;
         sim.gate_radius = 0; // don't do in real life
+        sim.compute_next_impact(0);
         sim.compute_next_impact(0);
         BOOST_CHECK_CLOSE(sim.next_impact_times(0), sim.circle_radius * 3 + 0.5, eps);
         BOOST_CHECK_CLOSE(sim.next_directions(0), pi, eps);
@@ -321,10 +323,10 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.next_positions(0, 0) = sim.left_center_x;
         sim.next_positions(0, 1) = 0;
 
-        sim.update();
+        sim.update(0);
         BOOST_CHECK_CLOSE(sim.next_impact_times(0), sim.circle_radius, eps);
         BOOST_CHECK_CLOSE(sim.next_directions(0), pi / 2, eps);
-        sim.update();
+        sim.update(0);
         BOOST_CHECK_CLOSE(sim.positions(0, 1), -sim.circle_radius, eps);
     }
 
@@ -342,19 +344,19 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.positions(0, 1) = 0;
         sim.directions(0) = pi / 2;
         sim.compute_next_impact(0);
-        sim.update();
+        sim.update(0);
         BOOST_CHECK_CLOSE(sim.positions(0, 0), -sim.left_center_x - side, eps);
         BOOST_CHECK_CLOSE(sim.positions(0, 1), side, eps);
         BOOST_CHECK_CLOSE(sim.directions(0), 0, eps);
-        sim.update();
+        sim.update(0);
         BOOST_CHECK_CLOSE(sim.positions(0, 0), -sim.left_center_x + side, eps);
         BOOST_CHECK_CLOSE(sim.positions(0, 1), side, eps);
         BOOST_CHECK_CLOSE(sim.directions(0), -pi / 2, eps);
-        sim.update();
+        sim.update(0);
         BOOST_CHECK_CLOSE(sim.positions(0, 0), -sim.left_center_x + side, eps);
         BOOST_CHECK_CLOSE(sim.positions(0, 1), -side, eps);
         BOOST_CHECK_CLOSE(sim.directions(0), pi, eps);
-        sim.update();
+        sim.update(0);
         BOOST_CHECK_CLOSE(sim.positions(0, 0), -sim.left_center_x - side, eps);
         BOOST_CHECK_CLOSE(sim.positions(0, 1), -side, eps);
         BOOST_CHECK_CLOSE(sim.directions(0), pi / 2, eps);
@@ -370,7 +372,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.start();
         bool all_correct = true;
         while (sim.time < 100) {
-            sim.update();
+            sim.update(0);
             for (int i = 0; i < sim.num_particles; i++) {
                 all_correct = all_correct and sim.is_in_domain(sim.positions(i, 0), sim.positions(i, 1));
             }
@@ -391,6 +393,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.directions(0) = -0.1;
         double angle = sim.get_retraction_angle(0);
         BOOST_CHECK(angle > pi / 2 and angle < pi * 3 / 2);
+
         // in right
         sim.positions(0, 0) = 0.26;
         sim.directions(0) = -pi;
@@ -400,16 +403,13 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.positions(0, 0) = -0.22;
         sim.directions(0) = -pi;
         angle = sim.get_retraction_angle(0);
-        BOOST_CHECK(abs(angle) < pi);
+        BOOST_CHECK(angle > pi / 2 and angle < pi * 3 / 2);
         // past bridge
         sim.positions(0, 0) = 0.22;
         sim.positions(0, 1) = 0.22;
         sim.directions(0) = pi / 6;
         angle = sim.get_retraction_angle(0);
-        BOOST_CHECK(cos(angle) < 0);
-        // or, more precisely
-        BOOST_CHECK_CLOSE(angle, -pi * 3 / 4, eps);
-
+        BOOST_CHECK(cos(angle) > 0);
     }
 
     BOOST_AUTO_TEST_CASE(test_get_current_position) {
@@ -425,6 +425,38 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_CLOSE(x, sim.next_positions(0, 0) / 2, eps);
         BOOST_CHECK_CLOSE(y, sim.next_positions(0, 1) / 2, eps);
 
+    }
+
+    BOOST_AUTO_TEST_CASE(test_going_in_out_circle) {
+        auto sim = get_sim(1);
+        double pi = 3.141592653589793;
+        sim.circle_radius = 1;
+        sim.circle_distance = 0.5;
+        sim.bridge_height = 0.3;
+        sim.gate_radius = 0.3;
+        // Hitting from a position radially to the gate.
+        // Pick some angle small enough
+        double angle = 1. / 12 * pi;
+        sim.setup();
+        sim.start();
+        sim.positions(0, 0) = sim.circle_radius * cos(pi - angle);
+        sim.positions(0, 1) = sim.circle_radius * sin(pi - angle);
+        BOOST_CHECK(sim.is_in_left_circle(sim.positions(0, 0), sim.positions(0, 1)));
+        BOOST_CHECK(not sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
+        sim.directions(0) = -angle;
+        sim.compute_next_impact(0);
+        double next_x = sim.gate_radius * cos(pi - angle);
+        double next_y = sim.gate_radius * sin(pi - angle);
+        sim.update(0);
+        BOOST_CHECK_CLOSE(next_x, sim.positions(0, 0), eps);
+        BOOST_CHECK_CLOSE(next_y, sim.positions(0, 1), eps);
+        BOOST_CHECK(sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
+        BOOST_CHECK_CLOSE(sim.directions(0), -angle, eps);
+        sim.update(0);
+        BOOST_CHECK_CLOSE(-next_x, sim.positions(0, 0), eps);
+        BOOST_CHECK_CLOSE(-next_y, sim.positions(0, 1), eps);
+        BOOST_CHECK(not sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
+        BOOST_CHECK_CLOSE(sim.directions(0), -angle, eps);
     }
 
 

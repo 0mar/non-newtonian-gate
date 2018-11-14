@@ -22,7 +22,6 @@ class VisualScene:
         :return: None
         """
         self.data_reader = data_reader
-        self.auto_loop = True
         self.window = None
         self.env = None
         self.step_callback = None  # set in manager
@@ -32,8 +31,6 @@ class VisualScene:
         self.p_size = 0.03
         self.colors = [random.choice(self.color_list) for _ in range(self.data_reader.num_particles)]
         self.time_delay = 100
-        if not self.auto_loop:
-            print("Auto-updating of backend disabled. Press <Space> or click to advance simulation")
         self.window = tkinter.Tk()
         self.window.title("Terrier")
         self._size = np.array((1000, 500))
@@ -43,6 +40,10 @@ class VisualScene:
         self.canvas = tkinter.Canvas(self.window, bd=0, highlightthickness=0)
         self.canvas.grid(row=0, sticky=tkinter.W + tkinter.E + tkinter.N + tkinter.S)
         self.canvas.pack(fill=tkinter.BOTH, expand=1)
+        self.window.bind("<Button-2>", self._give_position)
+        if not self.auto_loop:
+            self.disable_loop()
+            print("Auto-updating of backend disabled. Press <Space> or click to advance simulation")
         # self.window.pack(fill=tkinter.BOTH,expand=1)
 
     @property
@@ -82,8 +83,6 @@ class VisualScene:
         self.data_reader.read_line()
         if self.auto_loop:
             self.window.after(self.time_delay, self.loop)
-        else:
-            self.loop()
 
     def finish(self):
         """
@@ -94,13 +93,15 @@ class VisualScene:
         self.window.destroy()
         self.auto_loop = False
 
-    def _give_relative_position(self, event):
+    def _give_position(self, event):
         """
-        Return the position of the click, reverted to the standard coordinate system (in first quadrant of unit square)
+        Return the position of the click, reverted to the used coordinate system (in first quadrant of unit square)
         :param event: Mouse click or whatever
         :return: Coordinates relative to scene.
         """
-        x, y = (event.x / self.size[0], 1 - event.y / self.size[1])
+        rel_x, rel_y = (event.x / self.size[0], 1 - event.y / self.size[1])
+        x = (rel_x * 2 - 1) * self.data_reader.size[0]
+        y = (rel_y * 2 - 1) * self.data_reader.size[1]
         print("Mouse location: (%.2f,%.2f)" % (x, y))
 
     def draw_scene(self):

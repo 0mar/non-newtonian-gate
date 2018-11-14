@@ -63,6 +63,7 @@ public:
     Eigen::ArrayXi in_gate; // todo: Remove these 3 arrays
     Eigen::ArrayXi in_left;
     Eigen::ArrayXi in_right;
+    Eigen::ArrayXi impact_object; // debug
 
     std::vector<double> measuring_times;
     std::vector<int> total_left;
@@ -73,9 +74,9 @@ public:
 
     void get_current_position(int particle, double &x, double &y);
 
-    void check_gate_explosion();
+    bool check_gate_explosion();
 
-    void update();
+    void update(double write_at);
 
     void measure();
 
@@ -85,7 +86,7 @@ public:
 
     double get_reflection_angle(double angle_in, double normal_angle);
 
-    double get_retraction_angle(const int particle);
+    double get_retraction_angle(int particle);
 
     void finish();
 
