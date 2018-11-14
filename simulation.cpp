@@ -91,14 +91,14 @@ void Simulation::update(double write_at) {
     directions(particle) = next_directions(particle);
     if (time < write_at and write_at < next_impact) {
         time = write_at;
-        write_to_file(true);
+        write_positions_to_file(true);
     }
     time = next_impact;
     in_left(particle) = 0;
     in_right(particle) = 0;
-    if (is_in_left_circle(px, py)) {
+    if (px < 0) {
         in_left(particle) = 1;
-    } else if (is_in_right_circle(px, py)) {
+    } else if (px > 0) {
         in_right(particle) = 1;
     }
     if (is_in_gate_radius(px, py)) {
@@ -169,7 +169,7 @@ void Simulation::print_status() {
     printf("Particles in gate: %d\n", in_gate.sum());
 }
 
-void Simulation::write_to_file(bool interpolate) {
+void Simulation::write_positions_to_file(bool interpolate) {
     std::string filename = "results.dat";
     std::ofstream file;
     if (time == 0) {
@@ -208,10 +208,26 @@ void Simulation::write_to_file(bool interpolate) {
     file.close();
 }
 
-void Simulation::finish() {
-    for (unsigned long i = 0; i < measuring_times.size(); i++) {
-        printf("Time: %.2f\tLeft:%d\tRight:%d\n", measuring_times.at(i), total_left.at(i), total_right.at(i));
+void Simulation::write_totals_to_file() {
+    std::string filename = "totals.dat";
+    std::ofstream file;
+    file.open(filename, std::ofstream::out | std::ofstream::trunc);
+    for (double time: measuring_times) {
+        file << time << "\t";
     }
+    file << std::endl;
+    for (int left: total_left) {
+        file << left << "\t";
+    }
+    file << std::endl;
+    for (int right: total_right) {
+        file << right << "\t";
+    }
+    file << std::endl;
+}
+
+void Simulation::finish() {
+    write_totals_to_file();
 }
 
 void Simulation::couple_bridge() {

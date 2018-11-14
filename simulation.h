@@ -81,7 +81,9 @@ public:
 
     void print_status();
 
-    void write_to_file(bool interpolate);
+    void write_positions_to_file(bool interpolate);
+
+    void write_totals_to_file();
 
     double get_reflection_angle(double angle_in, double normal_angle);
 
