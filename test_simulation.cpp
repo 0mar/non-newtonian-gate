@@ -255,14 +255,6 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_CLOSE(time, 2 * sim.gate_radius, eps);
     }
 
-    BOOST_AUTO_TEST_CASE(test_updates) {
-        auto sim = get_sim(10000);
-        sim.setup();
-        sim.start();
-        sim.measure();
-        BOOST_CHECK(sim.in_left.sum() + sim.in_right.sum() <= sim.num_particles);
-    }
-
     BOOST_AUTO_TEST_CASE(test_reflection_angle) {
         auto sim = get_sim(10000);
         double pi = 3.141592653589793;
@@ -364,6 +356,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
 
 
     BOOST_AUTO_TEST_CASE(test_long_term_consistency) {
+        // Takes a long time
         auto sim = get_sim(1000);
         double pi = 3.141592653589793;
         sim.bridge_height = 0.1;
@@ -371,12 +364,15 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.setup();
         sim.start();
         bool all_correct = true;
-        while (sim.time < 100) {
+        bool left_or_right = true;
+        while (sim.time < 40) {
             sim.update(0);
             for (int i = 0; i < sim.num_particles; i++) {
                 all_correct = all_correct and sim.is_in_domain(sim.positions(i, 0), sim.positions(i, 1));
+                left_or_right = left_or_right and sim.in_left.sum() + sim.in_right.sum() == 1000;
             }
             BOOST_CHECK(all_correct);
+            BOOST_CHECK(left_or_right);
         }
     }
 
