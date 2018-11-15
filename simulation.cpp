@@ -308,11 +308,11 @@ void Simulation::compute_next_impact(const int particle) {
     if (to_gate < next_time) {
         next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
         next_angle = directions(particle);
-        double nx = positions(particle, 0) + next_time * cos(directions(particle));
-        double ny = positions(particle, 1) + next_time * sin(directions(particle));
-        if (is_in_gate_radius(px, py) and is_in_gate_radius(nx, ny)) {
-            printf("Small movement (%.3e) for particle %d detected\n", next_time, particle);
-        }
+//        double nx = positions(particle, 0) + next_time * cos(directions(particle));
+//        double ny = positions(particle, 1) + next_time * sin(directions(particle));
+//        if (is_in_gate_radius(px, py) and is_in_gate_radius(nx, ny)) {
+//            printf("Small movement (%.3e) for particle %d detected\n", next_time, particle);
+//        }
     }
     if (angle == 0) {
         throw std::invalid_argument("wrong angle");
