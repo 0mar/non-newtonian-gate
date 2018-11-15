@@ -4,31 +4,8 @@
 #include <string>
 #include <fstream>
 
-void write_results(std::string &id, std::vector<double> &x, std::vector<double> &y) {
-    if (x.size() != y.size()) std::cout << "Writing fails..." << std::endl;
-    std::ofstream results_file;
-    results_file.open(id + ".txt");
-    results_file << "[";
-    for (unsigned long i = 0; i < x.size(); i++) {
-        results_file << "[" << x.at(i) << ", " << y.at(i) << "]," << std::endl;
-    }
-    results_file << "]";
-}
-
-void run_domain() {
-    Simulation simulation = Simulation(1000, 0.3);
-    simulation.setup();
-    simulation.start();
-    simulation.write_positions_to_file(0);
-    while (simulation.time < 50) {
-        //simulation.print_status();
-        simulation.update(0);
-        simulation.write_positions_to_file(false);
-    }
-    simulation.finish();
-}
-
-void simulation_for_animation() {
+void single_particle_animation() {
+    printf("Running the animation for a single particle\n");
     Simulation simulation = Simulation(1, 0);
     simulation.bridge_height = 0.5;
     simulation.setup();
@@ -44,7 +21,20 @@ void simulation_for_animation() {
     }
 }
 
-void write_domain(double dt) {
+void many_particle_animation() {
+    printf("Running the animation for 200 particle\n");
+    Simulation simulation = Simulation(200, 0);
+    simulation.bridge_height = 0.5;
+    simulation.setup();
+    simulation.start();
+    simulation.write_positions_to_file(0);
+    double dt = 0.025;
+    while (simulation.time < 100) {
+        simulation.update(dt);
+    }
+}
+
+void standard_simulation(double dt) {
     Simulation simulation = Simulation(100, 0.3);
     simulation.setup();
     simulation.start();
@@ -89,11 +79,15 @@ int main(int argc, char *argv[]) {
     }
     switch (mode) {
         case 1: {
-            simulation_for_animation();
+            single_particle_animation();
+            break;
+        }
+        case 2: {
+            many_particle_animation();
             break;
         }
         default: {
-            std::cout << get_thermalisation_time(0.5, 2) << std::endl;
+            std::cout << get_thermalisation_time(0.5, 6) << std::endl;
             break;
         }
     }
