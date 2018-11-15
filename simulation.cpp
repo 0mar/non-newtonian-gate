@@ -86,14 +86,18 @@ void Simulation::update(double write_dt) {
     if (next_impact < time) {
         throw std::invalid_argument("Next impact in history, not possible");
     }
-    impact_times(particle) = time;
-    while (next_impact > last_written_time + write_dt) {
+    std::cout << impact_times << std::endl;
+    std::cout << next_impact_times << std::endl;
+    std::cout << "Next impact at " << next_impact << " of particle " << particle << std::endl;
+    while (next_impact > last_written_time) {
+        write_positions_to_file(last_written_time + write_dt);
         last_written_time += write_dt;
-        write_positions_to_file(last_written_time);
+        printf("Slicing on %.3f\n", last_written_time);
     }
     positions(particle, 0) = next_positions(particle, 0);
     positions(particle, 1) = next_positions(particle, 1);
     directions(particle) = next_directions(particle);
+    impact_times(particle) = next_impact;
     time = next_impact;
     in_left(particle) = 0;
     in_right(particle) = 0;
@@ -194,6 +198,8 @@ void Simulation::write_positions_to_file(double time) {
     file << std::endl;
     for (int particle = 0; particle < num_particles; particle++) {
         file << directions(particle) << " ";
+        printf("For particle %d, teller, %.3f, noemer: %.3f\n", particle, impact_times(particle) - time,
+               impact_times(particle) - next_impact_times(particle));
     }
     file << std::endl;
     file.close();

@@ -29,7 +29,8 @@ void run_domain() {
 }
 
 void simulation_for_animation() {
-    Simulation simulation = Simulation(1, 0);
+    Simulation simulation = Simulation(2, 0);
+    simulation.bridge_height = 0.5;
     simulation.setup();
     simulation.start();
     simulation.write_positions_to_file(0);
