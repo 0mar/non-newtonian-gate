@@ -439,6 +439,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.positions(0, 1) = sim.circle_radius * sin(pi - angle);
         BOOST_CHECK(sim.is_in_left_circle(sim.positions(0, 0), sim.positions(0, 1)));
         BOOST_CHECK(not sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
+        BOOST_CHECK(sim.currently_in_gate.empty());
         sim.directions(0) = -angle;
         sim.compute_next_impact(0);
         double next_x = sim.gate_radius * cos(pi - angle);
@@ -448,11 +449,14 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_CLOSE(next_y, sim.positions(0, 1), eps);
         BOOST_CHECK(sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
         BOOST_CHECK_CLOSE(sim.directions(0), -angle, eps);
+        BOOST_CHECK(sim.currently_in_gate.size() == 1);
         sim.update(0);
         BOOST_CHECK_CLOSE(-next_x, sim.positions(0, 0), eps);
         BOOST_CHECK_CLOSE(-next_y, sim.positions(0, 1), eps);
         BOOST_CHECK(not sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
         BOOST_CHECK_CLOSE(sim.directions(0), -angle, eps);
+        BOOST_CHECK(sim.currently_in_gate.empty());
+
     }
 
 

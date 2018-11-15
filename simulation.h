@@ -74,7 +74,7 @@ public:
 
     void get_current_position(int particle, double &x, double &y);
 
-    bool check_gate_explosion();
+    void check_gate_explosion(int particle);
 
     void update(double write_dt);
 

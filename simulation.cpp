@@ -86,13 +86,12 @@ void Simulation::update(double write_dt) {
     if (next_impact < time) {
         throw std::invalid_argument("Next impact in history, not possible");
     }
-//    if (write_dt > 0) {
-//        while (next_impact > last_written_time + write_dt) {
-//            write_positions_to_file(last_written_time + write_dt);
-//            last_written_time += write_dt;
-//        }
-//    }
-    write_positions_to_file(time);
+    if (write_dt > 0) {
+        while (next_impact > last_written_time + write_dt) {
+            write_positions_to_file(last_written_time + write_dt);
+            last_written_time += write_dt;
+        }
+    }
     positions(particle, 0) = next_positions(particle, 0);
     positions(particle, 1) = next_positions(particle, 1);
     directions(particle) = next_directions(particle);
@@ -107,19 +106,12 @@ void Simulation::update(double write_dt) {
     }
     if (is_in_gate_radius(px, py)) {
         if (in_gate(particle) == 0) {
-            in_gate(particle) = 1;
-//            printf("Num particles at time %.2f in gate is %d\n", time, in_gate.sum());
-            currently_in_gate.push_back(particle);
-            bool explodes = check_gate_explosion(); //  Todo: give offending particle as parameter
-            if (explodes) {
-                currently_in_gate.erase(std::remove(currently_in_gate.begin(), currently_in_gate.end(), particle),
-                                        currently_in_gate.end());
-                in_gate(particle) = 0;
-            }
+//            printf("Num particles at time %.2f in gate is %d\n", time, in_gate.sum() + 1);
+            check_gate_explosion(particle); // Todo, why does the final particle not get removed? this works tho
         }
     } else {
         if (in_gate(particle) == 1) {
-            in_gate(particle) = 0;
+            in_gate(particle) = 0; // todo: Also give own method
             currently_in_gate.erase(std::remove(currently_in_gate.begin(), currently_in_gate.end(), particle),
                                     currently_in_gate.end());
         }
@@ -128,11 +120,13 @@ void Simulation::update(double write_dt) {
     measure();
 }
 
-bool Simulation::check_gate_explosion() {
-    if (currently_in_gate.size() > gate_capacity) {
-//        std::cout << "Explosion at " << time << std::endl;
+void Simulation::check_gate_explosion(int exp_particle) {
+    if (currently_in_gate.size() > gate_capacity - 1) {
+
+        directions(exp_particle) = get_retraction_angle(exp_particle); // for violating particle only
         for (int particle: currently_in_gate) {
-//            printf("Bouncing particle %d\n", particle);
+//            printf("Bouncing particle %d with position (%.3f, %.3f)\n", particle,px,py);
+//            printf("Last impact time: %.2f\tNext impact time%.2f\n",impact_times(particle),next_impact_times(particle));
             double x, y;
             get_current_position(particle, x, y);
 //            printf("Position updated to (%.3f, %.3f)\n", x, y);
@@ -149,9 +143,12 @@ bool Simulation::check_gate_explosion() {
             compute_next_impact(particle);
 //            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
         }
-        return true;
+    } else {
+        // No explosion
+        currently_in_gate.push_back(exp_particle);
+        in_gate(exp_particle) = 1;
+//        printf("Particle %d added to gate\n",exp_particle);
     }
-    return false;
 }
 
 void Simulation::measure() {
@@ -330,11 +327,15 @@ void Simulation::get_current_position(int particle, double &x, double &y) {
     /**
      * Interpolate position at the current time. Returns in referenced variables
      */
-    x = px + (next_positions(particle, 0) - px) * (impact_times(particle) - time) /
-             (impact_times(particle) - next_impact_times(particle));
-
-    y = py + (next_positions(particle, 1) - py) * (impact_times(particle) - time) /
-             (impact_times(particle) - next_impact_times(particle));
+    if (impact_times(particle) == next_impact_times(particle)) {
+        x = px;
+        y = py;
+    } else {
+        x = px + (next_positions(particle, 0) - px) * (impact_times(particle) - time) /
+                 (impact_times(particle) - next_impact_times(particle));
+        y = py + (next_positions(particle, 1) - py) * (impact_times(particle) - time) /
+                 (impact_times(particle) - next_impact_times(particle));
+    }
 }
 
 double Simulation::time_to_hit_bridge(const int particle, double &normal_angle) {

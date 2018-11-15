@@ -38,7 +38,7 @@ void simulation_for_animation() {
     simulation.directions(0) = -2.3;
     simulation.compute_next_impact(0);
     simulation.write_positions_to_file(0);
-    double dt = 0.01;
+    double dt = 0.025;
     while (simulation.time < 100) {
         simulation.update(dt);
     }
@@ -62,7 +62,6 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.start();
     simulation.write_positions_to_file(0);
     while (simulation.in_right.sum() < simulation.num_particles / 2) {
-        std::cout << simulation.in_right.sum() << std::endl;
         simulation.update(0.05);
     }
     return simulation.time;
@@ -94,7 +93,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         default: {
-            std::cout << get_thermalisation_time(0.3, 1) << std::endl;
+            std::cout << get_thermalisation_time(0.5, 2) << std::endl;
             break;
         }
     }
