@@ -152,7 +152,8 @@ class VisualScene:
             vis_pos_array = np.array([rel_pos_array[0] / 2 + 0.5, 1 - (rel_pos_array[1] / 2 + 0.5)]) * self.size
             start_pos_array = vis_pos_array - 0.5 * rel_size_array
             end_pos_array = vis_pos_array + 0.5 * rel_size_array
-            self.canvas.create_oval(start_pos_array[0], start_pos_array[1], end_pos_array[0], end_pos_array[1], width=3)
+            self.canvas.create_oval(start_pos_array[0], start_pos_array[1], end_pos_array[0], end_pos_array[1], width=3,
+                                    fill='white')
         self.draw_bridge()
 
     def draw_pedestrians(self):

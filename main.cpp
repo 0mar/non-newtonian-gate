@@ -29,10 +29,14 @@ void run_domain() {
 }
 
 void simulation_for_animation() {
-    Simulation simulation = Simulation(2, 0);
+    Simulation simulation = Simulation(1, 0);
     simulation.bridge_height = 0.5;
     simulation.setup();
     simulation.start();
+    simulation.positions(0, 0) = -1.1;
+    simulation.positions(0, 1) = 0.34;
+    simulation.directions(0) = -2.3;
+    simulation.compute_next_impact(0);
     simulation.write_positions_to_file(0);
     double dt = 0.01;
     while (simulation.time < 100) {
@@ -57,8 +61,9 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.setup();
     simulation.start();
     simulation.write_positions_to_file(0);
-    while (simulation.in_right.sum() < simulation.num_particles) {
-        simulation.update(0);
+    while (simulation.in_right.sum() < simulation.num_particles / 2) {
+        std::cout << simulation.in_right.sum() << std::endl;
+        simulation.update(0.05);
     }
     return simulation.time;
 }
@@ -73,6 +78,7 @@ double test_parameters(double gate_radius, int gate_capacity) {
 }
 
 int main(int argc, char *argv[]) {
+
     int mode = 0;
     if (argc == 2) {
         mode = std::stoi(argv[1]);
@@ -88,7 +94,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         default: {
-            write_domain(0.03);
+            std::cout << get_thermalisation_time(0.3, 1) << std::endl;
             break;
         }
     }
