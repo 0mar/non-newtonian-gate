@@ -4,6 +4,16 @@
 #include <string>
 #include <fstream>
 
+
+void write_results(std::string &id, std::vector<double> &data) {
+    std::ofstream results_file;
+    results_file.open(id + ".txt");
+    for (double datum: data) {
+        results_file << datum << "\t";
+    }
+    results_file << std::endl;
+}
+
 void single_particle_animation() {
     printf("Running the animation for a single particle\n");
     Simulation simulation = Simulation(1, 0);
@@ -23,7 +33,8 @@ void single_particle_animation() {
 
 void many_particle_animation() {
     printf("Running the animation for 200 particle\n");
-    Simulation simulation = Simulation(200, 0);
+    Simulation simulation = Simulation(200, 0.7);
+    simulation.gate_capacity = 5;
     simulation.bridge_height = 0.5;
     simulation.setup();
     simulation.start();
@@ -50,15 +61,26 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.gate_capacity = gate_capacity;
     simulation.setup();
     simulation.start();
-    simulation.write_positions_to_file(0);
-    while (simulation.in_right.sum() < simulation.num_particles / 2) {
-        simulation.update(0.05);
+    // simulation.write_positions_to_file(0);
+    while (simulation.in_right.sum() < simulation.num_particles / 2 and simulation.time < 1E5) {
+        simulation.update(0.0);
     }
     return simulation.time;
 }
 
+void converge_thermalisation(double gate_radius, int gate_capacity, unsigned long repeats) {
+    auto results = std::vector<double>();
+    results.reserve(repeats);
+    for (unsigned long i = 0; i < repeats; i++) {
+        results.push_back(get_thermalisation_time(gate_radius, gate_capacity));
+        std::cout << i << std::endl;
+    }
+    std::string name = "therms";
+    write_results(name, results);
+}
+
 double test_parameters(double gate_radius, int gate_capacity) {
-    int repeats = 10;
+    int repeats = 1000;
     double total_time = 0;
     for (int i = 0; i < repeats; i++) {
         total_time += get_thermalisation_time(gate_radius, gate_capacity);
@@ -67,15 +89,15 @@ double test_parameters(double gate_radius, int gate_capacity) {
 }
 
 int main(int argc, char *argv[]) {
-
     int mode = 0;
     if (argc == 2) {
         mode = std::stoi(argv[1]);
     } else if (argc == 3) {
         double gate_radius = std::stod(argv[1]);
-        int gate_capacity = std::stoi(argv[1]);
-        printf("Assuming a gate radius of %.2f and a gate capacity of %d\n", gate_radius, gate_capacity);
-        test_parameters(gate_radius, gate_capacity);
+        int gate_capacity = std::stoi(argv[2]);
+        //printf("Assuming a gate radius of %.2f and a gate capacity of %d\n", gate_radius, gate_capacity);
+        std::cout << test_parameters(gate_radius, gate_capacity) << std::endl;
+        return 0;
     }
     switch (mode) {
         case 1: {
@@ -87,7 +109,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         default: {
-            std::cout << get_thermalisation_time(0.5, 6) << std::endl;
+            converge_thermalisation(0.5, 5, 100000);
             break;
         }
     }
