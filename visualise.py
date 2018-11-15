@@ -30,7 +30,7 @@ class VisualScene:
         self.auto_loop = True
         self.p_size = 0.03
         self.colors = [random.choice(self.color_list) for _ in range(self.data_reader.num_particles)]
-        self.time_delay = 100
+        self.time_delay = 10
         self.window = tkinter.Tk()
         self.window.title("Terrier")
         self._size = np.array((1000, 500))
