@@ -124,7 +124,7 @@ class VisualScene:
         self.canvas.delete('all')
         self.draw_outline()
         self.draw_pedestrians()
-        self.store_scene(None, 'images/slice-%04d.eps' % self.slice_num)
+        # self.store_scene(None, 'images/slice-%04d.eps' % self.slice_num)
 
     def store_scene(self, _, filename=None):
         """
@@ -152,8 +152,9 @@ class VisualScene:
             vis_pos_array = np.array([rel_pos_array[0] / 2 + 0.5, 1 - (rel_pos_array[1] / 2 + 0.5)]) * self.size
             start_pos_array = vis_pos_array - 0.5 * rel_size_array
             end_pos_array = vis_pos_array + 0.5 * rel_size_array
+            fill = None if x_center == 0 else 'white'
             self.canvas.create_oval(start_pos_array[0], start_pos_array[1], end_pos_array[0], end_pos_array[1], width=3,
-                                    fill='white')
+                                    fill=fill)
         self.draw_bridge()
 
     def draw_pedestrians(self):
