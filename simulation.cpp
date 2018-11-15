@@ -48,6 +48,7 @@ void Simulation::start() {
      * Initiate all particles, to the left
      */
     time = 0;
+    last_written_time = 0;
     double box_x_radius = circle_distance / 2 + circle_radius * 2;
     double box_y_radius = circle_radius;
     if (gate_radius >= box_x_radius) {
@@ -72,7 +73,7 @@ void Simulation::start() {
     measure();
 }
 
-void Simulation::update(double write_at) {
+void Simulation::update(double write_dt) {
     // Todo: Suboptimal. If we use a heap, we don't need to loop.
     double next_impact = next_impact_times(0);
     int particle = 0;
@@ -86,13 +87,13 @@ void Simulation::update(double write_at) {
         throw std::invalid_argument("Next impact in history, not possible");
     }
     impact_times(particle) = time;
+    while (next_impact > last_written_time + write_dt) {
+        last_written_time += write_dt;
+        write_positions_to_file(last_written_time);
+    }
     positions(particle, 0) = next_positions(particle, 0);
     positions(particle, 1) = next_positions(particle, 1);
     directions(particle) = next_directions(particle);
-    if (time < write_at and write_at < next_impact) {
-        time = write_at;
-        write_positions_to_file(true);
-    }
     time = next_impact;
     in_left(particle) = 0;
     in_right(particle) = 0;
@@ -106,7 +107,7 @@ void Simulation::update(double write_at) {
             in_gate(particle) = 1;
 //            printf("Num particles at time %.2f in gate is %d\n", time, in_gate.sum());
             currently_in_gate.push_back(particle);
-            bool explodes = check_gate_explosion();
+            bool explodes = check_gate_explosion(); //  Todo: give offending particle as parameter
             if (explodes) {
                 currently_in_gate.erase(std::remove(currently_in_gate.begin(), currently_in_gate.end(), particle),
                                         currently_in_gate.end());
@@ -169,7 +170,7 @@ void Simulation::print_status() {
     printf("Particles in gate: %d\n", in_gate.sum());
 }
 
-void Simulation::write_positions_to_file(bool interpolate) {
+void Simulation::write_positions_to_file(double time) {
     std::string filename = "results.dat";
     std::ofstream file;
     if (time == 0) {
@@ -181,24 +182,14 @@ void Simulation::write_positions_to_file(bool interpolate) {
     }
     file.open(filename, std::ios_base::app);
     file << time << std::endl;
-    if (interpolate) {
-        for (int particle = 0; particle < num_particles; particle++) {
-            file << px + (next_positions(particle, 0) - px) * (impact_times(particle) - time) /
-                         (impact_times(particle) - next_impact_times(particle)) << " ";
-        }
-        file << std::endl;
-        for (int particle = 0; particle < num_particles; particle++) {
-            file << py + (next_positions(particle, 1) - py) * (impact_times(particle) - time) /
-                         (impact_times(particle) - next_impact_times(particle)) << " ";
-        }
-    } else {
-        for (int particle = 0; particle < num_particles; particle++) {
-            file << px << " ";
-        }
-        file << std::endl;
-        for (int particle = 0; particle < num_particles; particle++) {
-            file << py << " ";
-        }
+    for (int particle = 0; particle < num_particles; particle++) {
+        file << px + (next_positions(particle, 0) - px) * (impact_times(particle) - time) /
+                     (impact_times(particle) - next_impact_times(particle)) << " ";
+    }
+    file << std::endl;
+    for (int particle = 0; particle < num_particles; particle++) {
+        file << py + (next_positions(particle, 1) - py) * (impact_times(particle) - time) /
+                     (impact_times(particle) - next_impact_times(particle)) << " ";
     }
     file << std::endl;
     for (int particle = 0; particle < num_particles; particle++) {

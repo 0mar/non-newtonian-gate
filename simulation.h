@@ -54,6 +54,7 @@ public:
     double time_to_hit_gate(int particle);
 
     double time;
+    double last_written_time;
     Eigen::ArrayXd next_impact_times;
     Eigen::ArrayXd impact_times;
     Eigen::ArrayXXd next_positions;
@@ -75,13 +76,13 @@ public:
 
     bool check_gate_explosion();
 
-    void update(double write_at);
+    void update(double write_dt);
 
     void measure();
 
     void print_status();
 
-    void write_positions_to_file(bool interpolate);
+    void write_positions_to_file(double time);
 
     void write_totals_to_file();
 

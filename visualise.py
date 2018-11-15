@@ -36,11 +36,21 @@ class VisualScene:
         self._size = np.array((1000, 500))
         self.window.geometry("%dx%d" % (self._size[0], self._size[1]))
         self.window.grid()
+        self.slice_num = 0
 
         self.canvas = tkinter.Canvas(self.window, bd=0, highlightthickness=0)
         self.canvas.grid(row=0, sticky=tkinter.W + tkinter.E + tkinter.N + tkinter.S)
         self.canvas.pack(fill=tkinter.BOTH, expand=1)
         self.window.bind("<Button-2>", self._give_position)
+
+        # Geometry data
+        x_centers = [-(self.data_reader.circle_radius + self.data_reader.circle_distance / 2),
+                     (self.data_reader.circle_radius + self.data_reader.circle_distance / 2)]
+        radii = [self.data_reader.circle_radius, self.data_reader.circle_radius]
+        if self.data_reader.gate_radius > 0:
+            x_centers.append(0)
+            radii.append(self.data_reader.gate_radius)
+        self.geom = tuple((x_centers, radii))
         if not self.auto_loop:
             self.disable_loop()
             print("Auto-updating of backend disabled. Press <Space> or click to advance simulation")
@@ -80,6 +90,7 @@ class VisualScene:
         :return: None
         """
         self.draw_scene()
+        self.slice_num += 1
         self.data_reader.read_line()
         if self.auto_loop:
             self.window.after(self.time_delay, self.loop)
@@ -113,6 +124,7 @@ class VisualScene:
         self.canvas.delete('all')
         self.draw_outline()
         self.draw_pedestrians()
+        self.store_scene(None, 'images/slice-%04d.eps' % self.slice_num)
 
     def store_scene(self, _, filename=None):
         """
@@ -132,16 +144,15 @@ class VisualScene:
         self.canvas.postscript(file=filename, pageheight=self.size[1], pagewidth=self.size[0])
 
     def draw_outline(self):
-        x_centers = [-(self.data_reader.circle_radius + self.data_reader.circle_distance / 2),
-                     (self.data_reader.circle_radius + self.data_reader.circle_distance / 2),0]
-        radii = [self.data_reader.circle_radius,self.data_reader.circle_radius,self.data_reader.gate_radius]
-        for x_center,radius in zip(x_centers,radii):
+        for i in range(len(self.geom[0])):
+            x_center = self.geom[0][i]
+            radius = self.geom[1][i]
             rel_pos_array = np.array([x_center, 0]) / self.data_reader.size
             rel_size_array = radius / self.data_reader.size * self.size
             vis_pos_array = np.array([rel_pos_array[0] / 2 + 0.5, 1 - (rel_pos_array[1] / 2 + 0.5)]) * self.size
             start_pos_array = vis_pos_array - 0.5 * rel_size_array
             end_pos_array = vis_pos_array + 0.5 * rel_size_array
-            self.canvas.create_oval(start_pos_array[0], start_pos_array[1], end_pos_array[0], end_pos_array[1])
+            self.canvas.create_oval(start_pos_array[0], start_pos_array[1], end_pos_array[0], end_pos_array[1], width=3)
         self.draw_bridge()
 
     def draw_pedestrians(self):
@@ -178,11 +189,12 @@ class VisualScene:
             np.array((-self.data_reader.bridge_size / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
         x_1 = self.convert_relative_coordinate(
             np.array((self.data_reader.bridge_size / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
-        self.canvas.create_line(tuple(x_0) + tuple(x_1), fill='black', width=2)
         x_2 = self.convert_relative_coordinate(
             np.array((-self.data_reader.bridge_size / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
         x_3 = self.convert_relative_coordinate(
             np.array((self.data_reader.bridge_size / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
+        self.canvas.create_rectangle(tuple(x_0) + tuple(x_3), fill='white', outline='white', width=3)
+        self.canvas.create_line(tuple(x_0) + tuple(x_1), fill='black', width=2)
         self.canvas.create_line(tuple(x_2) + tuple(x_3), fill='black', width=2)
 
     def convert_relative_coordinate(self, coord):
@@ -208,7 +220,7 @@ class DataReader:
         self.num_particles = self.gate_radius = self.circle_radius = 0
         self.circle_distance = self.bridge_height = self.bridge_size = 0
         self.read_parameters()
-        self.size = np.array([self.circle_radius * 4 + self.circle_distance, self.circle_radius * 2])
+        self.size = np.array([self.circle_radius * 4 + self.circle_distance, self.circle_radius * 2]) * 0.55
         self.times = []
         self.positions = np.zeros((self.num_particles, 2))
         self.directions = np.zeros(self.num_particles)

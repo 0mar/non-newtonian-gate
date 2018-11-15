@@ -19,7 +19,7 @@ void run_domain() {
     Simulation simulation = Simulation(1000, 0.3);
     simulation.setup();
     simulation.start();
-    simulation.write_positions_to_file(false);
+    simulation.write_positions_to_file(0);
     while (simulation.time < 50) {
         //simulation.print_status();
         simulation.update(0);
@@ -28,17 +28,24 @@ void run_domain() {
     simulation.finish();
 }
 
+void simulation_for_animation() {
+    Simulation simulation = Simulation(1, 0);
+    simulation.setup();
+    simulation.start();
+    simulation.write_positions_to_file(0);
+    double dt = 0.01;
+    while (simulation.time < 100) {
+        simulation.update(dt);
+    }
+}
+
 void write_domain(double dt) {
     Simulation simulation = Simulation(100, 0.3);
     simulation.setup();
     simulation.start();
-    simulation.write_positions_to_file(true);
-    int iteration = 0;
+    simulation.write_positions_to_file(0);
     while (simulation.time < 500) {
-        iteration++;
-        while (simulation.time < iteration * dt) {
-            simulation.update(iteration * dt);
-        }
+        simulation.update(dt);
     }
     simulation.finish();
 }
@@ -48,7 +55,7 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.gate_capacity = gate_capacity;
     simulation.setup();
     simulation.start();
-    simulation.write_positions_to_file(true);
+    simulation.write_positions_to_file(0);
     while (simulation.in_right.sum() < simulation.num_particles) {
         simulation.update(0);
     }
@@ -76,7 +83,7 @@ int main(int argc, char *argv[]) {
     }
     switch (mode) {
         case 1: {
-            run_domain();
+            simulation_for_animation();
             break;
         }
         default: {
