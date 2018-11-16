@@ -22,7 +22,8 @@ public:
     // Important parameters
     const int num_particles;
     double gate_radius;
-    int gate_capacity;
+    int left_gate_capacity;
+    int right_gate_capacity;
     // Other parameters
     double circle_radius;
     double circle_distance;
@@ -32,6 +33,8 @@ public:
     double right_center_x;
     double max_path;
     double bridge_size;
+    const int LEFT = 0;
+    const int RIGHT = 1;
 
     void setup();
 
@@ -45,13 +48,13 @@ public:
 
     bool is_in_bridge(double x, double y);
 
-    bool is_in_gate_radius(double x, double y);
-
     double time_to_hit_bridge(int particle, double &normal_angle);
 
     double time_to_hit_circle(int particle, double center_x, double &normal_angle);
 
     double time_to_hit_gate(int particle);
+
+    double time_to_hit_middle(int particle);
 
     double time;
     double last_written_time;
@@ -61,20 +64,31 @@ public:
     Eigen::ArrayXXd positions;
     Eigen::ArrayXd next_directions;
     Eigen::ArrayXd directions;
-    Eigen::ArrayXi in_gate;
+    Eigen::ArrayXi in_left_gate;
+    Eigen::ArrayXi in_right_gate;
     Eigen::ArrayXi in_left;
     Eigen::ArrayXi in_right;
 
     std::vector<double> measuring_times;
     std::vector<int> total_left;
-    std::vector<int> currently_in_gate;
+    std::vector<int> currently_in_left_gate;
+    std::vector<int> currently_in_right_gate;
     std::vector<int> total_right;
+    std::vector<std::vector<int>> gate_contents;
+    std::vector<Eigen::ArrayXi> gate_arrays;
+    std::vector<double> gate_capacities;
 
     void compute_next_impact(int particle);
 
     void get_current_position(int particle, double &x, double &y);
 
-    void check_gate_explosion(int particle);
+    void check_gate_admission(int particle, unsigned long direction);
+
+    void explode_gate(int particle, unsigned long direction);
+
+    bool is_in_gate(double x, double y, unsigned long direction);
+
+    void check_gate_departure(int particle, unsigned long direction);
 
     void update(double write_dt);
 

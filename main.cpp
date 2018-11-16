@@ -34,7 +34,8 @@ void single_particle_animation() {
 void many_particle_animation() {
     printf("Running the animation for 200 particle\n");
     Simulation simulation = Simulation(200, 0.7);
-    simulation.gate_capacity = 5;
+    simulation.left_gate_capacity = 15;
+    simulation.right_gate_capacity = 2;
     simulation.bridge_height = 0.5;
     simulation.setup();
     simulation.start();
@@ -58,7 +59,8 @@ void standard_simulation(double dt) {
 
 double get_thermalisation_time(double gate_radius, int gate_capacity) {
     Simulation simulation = Simulation(100, gate_radius);
-    simulation.gate_capacity = gate_capacity;
+    simulation.left_gate_capacity = gate_capacity;
+    simulation.right_gate_capacity = gate_capacity;
     simulation.setup();
     simulation.start();
     // simulation.write_positions_to_file(0);

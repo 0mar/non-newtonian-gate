@@ -24,14 +24,23 @@ Simulation::Simulation(int num_particles, double gate_radius) : num_particles(nu
     circle_distance = 0.5;
     bridge_height = 0.3;
     this->gate_radius = gate_radius;
-    gate_capacity = 3;
+    left_gate_capacity = 3;
+    right_gate_capacity = 3;
 }
 
 void Simulation::setup() {
     max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
     next_impact_times = Eigen::ArrayXd::Zero(num_particles);
     impact_times = Eigen::ArrayXd::Zero(num_particles);
-    in_gate = Eigen::ArrayXi::Zero(num_particles);
+    in_left_gate = Eigen::ArrayXi::Zero(num_particles);
+    in_right_gate = Eigen::ArrayXi::Zero(num_particles);
+    gate_arrays.push_back(in_left_gate);
+    gate_arrays.push_back(in_right_gate);
+    gate_contents.push_back(currently_in_left_gate);
+    gate_contents.push_back(currently_in_right_gate);
+    gate_capacities.push_back(left_gate_capacity);
+    gate_capacities.push_back(right_gate_capacity);
+
     in_left = Eigen::ArrayXi::Ones(num_particles);
     in_right = Eigen::ArrayXi::Zero(num_particles);
     left_center_x = -circle_distance / 2 - circle_radius;
@@ -60,7 +69,7 @@ void Simulation::start() {
     for (int particle = 0; particle < num_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate_radius(pos_x, pos_y) or is_in_bridge(pos_x, pos_y)) {
+        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, LEFT) or is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
         }
@@ -74,7 +83,7 @@ void Simulation::start() {
 }
 
 void Simulation::update(double write_dt) {
-    // Todo: Suboptimal. If we use a heap, we don't need to loop.
+    // Find next event: the first particle that has a new impact
     double next_impact = next_impact_times(0);
     int particle = 0;
     for (int p = 0; p < num_particles; p++) {
@@ -83,20 +92,23 @@ void Simulation::update(double write_dt) {
             particle = p;
         }
     }
-    if (next_impact < time) {
-        throw std::invalid_argument("Next impact in history, not possible");
-    }
+
+    // Write a time slice, if desired
     if (write_dt > 0) {
         while (next_impact > last_written_time + write_dt) {
             write_positions_to_file(last_written_time + write_dt);
             last_written_time += write_dt;
         }
     }
+
+    // Update the data of the particle with the collision
     positions(particle, 0) = next_positions(particle, 0);
     positions(particle, 1) = next_positions(particle, 1);
     directions(particle) = next_directions(particle);
     impact_times(particle) = next_impact;
     time = next_impact;
+
+    // Process the location of the particle
     in_left(particle) = 0;
     in_right(particle) = 0;
     if (px < 0) {
@@ -104,50 +116,69 @@ void Simulation::update(double write_dt) {
     } else if (px > 0) {
         in_right(particle) = 1;
     }
-    if (is_in_gate_radius(px, py)) {
-        if (in_gate(particle) == 0) {
-//            printf("Num particles at time %.2f in gate is %d\n", time, in_gate.sum() + 1);
-            check_gate_explosion(particle); // Todo, why does the final particle not get removed? this works tho
-        }
-    } else {
-        if (in_gate(particle) == 1) {
-            in_gate(particle) = 0; // todo: Also give own method
-            currently_in_gate.erase(std::remove(currently_in_gate.begin(), currently_in_gate.end(), particle),
-                                    currently_in_gate.end());
+
+    // Check if the particle explodes
+    for (unsigned long direction = 0; direction < 2; direction++) {
+        if (is_in_gate(px, py, direction)) {
+            check_gate_admission(particle, direction);
+        } else {
+            check_gate_departure(particle, direction);
         }
     }
+
+    // Find out when the next collision takes place
     compute_next_impact(particle);
+
+    // Do something useful with this information
     measure();
 }
 
-void Simulation::check_gate_explosion(int exp_particle) {
-    if ((int) currently_in_gate.size() > gate_capacity - 1) { // unsigned long HAVE to be cast
+bool Simulation::is_in_gate(double x, double y, unsigned long direction) {
+    return ((int) direction * 2 - 1) * x >= 0 and x * x + y * y < gate_radius * gate_radius;
+}
 
-        directions(exp_particle) = get_retraction_angle(exp_particle); // for violating particle only
-        for (int particle: currently_in_gate) {
+void Simulation::check_gate_admission(int particle, unsigned long direction) {
+    if (gate_arrays.at(direction)(particle) == 0) {
+        // Not yet in gate, check admission
+        if (gate_contents.at(direction).size() > gate_capacities.at(direction) - 1) {
+            explode_gate(particle, direction);
+        } else {
+            gate_contents.at(direction).push_back(particle);
+            gate_arrays.at(direction)(particle) = 1;
+        }
+    }
+}
+
+void Simulation::check_gate_departure(int particle, unsigned long direction) {
+    if (gate_arrays.at(direction)(particle) == 1) {
+        // Freshly leaving the gate
+        gate_contents.at(direction).erase(std::remove(gate_contents.at(direction).begin(),
+                                                      gate_contents.at(direction).end(), particle),
+                                          gate_contents.at(direction).end());
+        gate_arrays.at(direction)(particle) = 0;
+    }
+}
+
+void Simulation::explode_gate(int exp_particle, unsigned long direction) {
+    directions(exp_particle) = get_retraction_angle(exp_particle);
+    for (int particle: gate_contents.at(direction)) {
 //            printf("Bouncing particle %d with position (%.3f, %.3f)\n", particle,px,py);
 //            printf("Last impact time: %.2f\tNext impact time%.2f\n",impact_times(particle),next_impact_times(particle));
-            double x, y;
-            get_current_position(particle, x, y);
+        double x, y;
+        get_current_position(particle, x, y);
 //            printf("Position updated to (%.3f, %.3f)\n", x, y);
-            if (not is_in_domain(x, y)) {
+        if (not is_in_domain(x, y)) {
 //                printf("Particle %d not in domain\n", particle);
-            } else if (not is_in_gate_radius(x, y)) {
+        } else if (not is_in_gate(x, y, direction)) {
 //                printf("Particle %d not in radius\n", particle);
 //                printf("Distance from center: %.4f\n",sqrt(x*x + y*y));
-            }
-            px = x;
-            py = y;
-            directions(particle) = get_retraction_angle(particle);
-            impact_times(particle) = time;
-            compute_next_impact(particle);
-//            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
         }
-    } else {
-        // No explosion
-        currently_in_gate.push_back(exp_particle);
-        in_gate(exp_particle) = 1;
-//        printf("Particle %d added to gate\n",exp_particle);
+        px = x;
+        py = y;
+        directions(particle) = get_retraction_angle(particle);
+        impact_times(particle) = time;
+        compute_next_impact(particle);
+//            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
     }
 }
 
@@ -167,7 +198,7 @@ void Simulation::print_status() {
                next_positions(particle, 1), next_impact_times(particle), next_directions(particle) / PI);
     }
     printf("Particles left: %d, particles right: %d\n", in_left.sum(), in_right.sum());
-    printf("Particles in gate: %d\n", in_gate.sum());
+    printf("Particles in left gate: %d\t in right gate %d\n", in_left_gate.sum(), in_right_gate.sum());
 }
 
 void Simulation::write_positions_to_file(double time) {
@@ -248,6 +279,7 @@ bool Simulation::is_in_domain(double x, double y) {
     }
 }
 
+// todo: Change following two to one method
 bool Simulation::is_in_left_circle(const double x, const double y) {
     return (x - left_center_x) * (x - left_center_x) + y * y < circle_radius * circle_radius;
 }
@@ -261,13 +293,6 @@ bool Simulation::is_in_bridge(const double x, const double y) {
  * Note that these function is not mutually exclusive with left and right circle.
  */
     return abs(x) < bridge_size / 2 and abs(y) < bridge_height / 2;
-}
-
-bool Simulation::is_in_gate_radius(const double x, const double y) {
-    /**
-     * Check if the position is in the circular gate radius
-     */
-    return x * x + y * y < gate_radius * gate_radius;
 }
 
 void Simulation::compute_next_impact(const int particle) {
@@ -308,11 +333,15 @@ void Simulation::compute_next_impact(const int particle) {
     if (to_gate < next_time) {
         next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
         next_angle = directions(particle);
-//        double nx = positions(particle, 0) + next_time * cos(directions(particle));
-//        double ny = positions(particle, 1) + next_time * sin(directions(particle));
 //        if (is_in_gate_radius(px, py) and is_in_gate_radius(nx, ny)) {
 //            printf("Small movement (%.3e) for particle %d detected\n", next_time, particle);
 //        }
+    }
+    double to_middle = time_to_hit_middle(particle);
+
+    if (to_middle < next_time) {
+        next_time = to_middle + EPS;
+        next_angle = directions(particle);
     }
     if (angle == 0) {
         throw std::invalid_argument("wrong angle");
@@ -451,5 +480,22 @@ double Simulation::time_to_hit_gate(const int particle) {
     } else {
         return max_path;
     }
+}
 
+double Simulation::time_to_hit_middle(int particle) {
+    double min_t = 1;
+    if (gate_radius > 0) {
+        double rx = max_path * cos(directions(particle));
+        double ry = max_path * sin(directions(particle));
+        double sx = 0;
+        double sy = gate_radius * 2;
+        // u = (q − p) × r / (r × s)
+        double u = ((0 - px) * ry - (-gate_radius - py) * rx) / (rx * sy - ry * sx);
+        // t = (q − p) × s / (r × s)
+        double t = ((0 - px) * sy - (-gate_radius - py) * sx) / (rx * sy - ry * sx); // can be faster
+        if (EPS < t and t < min_t and 0 <= u and u <= 1) {
+            min_t = t + EPS;
+        }
+    }
+    return min_t * max_path;
 }

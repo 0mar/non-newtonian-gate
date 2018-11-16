@@ -11,7 +11,8 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         auto sim = Simulation(num_particles, 0.3);
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
-        sim.gate_capacity = 1;
+        sim.left_gate_capacity = 1;
+        sim.right_gate_capacity = 1;
         return sim;
     }
 
@@ -26,14 +27,15 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.circle_radius = 1;
         sim.circle_distance = 0.5;
         sim.bridge_height = 0.1;
-        sim.gate_capacity = 1;
+        sim.left_gate_capacity = 1;
         sim.setup();
         double x = 0;
         double y = 0;
         BOOST_CHECK(not sim.is_in_left_circle(x, y));
         BOOST_CHECK(not sim.is_in_right_circle(x, y));
         BOOST_CHECK(sim.is_in_bridge(x, y));
-        BOOST_CHECK(sim.is_in_gate_radius(x, y));
+        BOOST_CHECK(sim.is_in_gate(x, y, sim.LEFT));
+        BOOST_CHECK(sim.is_in_gate(x, y, sim.RIGHT));
         BOOST_CHECK(sim.is_in_domain(x, y));
         x = -2;
         y = 0.3;
@@ -41,15 +43,17 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(sim.is_in_left_circle(x, y));
         BOOST_CHECK(not sim.is_in_right_circle(x, y));
         BOOST_CHECK(sim.is_in_domain(x, y));
-        BOOST_CHECK(not sim.is_in_gate_radius(x, y));
+        BOOST_CHECK(not sim.is_in_gate(x, y, sim.LEFT));
+        BOOST_CHECK(not sim.is_in_gate(x, y, sim.RIGHT));
         x = 2.25;
         y = 0;
         BOOST_CHECK(not sim.is_in_left_circle(x, y));
         y = 0.06;
-        BOOST_CHECK(not(sim.is_in_domain(x, y) and sim.is_in_gate_radius(x, y)));
+        BOOST_CHECK(not(sim.is_in_domain(x, y) and sim.is_in_gate(x, y, sim.RIGHT)));
         x = 0;
         BOOST_CHECK(not sim.is_in_domain(x, y));
-        BOOST_CHECK(sim.is_in_gate_radius(x, y));
+        BOOST_CHECK(sim.is_in_gate(x, y, sim.LEFT));
+        BOOST_CHECK(sim.is_in_gate(x, y, sim.RIGHT));
     }
 
     BOOST_AUTO_TEST_CASE(test_particle_init) {
@@ -438,8 +442,8 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.positions(0, 0) = sim.circle_radius * cos(pi - angle);
         sim.positions(0, 1) = sim.circle_radius * sin(pi - angle);
         BOOST_CHECK(sim.is_in_left_circle(sim.positions(0, 0), sim.positions(0, 1)));
-        BOOST_CHECK(not sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
-        BOOST_CHECK(sim.currently_in_gate.empty());
+        BOOST_CHECK(not sim.is_in_gate(sim.positions(0, 0), sim.positions(0, 1), sim.LEFT));
+        BOOST_CHECK(sim.gate_contents.at(sim.LEFT).empty());
         sim.directions(0) = -angle;
         sim.compute_next_impact(0);
         double next_x = sim.gate_radius * cos(pi - angle);
@@ -447,15 +451,25 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.update(0);
         BOOST_CHECK_CLOSE(next_x, sim.positions(0, 0), eps);
         BOOST_CHECK_CLOSE(next_y, sim.positions(0, 1), eps);
-        BOOST_CHECK(sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
+        BOOST_CHECK(sim.is_in_gate(sim.positions(0, 0), sim.positions(0, 1), sim.LEFT) and
+                    not sim.is_in_gate(sim.positions(0, 0), sim.positions(0, 1), sim.RIGHT));
         BOOST_CHECK_CLOSE(sim.directions(0), -angle, eps);
-        BOOST_CHECK(sim.currently_in_gate.size() == 1);
+        BOOST_CHECK(sim.gate_contents.at(sim.LEFT).size() == 1);
+        BOOST_CHECK(sim.gate_contents.at(sim.RIGHT).empty());
+        sim.update(0);
+        BOOST_CHECK_CLOSE(eps, pow(sim.positions(0, 0), 2) + eps, eps); // more weird unclose
+        BOOST_CHECK_CLOSE(eps, pow(sim.positions(0, 1), 2) + eps, eps);
+        BOOST_CHECK(sim.is_in_gate(sim.positions(0, 0), sim.positions(0, 1), sim.RIGHT) and
+                    not sim.is_in_gate(sim.positions(0, 0), sim.positions(0, 1), sim.LEFT));
+        BOOST_CHECK_CLOSE(sim.directions(0), -angle, eps);
+        BOOST_CHECK(sim.gate_contents.at(sim.RIGHT).size() == 1);
+        BOOST_CHECK(sim.gate_contents.at(sim.LEFT).empty());
         sim.update(0);
         BOOST_CHECK_CLOSE(-next_x, sim.positions(0, 0), eps);
         BOOST_CHECK_CLOSE(-next_y, sim.positions(0, 1), eps);
-        BOOST_CHECK(not sim.is_in_gate_radius(sim.positions(0, 0), sim.positions(0, 1)));
+        BOOST_CHECK(not sim.is_in_gate(sim.positions(0, 0), sim.positions(0, 1), sim.RIGHT));
         BOOST_CHECK_CLOSE(sim.directions(0), -angle, eps);
-        BOOST_CHECK(sim.currently_in_gate.empty());
+        BOOST_CHECK_EQUAL(sim.gate_arrays.at(sim.LEFT).sum() + sim.gate_arrays.at(sim.RIGHT).sum(), 0);
 
     }
 
