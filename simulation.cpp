@@ -121,7 +121,7 @@ void Simulation::update(double write_dt) {
 }
 
 void Simulation::check_gate_explosion(int exp_particle) {
-    if (currently_in_gate.size() > gate_capacity - 1) {
+    if ((int) currently_in_gate.size() > gate_capacity - 1) { // unsigned long HAVE to be cast
 
         directions(exp_particle) = get_retraction_angle(exp_particle); // for violating particle only
         for (int particle: currently_in_gate) {
