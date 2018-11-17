@@ -5,7 +5,6 @@
 #ifndef BLOTZ_SIMULATION_H
 #define BLOTZ_SIMULATION_H
 
-#include <Eigen/Dense>
 #include <iostream>
 #include <fstream>
 #include <random>
