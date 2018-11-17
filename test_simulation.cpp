@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.x_pos.at(0) = 0.26;
         sim.directions.at(0) = -pi;
         angle = sim.get_retraction_angle(0);
-        BOOST_CHECK(abs(angle) < pi);
+        BOOST_CHECK(std::abs(angle) < pi);
         // in bridge
         sim.x_pos.at(0) = -0.22;
         sim.directions.at(0) = -pi;

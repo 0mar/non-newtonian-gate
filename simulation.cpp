@@ -319,7 +319,7 @@ bool Simulation::is_in_bridge(const double x, const double y) {
 /**
  * Note that these function is not mutually exclusive with left and right circle.
  */
-    return abs(x) < bridge_size / 2 and abs(y) < bridge_height / 2;
+    return std::abs(x) < bridge_size / 2 and std::abs(y) < bridge_height / 2;
 }
 
 void Simulation::compute_next_impact(const unsigned long particle) {
