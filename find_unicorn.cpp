@@ -43,12 +43,25 @@ double get_cool_down_time(int number_of_particles, int gate_capacity) {
 }
 
 double test_parameters(int number_of_particles, int gate_capacity) {
-    int repeats = 1000;
+    int repeats = 10000;
     double total_time = 0;
     for (int i = 0; i < repeats; i++) {
         total_time += get_cool_down_time(number_of_particles, gate_capacity);
     }
     return total_time / repeats;
+}
+
+void get_exit_range_times(int max_num_particles, int gate_capacity) {
+    int repeats = 50000;
+    for (int i = 0; i < 10; i++) {
+        double total_time = 0;
+        int number_of_particles = max_num_particles - i * 10;
+        for (int r = 0; r < repeats; r++) {
+            total_time += get_cool_down_time(number_of_particles, gate_capacity);
+        }
+        total_time /= repeats;
+        printf("Number of particles: %d\tCooldown time %.5f\n", number_of_particles, total_time);
+    }
 }
 
 void time_test() {
@@ -62,7 +75,7 @@ int main(int argc, char *argv[]) {
         int number_of_particles = std::stoi(argv[1]);
         int gate_capacity = std::stoi(argv[2]);
         //printf("Assuming a gate radius of %.2f and a gate capacity of %d\n", gate_radius, gate_capacity);
-        std::cout << test_parameters(number_of_particles, gate_capacity) << std::endl;
+        get_exit_range_times(number_of_particles, gate_capacity);
         return 0;
     }
     switch (mode) {

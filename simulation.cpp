@@ -114,8 +114,11 @@ void Simulation::update(double write_dt) {
     }
 
     // Update the data of the particle with the collision
-    if (not is_in_domain(next_x_pos[particle], next_y_pos[particle]))
-        printf("Stray particle %d now at (%.2f,%.2f)\n", (int) particle, px, py);
+    if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
+        // printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py);
+        next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
+        next_y_pos[particle] = 0;
+    }
 
     // Process the location of the particle
     if (px > 0 and next_x_pos[particle] < 0) {
@@ -190,8 +193,10 @@ void Simulation::explode_gate(unsigned long exp_particle, unsigned long directio
         if (not is_in_domain(x, y)) {
             printf("Particle %d not in domain\n", (int) particle);
         } else if (not is_in_gate(x, y, direction)) {
-            printf("Particle %d not in radius\n", (int) particle);
-            printf("Distance from center: %.4f\n", sqrt(x * x + y * y));
+            // printf("Particle %d not in radius, distance from center: %.4f. Removed from gate list\n", (int) particle, sqrt(x * x + y * y));
+            gate_contents[direction].erase(std::remove(gate_contents[direction].begin(),
+                                                       gate_contents[direction].end(), particle),
+                                           gate_contents[direction].end());
         }
         px = x;
         py = y;
