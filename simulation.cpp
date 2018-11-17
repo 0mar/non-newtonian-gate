@@ -27,6 +27,7 @@ Simulation::Simulation(int num_particles, double gate_radius) : num_particles(nu
     circle_radius = 1;
     circle_distance = 0.5;
     bridge_height = 0.3;
+    bridge_size = 0; // Computed later
     this->gate_radius = gate_radius;
     left_gate_capacity = 3;
     right_gate_capacity = 3;
@@ -54,7 +55,6 @@ void Simulation::setup() {
     gate_capacities.push_back(left_gate_capacity);
     gate_capacities.push_back(right_gate_capacity);
 
-
     left_center_x = -circle_distance / 2 - circle_radius;
     right_center_x = circle_distance / 2 + circle_radius;
 
@@ -80,7 +80,8 @@ void Simulation::start() {
     for (unsigned long particle = 0; particle < num_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, LEFT) or is_in_bridge(pos_x, pos_y)) {
+        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, (unsigned long) LEFT) or
+               is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
         }
@@ -427,6 +428,7 @@ double Simulation::time_to_hit_circle(const unsigned long particle, const double
     /**
      * Compute the time until next impact with one of the circle boundaries
      */
+    double min_t = 1;
     double add_x = max_path * cos(directions[particle]);
     double add_y = max_path * sin(directions[particle]);
     const double t_pos_x = (px - center_x) / circle_radius;
@@ -437,31 +439,33 @@ double Simulation::time_to_hit_circle(const unsigned long particle, const double
     const double a = t_add_x * t_add_x + t_add_y * t_add_y;
     const double b = 2 * t_pos_x * t_add_x + 2 * t_pos_y * t_add_y;
     const double c = t_pos_x * t_pos_x + t_pos_y * t_pos_y - 1;
-    const double D_sqrt = sqrt(b * b - 4 * a * c);
-    if (D_sqrt < 0) printf("hmmmmm neg D\n");
-    // compute roots
-    const double t1 = (-b - D_sqrt) / (2 * a);
-    const double t2 = (-b + D_sqrt) / (2 * a);
-    // Find minimal root between 0 and 1 not in bridge
-    double min_t = 1;
-    double impact_x = 0;
-    double impact_y = 0;
-    if (EPS < t1 and t1 < min_t) {
-        impact_x = px + t1 * add_x;
-        impact_y = py + t1 * add_y;
-        // Only hitting the circle if not in the bridge
-        if (not is_in_bridge(impact_x, impact_y)) {
-            normal_angle = atan2(0 - impact_y, center_x - impact_x);
-            min_t = t1 - EPS;
+    const double D = b * b - 4 * a * c;
+    if (D < 0) {
+        min_t = 1;
+    } else {
+        // compute roots
+        const double t1 = (-b - sqrt(D)) / (2 * a);
+        const double t2 = (-b + sqrt(D)) / (2 * a);
+        // Find minimal root between 0 and 1 not in bridge
+        double impact_x = 0;
+        double impact_y = 0;
+        if (EPS < t1 and t1 < min_t) {
+            impact_x = px + t1 * add_x;
+            impact_y = py + t1 * add_y;
+            // Only hitting the circle if not in the bridge
+            if (not is_in_bridge(impact_x, impact_y)) {
+                normal_angle = atan2(0 - impact_y, center_x - impact_x);
+                min_t = t1 - EPS;
+            }
         }
-    }
-    if (EPS < t2 and t2 < min_t) {
-        impact_x = px + t2 * add_x;
-        impact_y = py + t2 * add_y;
-        // Only hitting the circle if not in the bridge
-        if (not is_in_bridge(impact_x, impact_y)) {
-            normal_angle = atan2(0 - impact_y, center_x - impact_x);
-            min_t = t2 - EPS;
+        if (EPS < t2 and t2 < min_t) {
+            impact_x = px + t2 * add_x;
+            impact_y = py + t2 * add_y;
+            // Only hitting the circle if not in the bridge
+            if (not is_in_bridge(impact_x, impact_y)) {
+                normal_angle = atan2(0 - impact_y, center_x - impact_x);
+                min_t = t2 - EPS;
+            }
         }
     }
     return min_t * max_path;
