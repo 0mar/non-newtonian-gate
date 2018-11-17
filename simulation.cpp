@@ -102,6 +102,9 @@ void Simulation::update(double write_dt) {
     }
 
     // Update the data of the particle with the collision
+    if (not is_in_domain(next_positions(particle, 0), next_positions(particle, 1)))
+        printf("Stray particle %d now at (%.2f,%.2f)\n", particle, px, py);
+
     positions(particle, 0) = next_positions(particle, 0);
     positions(particle, 1) = next_positions(particle, 1);
     directions(particle) = next_directions(particle);
@@ -140,7 +143,7 @@ bool Simulation::is_in_gate(double x, double y, unsigned long direction) {
 void Simulation::check_gate_admission(int particle, unsigned long direction) {
     if (gate_arrays.at(direction)(particle) == 0) {
         // Not yet in gate, check admission
-        if (gate_contents.at(direction).size() > gate_capacities.at(direction) - 1) {
+        if ((int) gate_contents.at(direction).size() > gate_capacities.at(direction) - 1) {
             explode_gate(particle, direction);
         } else {
             gate_contents.at(direction).push_back(particle);
@@ -160,7 +163,10 @@ void Simulation::check_gate_departure(int particle, unsigned long direction) {
 }
 
 void Simulation::explode_gate(int exp_particle, unsigned long direction) {
-    directions(exp_particle) = get_retraction_angle(exp_particle);
+    do {
+        directions(exp_particle) = get_retraction_angle(exp_particle);
+        compute_next_impact(exp_particle);
+    } while (not is_in_domain(next_positions(exp_particle, 0), next_positions(exp_particle, 1)));
     for (int particle: gate_contents.at(direction)) {
 //            printf("Bouncing particle %d with position (%.3f, %.3f)\n", particle,px,py);
 //            printf("Last impact time: %.2f\tNext impact time%.2f\n",impact_times(particle),next_impact_times(particle));
@@ -168,10 +174,10 @@ void Simulation::explode_gate(int exp_particle, unsigned long direction) {
         get_current_position(particle, x, y);
 //            printf("Position updated to (%.3f, %.3f)\n", x, y);
         if (not is_in_domain(x, y)) {
-//                printf("Particle %d not in domain\n", particle);
+            printf("Particle %d not in domain\n", particle);
         } else if (not is_in_gate(x, y, direction)) {
-//                printf("Particle %d not in radius\n", particle);
-//                printf("Distance from center: %.4f\n",sqrt(x*x + y*y));
+            printf("Particle %d not in radius\n", particle);
+            printf("Distance from center: %.4f\n", sqrt(x * x + y * y));
         }
         px = x;
         py = y;
@@ -343,8 +349,10 @@ void Simulation::compute_next_impact(const int particle) {
         next_time = to_middle + EPS;
         next_angle = directions(particle);
     }
-    if (angle == 0) {
+    if (next_angle == 0) {
+        printf("Next time, %.2f, maxpath %.2f\n", next_time, max_path);
         throw std::invalid_argument("wrong angle");
+
     }
     next_positions(particle, 0) = positions(particle, 0) + next_time * cos(directions(particle));
     next_positions(particle, 1) = positions(particle, 1) + next_time * sin(directions(particle));

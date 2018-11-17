@@ -69,6 +69,29 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(correct);
     }
 
+    BOOST_AUTO_TEST_CASE(test_in_circle) {
+        auto sim = get_sim(1);
+        sim.gate_radius = 1;
+        sim.setup();
+        sim.start();
+        BOOST_CHECK(sim.is_in_gate(-0.5, 0, sim.LEFT));
+        BOOST_CHECK(not sim.is_in_gate(-0.5, 0, sim.RIGHT));
+        BOOST_CHECK(sim.is_in_gate(+0.5, 0, sim.RIGHT));
+        BOOST_CHECK(not sim.is_in_gate(+0.5, 0, sim.LEFT));
+        BOOST_CHECK(sim.is_in_gate(-0.7, 0.7, sim.LEFT));
+    }
+
+    BOOST_AUTO_TEST_CASE(test_to_middle) {
+        auto sim = get_sim(1);
+        sim.gate_radius = 1;
+        sim.setup();
+        sim.start();
+        sim.positions(0, 0) = -.5;
+        sim.positions(0, 1) = 0;
+        sim.directions(0) = 0;
+        double distance = sim.time_to_hit_middle(0);
+        BOOST_CHECK_CLOSE(distance, 0.5, eps);
+    }
 
     BOOST_AUTO_TEST_CASE(test_bridge_collision) {
         auto sim = get_sim(1);
