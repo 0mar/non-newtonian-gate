@@ -35,15 +35,15 @@ double get_cool_down_time(int number_of_particles, int gate_capacity) {
     simulation.right_gate_capacity = 0;
     simulation.setup();
     simulation.start();
-    //simulation.write_positions_to_file(0);
-    while (simulation.in_right.sum() < 10 and simulation.time < 1E5) {
+    // simulation.write_positions_to_file(0);
+    while (simulation.total_right.at(simulation.total_right.size() - 1) < 10 and simulation.time < 1E5) {
         simulation.update(0.0);
     }
     return simulation.time;
 }
 
 double test_parameters(int number_of_particles, int gate_capacity) {
-    int repeats = 100;
+    int repeats = 1000;
     double total_time = 0;
     for (int i = 0; i < repeats; i++) {
         total_time += get_cool_down_time(number_of_particles, gate_capacity);
@@ -51,6 +51,9 @@ double test_parameters(int number_of_particles, int gate_capacity) {
     return total_time / repeats;
 }
 
+void time_test() {
+    test_parameters(200, 2);
+}
 int main(int argc, char *argv[]) {
     int mode = 0;
     if (argc == 2) {
@@ -64,7 +67,7 @@ int main(int argc, char *argv[]) {
     }
     switch (mode) {
         case 1: {
-            break;
+            time_test();
         }
         case 2: {
             break;

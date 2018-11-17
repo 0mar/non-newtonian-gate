@@ -20,9 +20,9 @@ void single_particle_animation() {
     simulation.bridge_height = 0.5;
     simulation.setup();
     simulation.start();
-    simulation.positions(0, 0) = -1.1;
-    simulation.positions(0, 1) = 0.34;
-    simulation.directions(0) = -2.3;
+    simulation.x_pos.at(0) = -1.1;
+    simulation.y_pos.at(0) = 0.34;
+    simulation.directions.at(0) = -2.3;
     simulation.compute_next_impact(0);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
@@ -64,7 +64,8 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.setup();
     simulation.start();
     // simulation.write_positions_to_file(0);
-    while (simulation.in_right.sum() < simulation.num_particles / 2 and simulation.time < 1E5) {
+    while (simulation.total_right.at(simulation.total_right.size() - 1) < simulation.num_particles / 2 and
+           simulation.time < 1E5) {
         simulation.update(0.0);
     }
     return simulation.time;

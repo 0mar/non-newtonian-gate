@@ -24,6 +24,8 @@ public:
     double gate_radius;
     int left_gate_capacity;
     int right_gate_capacity;
+    unsigned long in_left;
+    unsigned long in_right;
     // Other parameters
     double circle_radius;
     double circle_distance;
@@ -48,47 +50,47 @@ public:
 
     bool is_in_bridge(double x, double y);
 
-    double time_to_hit_bridge(int particle, double &normal_angle);
+    double time_to_hit_bridge(unsigned long particle, double &normal_angle);
 
-    double time_to_hit_circle(int particle, double center_x, double &normal_angle);
+    double time_to_hit_circle(unsigned long particle, double center_x, double &normal_angle);
 
-    double time_to_hit_gate(int particle);
+    double time_to_hit_gate(unsigned long particle);
 
-    double time_to_hit_middle(int particle);
+    double time_to_hit_middle(unsigned long particle);
 
     double time;
     double last_written_time;
-    Eigen::ArrayXd next_impact_times;
-    Eigen::ArrayXd impact_times;
-    Eigen::ArrayXXd next_positions;
-    Eigen::ArrayXXd positions;
-    Eigen::ArrayXd next_directions;
-    Eigen::ArrayXd directions;
-    Eigen::ArrayXi in_left_gate;
-    Eigen::ArrayXi in_right_gate;
-    Eigen::ArrayXi in_left;
-    Eigen::ArrayXi in_right;
+    std::vector<double> next_impact_times;
+    std::vector<double> impact_times;
+    std::vector<double> next_x_pos;
+    std::vector<double> next_y_pos;
+    std::vector<double> x_pos;
+    std::vector<double> y_pos;
+    std::vector<double> directions;
+    std::vector<double> next_directions;
+    std::vector<unsigned long> in_left_gate;
+    std::vector<unsigned long> in_right_gate;
 
     std::vector<double> measuring_times;
-    std::vector<int> total_left;
-    std::vector<int> currently_in_left_gate;
-    std::vector<int> currently_in_right_gate;
-    std::vector<int> total_right;
-    std::vector<std::vector<int>> gate_contents;
-    std::vector<Eigen::ArrayXi> gate_arrays;
+    std::vector<unsigned long> total_left;
+    std::vector<unsigned long> currently_in_left_gate;
+    std::vector<unsigned long> currently_in_right_gate;
+    std::vector<unsigned long> total_right;
+    std::vector<std::vector<unsigned long>> gate_contents;
+    std::vector<std::vector<unsigned long>> gate_arrays;
     std::vector<double> gate_capacities;
 
-    void compute_next_impact(int particle);
+    void compute_next_impact(unsigned long particle);
 
-    void get_current_position(int particle, double &x, double &y);
+    void get_current_position(unsigned long particle, double &x, double &y);
 
-    void check_gate_admission(int particle, unsigned long direction);
+    void check_gate_admission(unsigned long particle, unsigned long direction);
 
-    void explode_gate(int particle, unsigned long direction);
+    void explode_gate(unsigned long particle, unsigned long direction);
 
     bool is_in_gate(double x, double y, unsigned long direction);
 
-    void check_gate_departure(int particle, unsigned long direction);
+    void check_gate_departure(unsigned long particle, unsigned long direction);
 
     void update(double write_dt);
 
@@ -102,7 +104,7 @@ public:
 
     double get_reflection_angle(double angle_in, double normal_angle);
 
-    double get_retraction_angle(int particle);
+    double get_retraction_angle(unsigned long particle);
 
     void finish();
 
