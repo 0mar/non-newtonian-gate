@@ -92,7 +92,7 @@ class VisualScene:
         self.draw_scene()
         self.slice_num += 1
         self.data_reader.read_line()
-        if self.auto_loop:
+        if self.auto_loop and self.data_reader.time >= 0:
             self.window.after(self.time_delay, self.loop)
 
     def finish(self):
@@ -241,15 +241,18 @@ class DataReader:
         self.num_particles = int(self.num_particles)
 
     def read_line(self):
-        self.time = float(self.file.readline().strip())
-        self.times.append(self.time)
-        raw_pos_x = self.file.readline().strip().split(' ')
-        raw_pos_y = self.file.readline().strip().split(' ')
-        raw_dirs = self.file.readline().strip().split(' ')
-        for i in range(self.num_particles):
-            self.positions[i, 0] = float(raw_pos_x[i])
-            self.positions[i, 1] = float(raw_pos_y[i])
-            self.directions[i] = float(raw_dirs[i])
+        try:
+            self.time = float(self.file.readline().strip())
+            self.times.append(self.time)
+            raw_pos_x = self.file.readline().strip().split(' ')
+            raw_pos_y = self.file.readline().strip().split(' ')
+            raw_dirs = self.file.readline().strip().split(' ')
+            for i in range(self.num_particles):
+                self.positions[i, 0] = float(raw_pos_x[i])
+                self.positions[i, 1] = float(raw_pos_y[i])
+                self.directions[i] = float(raw_dirs[i])
+        except ValueError:
+            self.time = -1
 
 
 if __name__ == '__main__':

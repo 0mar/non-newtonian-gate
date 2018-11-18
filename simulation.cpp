@@ -94,6 +94,53 @@ void Simulation::start() {
     measure();
 }
 
+void Simulation::start_evenly() {
+    /**
+     * Initiate all particles, as many left as right
+     */
+    time = 0;
+    last_written_time = 0;
+    in_left = 0;
+    in_right = 0;
+    double box_x_radius = circle_distance / 2 + circle_radius * 2;
+    double box_y_radius = circle_radius;
+    if (gate_radius >= box_x_radius) {
+        throw std::invalid_argument("Gate radius too large; no initialization possible");
+    }
+    if (bridge_size / 2 > circle_radius) {
+        throw std::invalid_argument("Bridge larger than circle; no initialization possible");
+    }
+    for (unsigned long particle = 0; particle < num_particles / 2; particle++) {
+        double pos_x = 0;
+        double pos_y = 0;
+        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, (unsigned long) LEFT) or
+               is_in_bridge(pos_x, pos_y)) {
+            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
+            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
+        }
+        px = pos_x;
+        py = pos_y;
+        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
+        compute_next_impact(particle);
+        in_left++;
+    }
+    for (unsigned long particle = num_particles / 2; particle < num_particles; particle++) {
+        double pos_x = 0;
+        double pos_y = 0;
+        while (not is_in_right_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, (unsigned long) RIGHT) or
+               is_in_bridge(pos_x, pos_y)) {
+            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
+            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
+        }
+        px = pos_x;
+        py = pos_y;
+        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
+        compute_next_impact(particle);
+        in_right++;
+    }
+    measure();
+}
+
 void Simulation::update(double write_dt) {
     // Find next event: the first particle that has a new impact
     // If we really need more optimization, this is where to get it.

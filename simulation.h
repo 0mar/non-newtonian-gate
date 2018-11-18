@@ -41,6 +41,8 @@ public:
 
     void start();
 
+    void start_evenly();
+
     bool is_in_domain(double x, double y);
 
     bool is_in_left_circle(double x, double y);

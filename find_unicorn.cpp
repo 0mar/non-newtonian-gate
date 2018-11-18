@@ -3,7 +3,7 @@
 #include "simulation.h"
 #include <string>
 #include <fstream>
-
+#include <cmath>
 
 void write_results(std::string &id, std::vector<double> &data) {
     std::ofstream results_file;
@@ -64,6 +64,23 @@ void get_exit_range_times(int max_num_particles, int gate_capacity) {
     }
 }
 
+void unicorn(double gate_radius, int gate_capacity, int number_of_particles) {
+    Simulation simulation = Simulation(number_of_particles, gate_radius);
+    simulation.left_gate_capacity = gate_capacity;
+    simulation.right_gate_capacity = gate_capacity;
+    simulation.setup();
+    simulation.start_evenly();
+    // simulation.write_positions_to_file(0);
+    int diff = 0;
+    while (diff < number_of_particles - 10 and simulation.time < 1E5) {
+        simulation.update(0.0);
+        diff = ((int) simulation.total_right.at(simulation.total_right.size() - 1) -
+                (int) simulation.total_left.at(simulation.total_left.size() - 1));
+        diff = std::abs(diff);
+        printf("%.4f\t%d\n", simulation.time, (int) simulation.total_right.at(simulation.total_right.size() - 1));
+    }
+}
+
 void time_test() {
     test_parameters(200, 2);
 }
@@ -86,7 +103,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         default: {
-            std::cout << get_cool_down_time(200, 2) << std::endl;
+            unicorn(0.3, 2, 500);
             break;
         }
     }
