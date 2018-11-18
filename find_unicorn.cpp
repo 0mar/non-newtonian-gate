@@ -64,7 +64,10 @@ void get_exit_range_times(int max_num_particles, int gate_capacity) {
     }
 }
 
-void unicorn(double gate_radius, int gate_capacity, int number_of_particles) {
+void unicorn() {
+    double gate_radius = 0.3;
+    int gate_capacity = 2;
+    int number_of_particles = 500;
     Simulation simulation = Simulation(number_of_particles, gate_radius);
     simulation.left_gate_capacity = gate_capacity;
     simulation.right_gate_capacity = gate_capacity;
@@ -72,13 +75,43 @@ void unicorn(double gate_radius, int gate_capacity, int number_of_particles) {
     simulation.start_evenly();
     // simulation.write_positions_to_file(0);
     int diff = 0;
-    while (diff < number_of_particles - 10 and simulation.time < 1E5) {
+    while (diff < number_of_particles - 10 and simulation.time < 15000) {
         simulation.update(0.0);
         diff = ((int) simulation.total_right.at(simulation.total_right.size() - 1) -
                 (int) simulation.total_left.at(simulation.total_left.size() - 1));
         diff = std::abs(diff);
         printf("%.4f\t%d\n", simulation.time, (int) simulation.total_right.at(simulation.total_right.size() - 1));
     }
+}
+
+void find_gate(int start_particles, int end_particle) {
+    double gate_radius = 0.3;
+    int gate_capacity = 2;
+    int step = 25;
+    for (int i = 0; i < (end_particle - start_particles) / step; i++) {
+        int number_of_particles = start_particles + i * step;
+        int num_repeats = 100;
+        double total_time = 0;
+        for (int rep = 0; rep < num_repeats; rep++) {
+            Simulation simulation = Simulation(number_of_particles, gate_radius);
+            simulation.left_gate_capacity = gate_capacity;
+            simulation.right_gate_capacity = gate_capacity;
+            simulation.setup();
+            simulation.start_evenly();
+            int diff = 0;
+            while (diff < number_of_particles * 0.95 and simulation.time < 10000) {
+                simulation.update(0.0);
+                diff = ((int) simulation.total_right.at(simulation.total_right.size() - 1) -
+                        (int) simulation.total_left.at(simulation.total_left.size() - 1));
+                diff = std::abs(diff);
+                // printf("%.4f\t%d\n", simulation.time, (int) simulation.total_right.at(simulation.total_right.size() - 1));
+            }
+            total_time += simulation.time;
+        }
+        total_time /= num_repeats;
+        printf("Number of particles: %d therm_time %.2f\n", number_of_particles, total_time);
+    }
+
 }
 
 void time_test() {
@@ -103,7 +136,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         default: {
-            unicorn(0.3, 2, 500);
+            find_gate(120, 1000);
             break;
         }
     }
