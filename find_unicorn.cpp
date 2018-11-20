@@ -53,7 +53,7 @@ double test_parameters(int number_of_particles, int gate_capacity) {
 
 void get_exit_range_times(int max_num_particles, int gate_capacity) {
     int repeats = 50000;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 39; i++) {
         double total_time = 0;
         int number_of_particles = max_num_particles - i * 10;
         for (int r = 0; r < repeats; r++) {
