@@ -31,6 +31,7 @@ Simulation::Simulation(int num_particles, double gate_radius) : num_particles(nu
     this->gate_radius = gate_radius;
     left_gate_capacity = 3;
     right_gate_capacity = 3;
+    explosion_direction_is_random = true;
 }
 
 void Simulation::setup() {
@@ -527,10 +528,10 @@ double Simulation::get_retraction_angle(const unsigned long particle) {
         int side = sgn(px);
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
     } else {
-        if (cos(directions[particle]*x_pos[particle]) < 0) {
-            return directions[particle];
-        } else {
+        if (cos(directions[particle]) * x_pos[particle] < 0) {
             return directions[particle] + PI;
+        } else {
+            return directions[particle];
         }
     }
 }
