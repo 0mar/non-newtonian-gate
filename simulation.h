@@ -63,6 +63,13 @@ public:
      */
     bool is_in_domain(double x, double y);
 
+    /**
+     * Check if the point (x,y) is in a circle on side `side`.
+     * @param x
+     * @param y
+     * @param side
+     * @return
+     */
     bool is_in_circle(double x, double y, unsigned long side);
 
     bool is_in_bridge(double x, double y);
