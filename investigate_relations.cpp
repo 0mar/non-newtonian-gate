@@ -19,37 +19,62 @@ void test_constant_in_density() {
      * This method tests if we get constant thermalisation time for number of particles scaling with the density.
      * This method must be tested in the critical case because otherwise there is no thermalisation happening.
      */
-     int num_steps = 20;
-     int repeats = 25;
+     int num_steps = 20;     int repeats = 1;
      double polarisation_ratio = 0.90;
      double final_time = 1E5;
 
      double gate_radius = 0.3;
      int gate_capacity = 2;
-     double relation_constant = 1./200;
      for (int step=1;step < num_steps;step++) {
-         int num_particles = 200 + step*10;
-         double radius = std::sqrt(num_particles*relation_constant);
-         printf("Number of particles: %d\nUrn Radius: %.2f\n",num_particles,radius);
-         double pol_time = 0;
-         for (int rep=0;rep<repeats;rep++) {
-             Simulation sim = Simulation(num_particles,gate_radius);
-             sim.left_gate_capacity = gate_capacity;
-             sim.right_gate_capacity = gate_capacity;
-             sim.circle_radius = radius;
-             sim.setup();
-             sim.start_evenly();
-             int diff = 0;
-             while (diff < num_particles*polarisation_ratio and sim.time < final_time) {
-                 sim.update(0.0);
-                 unsigned long it = sim.total_left.size() - 1;
-                 diff = std::abs((int)sim.total_left.at(it) - (int)sim.total_right.at(it));
-             }
-             pol_time += sim.time;
-         }
-         pol_time /= repeats;
-         printf("polarisation time: %.2f\n\n",pol_time);
+         double radius = 0.5 + step*0.1;
+         int crit = get_critical_number_of_particles(radius);
+         printf("Radius\t%.2f\tCritical Number\t%d\n",radius,crit);
      }
+}
+
+int get_critical_number_of_particles(double radius, int upper_bound = 1000) {
+    double final_time = 1E5;
+    int num_particles = 500;
+    double polarisation_ratio = 0.90;
+    double gate_radius = 0.3;
+    int gate_capacity = 2;
+    int repeats = 3;
+    bool has_converged = false;
+    printf("Urn Radius: %.2f\n",radius);
+    int lower_bound = 0;
+    while (not has_converged) {
+        printf("Testing %d particles\n",num_particles);
+        //printf("testing %d particles\n",num_particles)
+        int num_of_polarizations=0;
+        for (int rep=0;rep < repeats;rep++) {
+            Simulation sim = Simulation(num_particles,gate_radius);
+            sim.left_gate_capacity = gate_capacity;
+            sim.right_gate_capacity = gate_capacity;
+            sim.circle_radius = radius;
+            sim.setup();
+            sim.start_evenly();
+            int diff = 0;
+            while (diff < num_particles*polarisation_ratio and sim.time < final_time) {
+                sim.update(0.0);
+                unsigned long it = sim.total_left.size() - 1;
+                diff = std::abs((int)sim.total_left.at(it) - (int)sim.total_right.at(it));
+            }
+            bool has_polarized = (sim.time < final_time);
+            if (has_polarized) {
+                num_of_polarizations++;
+            }
+        }
+        if (num_of_polarizations==0 and num_particles==lower_bound) {
+            num_particles = (lower_bound + upper_bound)/2;
+            lower_bound = num_particles;
+        } else if (num_of_polarizations == repeats and num_particles == upper_bound) {
+            num_particles = (lower_bound + upper_bound)/2;
+            upper_bound = num_particles;
+        } else {
+            printf("Unsure results for %d particles: polarised %d/%d times, \n", num_particles,num_of_polarizations,repeats);
+        }
+    }
+    return (lower_bound+upper_bound)/2;
 }
 
 double get_thermalisation_time(double gate_radius, int gate_capacity) {
