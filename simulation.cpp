@@ -80,7 +80,7 @@ void Simulation::start() {
     for (unsigned long particle = 0; particle < num_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, (unsigned long) LEFT) or
+        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, LEFT) or
                is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
@@ -113,7 +113,7 @@ void Simulation::start_evenly() {
     for (unsigned long particle = 0; particle < num_particles / 2; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, (unsigned long) LEFT) or
+        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, LEFT) or
                is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
@@ -124,10 +124,10 @@ void Simulation::start_evenly() {
         compute_next_impact(particle);
         in_left++;
     }
-    for (unsigned long particle = num_particles / 2; particle < num_particles; particle++) {
+    for (unsigned long particle = (unsigned long)num_particles / 2; particle < num_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_right_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, (unsigned long) RIGHT) or
+        while (not is_in_right_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, RIGHT) or
                is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
@@ -523,9 +523,16 @@ double Simulation::get_reflection_angle(const double angle_in, const double norm
 }
 
 double Simulation::get_retraction_angle(const unsigned long particle) {
-    int side = sgn(px);
-    double new_angle = ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
-    return new_angle;
+    if (explosion_direction_is_random) {
+        int side = sgn(px);
+        return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
+    } else {
+        if (cos(directions[particle]*x_pos[particle]) < 0) {
+            return directions[particle];
+        } else {
+            return directions[particle] + PI;
+        }
+    }
 }
 
 double Simulation::time_to_hit_gate(const unsigned long particle) {

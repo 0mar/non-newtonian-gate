@@ -34,15 +34,33 @@ public:
     double right_center_x;
     double max_path;
     double bridge_size;
-    const int LEFT = 0;
-    const int RIGHT = 1;
+    const unsigned long LEFT = 0;
+    const unsigned long RIGHT = 1;
+    bool explosion_direction_is_random;
 
+    /**
+     * Compute necessary parameters for the simulation, initialize data structures.
+     * Run only once per simulation. Different runs require new setups and (therefore) new objects.
+     */
     void setup();
 
+    /**
+     * Start the simulation. Initialize particles and times, and compute the next (first) impact.
+     */
     void start();
 
+    /**
+     * Different start method (could possibly be merged).
+     * As opposed to `start()`, this method puts as much particles left as it does right
+     */
     void start_evenly();
 
+    /**
+     * Check if the point (x,y) is in the domain (collection for saying it is either in the left, the right or the gate.
+     * @param x x-coordinate of the point.
+     * @param y y-coordinate of the point
+     * @return true if inside the domain, false otherwise.
+     */
     bool is_in_domain(double x, double y);
 
     bool is_in_left_circle(double x, double y);
