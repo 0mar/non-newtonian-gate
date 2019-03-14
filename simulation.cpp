@@ -80,7 +80,7 @@ void Simulation::start() {
     for (unsigned long particle = 0; particle < num_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, LEFT) or
+        while (not is_in_circle(pos_x, pos_y, LEFT) or is_in_gate(pos_x, pos_y, LEFT) or
                is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
@@ -113,7 +113,7 @@ void Simulation::start_evenly() {
     for (unsigned long particle = 0; particle < num_particles / 2; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_left_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, LEFT) or
+        while (not is_in_circle(pos_x, pos_y, LEFT) or is_in_gate(pos_x, pos_y, LEFT) or
                is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
@@ -127,7 +127,7 @@ void Simulation::start_evenly() {
     for (unsigned long particle = (unsigned long)num_particles / 2; particle < num_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
-        while (not is_in_right_circle(pos_x, pos_y) or is_in_gate(pos_x, pos_y, RIGHT) or
+        while (not is_in_circle(pos_x, pos_y, RIGHT) or is_in_gate(pos_x, pos_y, RIGHT) or
                is_in_bridge(pos_x, pos_y)) {
             pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
             pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
@@ -346,21 +346,21 @@ bool Simulation::is_in_domain(double x, double y) {
         return true;
     } else {
         if (x < 0) {
-            return is_in_left_circle(x, y);
+            return is_in_circle(x, y, LEFT);
         } else {
-            return is_in_right_circle(x, y);
+            return is_in_circle(x, y, RIGHT);
         }
     }
 }
 
-// todo: Change following two to one method
-bool Simulation::is_in_left_circle(const double x, const double y) {
-    return (x - left_center_x) * (x - left_center_x) + y * y < circle_radius * circle_radius;
+bool Simulation::is_in_circle(const double x, const double y, const unsigned long side) {
+    if (side == LEFT) {
+        return (x - left_center_x) * (x - left_center_x) + y * y < circle_radius * circle_radius;
+    } else {
+        return (x - right_center_x) * (x - right_center_x) + y * y < circle_radius * circle_radius;
+    }
 }
 
-bool Simulation::is_in_right_circle(const double x, const double y) {
-    return (x - right_center_x) * (x - right_center_x) + y * y < circle_radius * circle_radius;
-}
 
 bool Simulation::is_in_bridge(const double x, const double y) {
 /**
@@ -576,9 +576,10 @@ double Simulation::time_to_hit_middle(unsigned long particle) {
         double sx = 0;
         double sy = gate_radius * 2;
         // u = (q − p) × r / (r × s)
-        double u = ((0 - px) * ry - (-gate_radius - py) * rx) / (rx * sy - ry * sx);
+        double denum = 1. / (rx * sy - ry * sx);
+        double u = ((0 - px) * ry - (-gate_radius - py) * rx) * denum;
         // t = (q − p) × s / (r × s)
-        double t = ((0 - px) * sy - (-gate_radius - py) * sx) / (rx * sy - ry * sx); // can be faster
+        double t = ((0 - px) * sy - (-gate_radius - py) * sx) * denum;
         if (EPS < t and t < min_t and 0 <= u and u <= 1) {
             min_t = t + EPS;
         }

@@ -31,8 +31,8 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.setup();
         double x = 0;
         double y = 0;
-        BOOST_CHECK(not sim.is_in_left_circle(x, y));
-        BOOST_CHECK(not sim.is_in_right_circle(x, y));
+        BOOST_CHECK(not sim.is_in_circle(x, y, sim.LEFT));
+        BOOST_CHECK(not sim.is_in_circle(x, y, sim.RIGHT));
         BOOST_CHECK(sim.is_in_bridge(x, y));
         BOOST_CHECK(sim.is_in_gate(x, y, sim.LEFT));
         BOOST_CHECK(sim.is_in_gate(x, y, sim.RIGHT));
@@ -40,14 +40,14 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         x = -2;
         y = 0.3;
         BOOST_CHECK(not sim.is_in_bridge(x, y));
-        BOOST_CHECK(sim.is_in_left_circle(x, y));
-        BOOST_CHECK(not sim.is_in_right_circle(x, y));
+        BOOST_CHECK(sim.is_in_circle(x, y, sim.LEFT));
+        BOOST_CHECK(not sim.is_in_circle(x, y, sim.RIGHT));
         BOOST_CHECK(sim.is_in_domain(x, y));
         BOOST_CHECK(not sim.is_in_gate(x, y, sim.LEFT));
         BOOST_CHECK(not sim.is_in_gate(x, y, sim.RIGHT));
         x = 2.25;
         y = 0;
-        BOOST_CHECK(not sim.is_in_left_circle(x, y));
+        BOOST_CHECK(not sim.is_in_circle(x, y, sim.LEFT));
         y = 0.06;
         BOOST_CHECK(not(sim.is_in_domain(x, y) and sim.is_in_gate(x, y, sim.RIGHT)));
         x = 0;
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_EQUAL(sim.total_right.at(0), 0);
         bool correct = true;
         for (unsigned long i = 0; i < 1000; i++) {
-            correct &= sim.is_in_left_circle(sim.x_pos.at(i), sim.y_pos.at(i));
+            correct &= sim.is_in_circle(sim.x_pos.at(i), sim.y_pos.at(i), sim.LEFT);
         }
         BOOST_CHECK(correct);
     }
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.setup();
         BOOST_CHECK(sim.bridge_size > sim.circle_distance);
         BOOST_CHECK(sim.is_in_domain(sim.bridge_size / 2 - 0.001, sim.bridge_height / 2 - 0.001));
-        BOOST_CHECK(not sim.is_in_right_circle(sim.bridge_size / 2 - 0.001, sim.bridge_height / 2 - 0.001));
+        BOOST_CHECK(not sim.is_in_circle(sim.bridge_size / 2 - 0.001, sim.bridge_height / 2 - 0.001, sim.RIGHT));
     }
 
     BOOST_AUTO_TEST_CASE(test_circle_bridge_connection) {
@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.start();
         sim.x_pos.at(0) = sim.circle_radius * cos(pi - angle);
         sim.y_pos.at(0) = sim.circle_radius * sin(pi - angle);
-        BOOST_CHECK(sim.is_in_left_circle(sim.x_pos.at(0), sim.y_pos.at(0)));
+        BOOST_CHECK(sim.is_in_circle(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(not sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(sim.gate_contents.at(sim.LEFT).empty());
         sim.directions.at(0) = -angle;

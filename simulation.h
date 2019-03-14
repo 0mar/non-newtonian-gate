@@ -63,9 +63,7 @@ public:
      */
     bool is_in_domain(double x, double y);
 
-    bool is_in_left_circle(double x, double y);
-
-    bool is_in_right_circle(double x, double y);
+    bool is_in_circle(double x, double y, unsigned long side);
 
     bool is_in_bridge(double x, double y);
 
