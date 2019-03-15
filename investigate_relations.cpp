@@ -4,33 +4,35 @@
 #include <string>
 #include <fstream>
 
-
-void write_results(std::string &id, std::vector<double> &data) {
+template<class T>
+void write_results(std::string &id, std::vector<T> &data) {
     std::ofstream results_file;
     results_file.open(id + ".txt");
-    for (double datum: data) {
+    for (T datum: data) {
         results_file << datum << "\t";
     }
     results_file << std::endl;
 }
 
-int get_critical_number_of_particles(double radius,int lower_bound=1000, int upper_bound = 7000) {
+int get_critical_number_of_particles(double radius, int capacity, double gate_height, double gate_length,
+                                     int lower_bound = 1000, int upper_bound = 7000, int guess = 3500) {
     double final_time = 1E5;
     double polarisation_ratio = 0.95;
-    double gate_radius = 0.3;
-    int gate_capacity = 2;
+    double gate_radius = gate_length / 2;
     int repeats = 3;
     bool found_lower_bound = false;
     bool found_upper_bound = false;
-    int num_particles = (upper_bound+lower_bound)/2;
+    int num_particles = guess;
     while (not (found_lower_bound and found_upper_bound)) {
-//        printf("Testing %d particles\n",num_particles);
+        printf("Testing %d particles\n", num_particles);
         int num_of_polarizations=0;
         for (int rep=0;rep < repeats;rep++) {
             Simulation sim = Simulation(num_particles,gate_radius);
-            sim.left_gate_capacity = gate_capacity;
-            sim.right_gate_capacity = gate_capacity;
+            sim.left_gate_capacity = capacity;
+            sim.right_gate_capacity = capacity;
             sim.circle_radius = radius;
+            sim.bridge_height = gate_height;
+            sim.circle_distance = gate_length; // todo: Remember: approximative.
             sim.setup();
             sim.start_evenly();
             int diff = 0;
@@ -42,17 +44,27 @@ int get_critical_number_of_particles(double radius,int lower_bound=1000, int upp
             bool has_polarized = (sim.time < final_time);
             if (has_polarized) {
                 num_of_polarizations++;
-//                printf("has polarized\n");
+                printf("has polarized in %.2f\n", sim.time);
+            } else {
+                printf("not polarized in %.2f\n", final_time);
             }
         }
             if (num_of_polarizations==0) {
                 lower_bound = num_particles;
                 num_particles = (lower_bound + upper_bound) / 2;
+                if (num_particles - num_of_polarizations < 10) {
+                    printf("Very close to lower bound and still not polarizing; reducing lower bound\n");
+                    lower_bound -= 50;
+                }
             } else if (num_of_polarizations==repeats){
                 upper_bound = num_particles;
                 num_particles = (lower_bound + upper_bound) / 2;
+                if (upper_bound - num_particles < 10) {
+                    printf("Very close to upper bound and still not polarizing: reducing upper bound\n");
+                    upper_bound += 50;
+                }
             } else {
-//                printf("Interval: (%d,%d), crit: %d\n",lower_bound,upper_bound,num_particles);
+                printf("Interval: (%d,%d), crit: %d\n", lower_bound, upper_bound, num_particles);
                 found_lower_bound = true;
                 found_upper_bound = true;
             }
@@ -60,22 +72,49 @@ int get_critical_number_of_particles(double radius,int lower_bound=1000, int upp
     return num_particles;
 }
 
-void test_constant_in_density() {
+void test_constant_in_density(int capacity) {
     /**
      * This method tests if we get constant thermalisation time for number of particles scaling with the density.
      * This method must be tested in the critical case because otherwise there is no thermalisation happening.
      */
      int num_steps = 20;
-     int repeats = 1;
-     double polarisation_ratio = 0.90;
-     double final_time = 1E5;
-     double gate_radius = 0.3;
-     int gate_capacity = 2;
+    double height = 0.3;
+    double length = 0.6;
+    printf("Testing constant in density: Capacity:%d/\n", capacity);
+    int lb = 0;
+    int ub = 2000; // Link these three to your initial guess by some estimate; count on continuity
+    int guess = 1000;
      for (int step=0;step < num_steps;step++) {
          double radius = 2 + step*0.2;
-         int crit = get_critical_number_of_particles(radius);
-         printf("Radius\t%.2f\tCritical Number\t%d\n",radius,crit);
+         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
+         printf("o: Radius:%.2f/Critical Number:%d/\n", radius, crit);
+         guess = (int) (crit * 1.5);
+         lb = (int) (crit * 0.9);
+         ub = (int) (crit * 1.6);
      }
+}
+
+void test_linear_in_capacity(double density) {
+    /**
+     * This method tests if we get constant thermalisation time for number of particles scaling with the density.
+     * This method must be tested in the critical case because otherwise there is no thermalisation happening.
+     */
+    int num_steps = 20;
+    double radius = 2.;
+    double height = 0.3;
+    double length = 0.6;
+    printf("Testing linear in capacity\n");
+    int lb = 0;
+    int ub = 2000; // Link these three to your initial guess by some estimate; count on continuity
+    int guess = 1000;
+    for (int step = 0; step < num_steps; step++) {
+        int capacity = 2 + step * 2;
+        int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
+        printf("o: Capacity:%d/Critical Number:%d/\n", capacity, crit);
+        guess = (int) (crit * 1.3);
+        lb = (int) (crit * 0.9);
+        ub = (int) (crit * 1.6);
+    }
 }
 
 double get_thermalisation_time(double gate_radius, int gate_capacity) {
@@ -91,18 +130,29 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     }
     return simulation.time;
 }
-
-double test_parameters(double gate_radius, int gate_capacity) {
-    int repeats = 1000;
-    double total_time = 0;
-    for (int i = 0; i < repeats; i++) {
-        total_time += get_thermalisation_time(gate_radius, gate_capacity);
-    }
-    return total_time / repeats;
-}
-
 int main(int argc, char *argv[]) {
-    test_constant_in_density();
+    int mode = 0;
+    if (argc == 2) {
+        mode = std::stoi(argv[1]);
+    }
+    switch (mode) {
+        case 1: {
+            test_constant_in_density(2);
+            break;
+        }
+        case 2: {
+            test_constant_in_density(20);
+            break;
+        }
+        case 3: {
+            test_linear_in_capacity(0.5);
+            break;
+        }
+        default: {
+            printf("Please choose option (0-2)\n");
+            break;
+        }
+    }
     return 0;
 }
 
