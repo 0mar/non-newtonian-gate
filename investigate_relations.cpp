@@ -14,7 +14,7 @@ void write_results(std::string &id, std::vector<double> &data) {
     results_file << std::endl;
 }
 
-int get_critical_number_of_particles(double radius, int upper_bound = 1000) {
+int get_critical_number_of_particles(double radius,int lower_bound=1000, int upper_bound = 7000) {
     double final_time = 1E5;
     double polarisation_ratio = 0.95;
     double gate_radius = 0.3;
@@ -22,7 +22,6 @@ int get_critical_number_of_particles(double radius, int upper_bound = 1000) {
     int repeats = 3;
     bool found_lower_bound = false;
     bool found_upper_bound = false;
-    int lower_bound = 0;
     int num_particles = (upper_bound+lower_bound)/2;
     while (not (found_lower_bound and found_upper_bound)) {
 //        printf("Testing %d particles\n",num_particles);
@@ -73,7 +72,7 @@ void test_constant_in_density() {
      double gate_radius = 0.3;
      int gate_capacity = 2;
      for (int step=0;step < num_steps;step++) {
-         double radius = 1 + step*0.1;
+         double radius = 2 + step*0.2;
          int crit = get_critical_number_of_particles(radius);
          printf("Radius\t%.2f\tCritical Number\t%d\n",radius,crit);
      }
