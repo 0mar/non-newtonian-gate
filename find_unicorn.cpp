@@ -84,6 +84,26 @@ void unicorn() {
     }
 }
 
+void test_high_capacity() {
+    double gate_radius = 0.3;
+    int gate_capacity = 20;
+    int number_of_particles = 4000;
+    Simulation simulation = Simulation(number_of_particles, gate_radius);
+    simulation.left_gate_capacity = gate_capacity;
+    simulation.right_gate_capacity = gate_capacity;
+    simulation.setup();
+    simulation.start_evenly();
+    // simulation.write_positions_to_file(0);
+    int diff = 0;
+    while (diff < number_of_particles*0.9 and simulation.time < 150000) {
+        simulation.update(0.0);
+        diff = ((int) simulation.total_right.at(simulation.total_right.size() - 1) -
+                (int) simulation.total_left.at(simulation.total_left.size() - 1));
+        diff = std::abs(diff);
+    }
+    printf("%.4f\t%d\n", simulation.time, (int) simulation.total_right.at(simulation.total_right.size() - 1));
+}
+
 void find_gate(int start_particles, int end_particle) {
     double gate_radius = 0.3;
     int gate_capacity = 2;
@@ -131,8 +151,10 @@ int main(int argc, char *argv[]) {
     switch (mode) {
         case 1: {
             time_test();
+            break;
         }
         case 2: {
+            test_high_capacity();
             break;
         }
         default: {
