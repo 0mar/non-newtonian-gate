@@ -16,14 +16,26 @@ void write_results(std::string &id, std::vector<T> &data) {
 
 int get_critical_number_of_particles(double radius, int capacity, double gate_height, double gate_length,
                                      int lower_bound = 1000, int upper_bound = 7000, int guess = 3500) {
+    /*
+     * Find the critical number of particles for any set of parameters.
+     * This is a binary search method that from some (guess) lower and upper bound tries to derive an estimate
+     * for the critical number of particles: where the situation sometimes thermalizes and sometimes does not.
+     *
+     * Because this is a chaotic system and all depends on the initial positions,
+     * not observing critical behaviour does not mean that it is not there. To mediate for this, we try every guess three times.
+     *
+     * another problem is that the simulations take time and not the entire search space can feasibly be explored.
+     * To resolve this, we take an indicative upper and lower bound and move them up when we cannot find the behaviour we are looking for.
+     * This is done by first assuming no real upper bound until we observe antithermalisation, and assuming the real lower bound is zero.
+     */
     double final_time = 1E5;
     double polarisation_ratio = 0.95;
     double gate_radius = gate_length / 2;
     int repeats = 3;
-    bool found_lower_bound = false;
+    bool found = false;
     bool found_upper_bound = false;
     int num_particles = guess;
-    while (not (found_lower_bound and found_upper_bound)) {
+    while (not found) {
         printf("Testing %d particles\n", num_particles);
         int num_of_polarizations=0;
         for (int rep=0;rep < repeats;rep++) {
@@ -52,21 +64,26 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
             if (num_of_polarizations==0) {
                 lower_bound = num_particles;
                 num_particles = (lower_bound + upper_bound) / 2;
+                found_upper_bound = true;
                 if (num_particles - lower_bound < 10) {
                     printf("Very close to lower bound and still not polarizing; reducing lower bound\n");
-                    lower_bound = (int) (lower_bound / 2);
+                    lower_bound -= 50;
                 }
             } else if (num_of_polarizations==repeats){
                 upper_bound = num_particles;
                 num_particles = (lower_bound + upper_bound) / 2;
                 if (upper_bound - num_particles < 10) {
                     printf("Very close to upper bound and still not polarizing: increasing upper bound\n");
+                    if (not found_upper_bound) {
+                        upper_bound = (int) (upper_bound * 1.5);
+                    } else {
+                        upper_bound += 10;
+                    }
                     upper_bound = (int) (upper_bound * 1.5);
                 }
             } else {
                 printf("Interval: (%d,%d), crit: %d\n", lower_bound, upper_bound, num_particles);
-                found_lower_bound = true;
-                found_upper_bound = true;
+                found = true;
             }
         }
     return num_particles;
