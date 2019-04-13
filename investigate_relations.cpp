@@ -64,22 +64,23 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
             if (num_of_polarizations==0) {
                 lower_bound = num_particles;
                 num_particles = (lower_bound + upper_bound) / 2;
-                found_upper_bound = true;
-                if (num_particles - lower_bound < 10) {
-                    printf("Very close to lower bound and still not polarizing; reducing lower bound\n");
-                    lower_bound -= 50;
-                }
-            } else if (num_of_polarizations==repeats){
-                upper_bound = num_particles;
-                num_particles = (lower_bound + upper_bound) / 2;
-                if (upper_bound - num_particles < 10) {
+                if (upper_bound - num_particles < 20) {
                     printf("Very close to upper bound and still not polarizing: increasing upper bound\n");
                     if (not found_upper_bound) {
                         upper_bound = (int) (upper_bound * 1.5);
                     } else {
                         upper_bound += 10;
                     }
-                    upper_bound = (int) (upper_bound * 1.5);
+                    num_particles = (lower_bound + upper_bound) / 2;
+                }
+            } else if (num_of_polarizations==repeats){
+                upper_bound = num_particles;
+                num_particles = (lower_bound + upper_bound) / 2;
+                found_upper_bound = true;
+                if (num_particles - lower_bound < 10) {
+                    printf("Very close to lower bound and still not polarizing; reducing lower bound\n");
+                    lower_bound -= 50;
+                    num_particles = (lower_bound + upper_bound) / 2;
                 }
             } else {
                 printf("Interval: (%d,%d), crit: %d\n", lower_bound, upper_bound, num_particles);
