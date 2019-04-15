@@ -90,7 +90,7 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
     return num_particles;
 }
 
-void test_constant_in_density(int capacity) {
+void test_constant_in_density(int capacity, int guess) {
     /**
      * This method tests if we get constant thermalisation time for number of particles scaling with the density.
      * This method must be tested in the critical case because otherwise there is no thermalisation happening.
@@ -100,8 +100,7 @@ void test_constant_in_density(int capacity) {
     double length = 0.6;
     printf("Testing constant in density: Capacity:%d/\n", capacity);
     int lb = 0;
-    int ub = 2000; // Link these three to your initial guess by some estimate; count on continuity
-    int guess = 1000;
+    int ub = guess * 2; // Link these three to your initial guess by some estimate; count on continuity
      for (int step=0;step < num_steps;step++) {
          double radius = 2 + step*0.2;
          int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
@@ -155,11 +154,11 @@ int main(int argc, char *argv[]) {
     }
     switch (mode) {
         case 1: {
-            test_constant_in_density(2);
+            test_constant_in_density(2,1000);
             break;
         }
         case 2: {
-            test_constant_in_density(20);
+            test_constant_in_density(20,10000);
             break;
         }
         case 3: {
