@@ -3,6 +3,7 @@
 #include "simulation.h"
 #include <string>
 #include <fstream>
+#include <ctime>
 
 template<class T>
 void write_results(std::string &id, std::vector<T> &data) {
@@ -37,9 +38,9 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
     int num_particles = guess;
     while (not found) {
         printf("Testing %d particles\n", num_particles);
-        int num_of_polarizations=0;
-        for (int rep=0;rep < repeats;rep++) {
-            Simulation sim = Simulation(num_particles,gate_radius);
+        int num_of_polarizations = 0;
+        for (int rep = 0; rep < repeats; rep++) {
+            Simulation sim = Simulation(num_particles, gate_radius);
             sim.left_gate_capacity = capacity;
             sim.right_gate_capacity = capacity;
             sim.circle_radius = radius;
@@ -48,10 +49,10 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
             sim.setup();
             sim.start_evenly();
             int diff = 0;
-            while (diff < num_particles*polarisation_ratio and sim.time < final_time) {
+            while (diff < num_particles * polarisation_ratio and sim.time < final_time) {
                 sim.update(0.0);
                 unsigned long it = sim.total_left.size() - 1;
-                diff = std::abs((int)sim.total_left.at(it) - (int)sim.total_right.at(it));
+                diff = std::abs((int) sim.total_left.at(it) - (int) sim.total_right.at(it));
             }
             bool has_polarized = (sim.time < final_time);
             if (has_polarized) {
@@ -61,32 +62,32 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
                 printf("not polarized in %.2f\n", final_time);
             }
         }
-            if (num_of_polarizations==0) {
-                lower_bound = num_particles;
-                num_particles = (lower_bound + upper_bound) / 2;
-                if (upper_bound - num_particles < 20) {
-                    printf("Very close to upper bound and still not polarizing: increasing upper bound\n");
-                    if (not found_upper_bound) {
-                        upper_bound = (int) (upper_bound * 1.5);
-                    } else {
-                        upper_bound += 10;
-                    }
-                    num_particles = (lower_bound + upper_bound) / 2;
+        if (num_of_polarizations == 0) {
+            lower_bound = num_particles;
+            num_particles = (lower_bound + upper_bound) / 2;
+            if (upper_bound - num_particles < 20) {
+                printf("Very close to upper bound and still not polarizing: increasing upper bound\n");
+                if (not found_upper_bound) {
+                    upper_bound = (int) (upper_bound * 1.5);
+                } else {
+                    upper_bound += 10;
                 }
-            } else if (num_of_polarizations==repeats){
-                upper_bound = num_particles;
                 num_particles = (lower_bound + upper_bound) / 2;
-                found_upper_bound = true;
-                if (num_particles - lower_bound < 10) {
-                    printf("Very close to lower bound and still not polarizing; reducing lower bound\n");
-                    lower_bound -= 50;
-                    num_particles = (lower_bound + upper_bound) / 2;
-                }
-            } else {
-                printf("Interval: (%d,%d), crit: %d\n", lower_bound, upper_bound, num_particles);
-                found = true;
             }
+        } else if (num_of_polarizations == repeats) {
+            upper_bound = num_particles;
+            num_particles = (lower_bound + upper_bound) / 2;
+            found_upper_bound = true;
+            if (num_particles - lower_bound < 10) {
+                printf("Very close to lower bound and still not polarizing; reducing lower bound\n");
+                lower_bound -= 50;
+                num_particles = (lower_bound + upper_bound) / 2;
+            }
+        } else {
+            printf("Interval: (%d,%d), crit: %d\n", lower_bound, upper_bound, num_particles);
+            found = true;
         }
+    }
     return num_particles;
 }
 
@@ -95,20 +96,25 @@ void test_constant_in_density(int capacity, int guess) {
      * This method tests if we get constant thermalisation time for number of particles scaling with the density.
      * This method must be tested in the critical case because otherwise there is no thermalisation happening.
      */
-     int num_steps = 20;
+    std::ofstream result_file("result_run" + std::to_string(std::time(nullptr)) + ".txt");
+    int num_steps = 20;
     double height = 0.3;
     double length = 0.6;
+    result_file << "number of steps: " << num_steps << "\theight: " << height << "\tlength " << length << "\tcapacity: "
+                << capacity << std::endl;
     printf("Testing constant in density: Capacity:%d/\n", capacity);
     int lb = 0;
     int ub = guess * 2; // Link these three to your initial guess by some estimate; count on continuity
-     for (int step=0;step < num_steps;step++) {
-         double radius = 2 + step*0.2;
-         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
-         printf("o: Radius:%.2f/Critical Number:%d/\n", radius, crit);
-         guess = (int) (crit * 1.5);
-         lb = (int) (crit * 0.9);
-         ub = (int) (crit * 1.6);
-     }
+    for (int step = 0; step < num_steps; step++) {
+        double radius = 2 + step * 0.2;
+        int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
+        printf("o: Radius:%.2f/Critical Number:%d/\n", radius, crit);
+        result_file << "radius " << radius << " crit " << crit << std::endl;
+        guess = (int) (crit * 1.5);
+        lb = (int) (crit * 0.9);
+        ub = (int) (crit * 1.6);
+    }
+    result_file.close();
 }
 
 void test_linear_in_capacity(double density) {
@@ -116,10 +122,13 @@ void test_linear_in_capacity(double density) {
      * This method tests if we get constant thermalisation time for number of particles scaling with the density.
      * This method must be tested in the critical case because otherwise there is no thermalisation happening.
      */
+    std::ofstream result_file("result_run" + std::to_string(std::time(nullptr)) + ".txt");
     int num_steps = 20;
     double radius = 2.;
     double height = 0.3;
     double length = 0.6;
+    result_file << "number of steps: " << num_steps << "\theight: " << height << "\tlength " << length << "\tradius: "
+                << radius << std::endl;
     printf("Testing linear in capacity\n");
     int lb = 0;
     int ub = 2000; // Link these three to your initial guess by some estimate; count on continuity
@@ -128,10 +137,12 @@ void test_linear_in_capacity(double density) {
         int capacity = 2 + step * 2;
         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
         printf("o: Capacity:%d/Critical Number:%d/\n", capacity, crit);
+        result_file << "capacity " << capacity << " crit " << crit << std::endl;
         guess = (int) (crit * 1.3);
         lb = (int) (crit * 0.9);
         ub = (int) (crit * 1.6);
     }
+    result_file.close();
 }
 
 double get_thermalisation_time(double gate_radius, int gate_capacity) {
@@ -147,6 +158,7 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     }
     return simulation.time;
 }
+
 int main(int argc, char *argv[]) {
     int mode = 0;
     if (argc == 2) {
@@ -154,11 +166,11 @@ int main(int argc, char *argv[]) {
     }
     switch (mode) {
         case 1: {
-            test_constant_in_density(2,1000);
+            test_constant_in_density(2, 1000);
             break;
         }
         case 2: {
-            test_constant_in_density(20,10000);
+            test_constant_in_density(20, 7500);
             break;
         }
         case 3: {
