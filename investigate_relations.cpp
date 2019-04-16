@@ -29,7 +29,7 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
      * To resolve this, we take an indicative upper and lower bound and move them up when we cannot find the behaviour we are looking for.
      * This is done by first assuming no real upper bound until we observe antithermalisation, and assuming the real lower bound is zero.
      */
-    double final_time = 1E5;
+    double final_time = 5E4;
     double polarisation_ratio = 0.95;
     double gate_radius = gate_length / 2;
     int repeats = 3;
@@ -100,7 +100,7 @@ void test_constant_in_density(int capacity, int guess) {
      * This method must be tested in the critical case because otherwise there is no thermalisation happening.
      */
     std::ofstream result_file("result_run" + std::to_string(std::time(nullptr)) + ".txt");
-    int num_steps = 20;
+    int num_steps = 10;
     double height = 0.3;
     double length = 0.6;
     result_file << "number of steps: " << num_steps << "\theight: " << height << "\tlength " << length << "\tcapacity: "
@@ -109,7 +109,7 @@ void test_constant_in_density(int capacity, int guess) {
     int lb = 0;
     int ub = guess * 2; // Link these three to your initial guess by some estimate; count on continuity
     for (int step = 0; step < num_steps; step++) {
-        double radius = 2 + step * 0.2;
+        double radius = .35 + step * 0.05;
         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
         printf("o: Radius:%.2f/Critical Number:%d/\n", radius, crit);
         result_file << "radius " << radius << " crit " << crit << std::endl;
@@ -127,17 +127,18 @@ void test_linear_in_capacity(double density) {
      */
     std::ofstream result_file("result_run" + std::to_string(std::time(nullptr)) + ".txt");
     int num_steps = 20;
-    double radius = 2.;
+    double radius = 1;
     double height = 0.3;
     double length = 0.6;
     result_file << "number of steps: " << num_steps << "\theight: " << height << "\tlength " << length << "\tradius: "
                 << radius << std::endl;
     printf("Testing linear in capacity\n");
     int lb = 0;
-    int ub = 2000; // Link these three to your initial guess by some estimate; count on continuity
-    int guess = 1000;
+    int ub = 600; // Link these three to your initial guess by some estimate; count on continuity
+    int guess = 400;
     for (int step = 0; step < num_steps; step++) {
-        int capacity = 2 + step * 2;
+        int capacity = 2 + step;
+        radius -= 0.05;
         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
         printf("o: Capacity:%d/Critical Number:%d/\n", capacity, crit);
         result_file << "capacity " << capacity << " crit " << crit << std::endl;
@@ -173,7 +174,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         case 2: {
-            test_constant_in_density(20, 7500);
+            test_constant_in_density(20, 750);
             break;
         }
         case 3: {
