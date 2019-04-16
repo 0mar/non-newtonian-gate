@@ -162,12 +162,12 @@ void test_inverse_in_height() {
     result_file << "number of steps: " << num_steps << "\tcapacity: " << capacity << "\tlength " << length
                 << "\tradius: "
                 << radius << std::endl;
-    printf("Testing inverse in width\n");
+    printf("Testing inverse in height\n");
     int lb = 0;
-    int ub = 600; // Link these three to your initial guess by some estimate; count on continuity
-    int guess = 400;
+    int ub = 1000; // Link these three to your initial guess by some estimate; count on continuity
+    int guess = 500;
     for (int step = 0; step < num_steps; step++) {
-        double height = 0.05 + step * 0.05;
+        double height = 0.2 + step * 0.05;
         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
         printf("o: Height:%.2f/Critical Number:%d/\n", height, crit);
         result_file << "Height " << height << " crit " << crit << std::endl;
@@ -193,10 +193,10 @@ void test_inverse_in_length() {
                 << radius << std::endl;
     printf("Testing inverse in length\n");
     int lb = 0;
-    int ub = 600; // Link these three to your initial guess by some estimate; count on continuity
-    int guess = 400;
+    int ub = 2000; // Link these three to your initial guess by some estimate; count on continuity
+    int guess = 1000;
     for (int step = 0; step < num_steps; step++) {
-        double length = 0.1 + step * 0.1;
+        double length = 0.3 + step * 0.1;
         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
         printf("o: Length:%.2f/Critical Number:%d/\n", length, crit);
         result_file << "length " << length << " crit " << crit << std::endl;
