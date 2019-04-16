@@ -149,6 +149,64 @@ void test_linear_in_capacity(double density) {
     result_file.close();
 }
 
+void test_inverse_in_height() {
+    /**
+     * This method tests if we get constant thermalisation time for number of particles scaling with the density.
+     * This method must be tested in the critical case because otherwise there is no thermalisation happening.
+     */
+    std::ofstream result_file("result_run" + std::to_string(std::time(nullptr)) + ".txt");
+    int num_steps = 20;
+    double radius = 1;
+    double length = 0.6;
+    int capacity = 2;
+    result_file << "number of steps: " << num_steps << "\tcapacity: " << capacity << "\tlength " << length
+                << "\tradius: "
+                << radius << std::endl;
+    printf("Testing inverse in width\n");
+    int lb = 0;
+    int ub = 600; // Link these three to your initial guess by some estimate; count on continuity
+    int guess = 400;
+    for (int step = 0; step < num_steps; step++) {
+        double height = 0.05 + step * 0.05;
+        int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
+        printf("o: Height:%.2f/Critical Number:%d/\n", height, crit);
+        result_file << "Height " << height << " crit " << crit << std::endl;
+        guess = (int) (crit * 1.3);
+        lb = (int) (crit * 0.9);
+        ub = (int) (crit * 1.6);
+    }
+    result_file.close();
+}
+
+void test_inverse_in_length() {
+    /**
+     * This method tests if we get constant thermalisation time for number of particles scaling with the density.
+     * This method must be tested in the critical case because otherwise there is no thermalisation happening.
+     */
+    std::ofstream result_file("result_run" + std::to_string(std::time(nullptr)) + ".txt");
+    int num_steps = 20;
+    double radius = 1;
+    double height = 0.3;
+    int capacity = 2;
+    result_file << "number of steps: " << num_steps << "\tcapacity: " << capacity << "\theight " << height
+                << "\tradius: "
+                << radius << std::endl;
+    printf("Testing inverse in length\n");
+    int lb = 0;
+    int ub = 600; // Link these three to your initial guess by some estimate; count on continuity
+    int guess = 400;
+    for (int step = 0; step < num_steps; step++) {
+        double length = 0.1 + step * 0.1;
+        int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
+        printf("o: Length:%.2f/Critical Number:%d/\n", length, crit);
+        result_file << "length " << length << " crit " << crit << std::endl;
+        guess = (int) (crit * 1.3);
+        lb = (int) (crit * 0.9);
+        ub = (int) (crit * 1.6);
+    }
+    result_file.close();
+}
+
 double get_thermalisation_time(double gate_radius, int gate_capacity) {
     Simulation simulation = Simulation(100, gate_radius);
     simulation.left_gate_capacity = gate_capacity;
@@ -181,8 +239,16 @@ int main(int argc, char *argv[]) {
             test_linear_in_capacity(0.5);
             break;
         }
+        case 4: {
+            test_inverse_in_height();
+            break;
+        }
+        case 5: {
+            test_inverse_in_length();
+            break;
+        }
         default: {
-            printf("Please choose option (0-2)\n");
+            printf("Please choose option (1-5)\n");
             break;
         }
     }
