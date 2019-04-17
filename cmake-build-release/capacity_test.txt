@@ -1,0 +1,14 @@
+number of steps: 20	height: 0.3	length 0.6	radius: 1
+capacity 2 crit 191
+capacity 4 crit 343
+capacity 6 crit 432
+capacity 8 crit 495
+capacity 10 crit 544
+capacity 12 crit 556
+capacity 14 crit 555
+capacity 16 crit 524
+capacity 18 crit 497
+capacity 20 crit 438
+capacity 22 crit 394
+capacity 24 crit 338
+capacity 26 crit 272
