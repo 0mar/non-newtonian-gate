@@ -16,7 +16,8 @@ void write_results(std::string &id, std::vector<T> &data) {
 }
 
 int get_critical_number_of_particles(double radius, int capacity, double gate_height, double gate_length,
-                                     int lower_bound = 1000, int upper_bound = 7000, int guess = 3500) {
+                                     int lower_bound = 1000, int upper_bound = 7000, int guess = 3500,
+                                     bool high_res = true) {
     /*
      * Find the critical number of particles for any set of parameters.
      * This is a binary search method that from some (guess) lower and upper bound tries to derive an estimate
@@ -29,10 +30,17 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
      * To resolve this, we take an indicative upper and lower bound and move them up when we cannot find the behaviour we are looking for.
      * This is done by first assuming no real upper bound until we observe antithermalisation, and assuming the real lower bound is zero.
      */
-    double final_time = 5E4;
+    double final_time = 10E4;
     double polarisation_ratio = 0.95;
     double gate_radius = gate_length / 2;
+    // How often will we repeat the experiment?
     int repeats = 3;
+    // How many deviant outcomes will we tolerate?
+    int num_deviant = 0;
+    if (high_res) {
+        repeats = 7;
+        num_deviant = 1;
+    }
     bool found = false;
     bool found_upper_bound = false;
     int num_particles = guess;
@@ -62,7 +70,7 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
                 printf("not polarized in %.2f\n", final_time);
             }
         }
-        if (num_of_polarizations == 0) {
+        if (num_of_polarizations <= num_deviant) {
             if (not found_upper_bound) {
                 printf("Doubling upper bound\n");
                 lower_bound = num_particles;
@@ -71,19 +79,24 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
             } else {
                 lower_bound = num_particles;
                 num_particles = (lower_bound + upper_bound) / 2;
-                if (upper_bound - num_particles < 20) {
+                if (upper_bound - num_particles < 5) {
                     printf("Very close to upper bound and still not polarizing: increasing upper bound\n");
                     upper_bound += 10;
                     num_particles = (lower_bound + upper_bound) / 2;
                 }
             }
-        } else if (num_of_polarizations == repeats) {
+        } else if (num_of_polarizations >= repeats - num_deviant) {
             upper_bound = num_particles;
             num_particles = (lower_bound + upper_bound) / 2;
             found_upper_bound = true;
-            if (num_particles - lower_bound < 10) {
+            if (num_particles - lower_bound < 5) {
                 printf("Very close to lower bound and still not polarizing; reducing lower bound\n");
-                lower_bound -= 50;
+                if (lower_bound < 20) {
+                    printf("Lower bound of %d not low enough. No meaningful convergence, exiting\n", lower_bound);
+                    std::exit(200);
+                } else {
+                    lower_bound -= 20;
+                }
                 num_particles = (lower_bound + upper_bound) / 2;
             }
         } else {
@@ -167,7 +180,7 @@ void test_inverse_in_height() {
     int ub = 1000; // Link these three to your initial guess by some estimate; count on continuity
     int guess = 500;
     for (int step = 0; step < num_steps; step++) {
-        double height = 0.2 + step * 0.05;
+        double height = 0.2 + step * 0.01;
         int crit = get_critical_number_of_particles(radius, capacity, height, length, lb, ub, guess);
         printf("o: Height:%.2f/Critical Number:%d/\n", height, crit);
         result_file << "Height " << height << " crit " << crit << std::endl;
