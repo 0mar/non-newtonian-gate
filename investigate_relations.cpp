@@ -168,7 +168,7 @@ void test_inverse_in_height() {
      * This method must be tested in the critical case because otherwise there is no thermalisation happening.
      */
     std::ofstream result_file("result_run" + std::to_string(std::time(nullptr)) + ".txt");
-    int num_steps = 20;
+    int num_steps = 40;
     double radius = 1;
     double length = 0.6;
     int capacity = 2;
