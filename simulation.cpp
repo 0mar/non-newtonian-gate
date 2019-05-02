@@ -537,6 +537,10 @@ double Simulation::get_retraction_angle(const unsigned long particle) {
 }
 
 double Simulation::time_to_hit_gate(const unsigned long particle) {
+    /**
+     * Compute time towards the circular gate by transforming the domain and solving a quadratic equation.
+     * In order to ensure positivity of the solution, we use numerical rounding with epsilon for finding roots
+     */
     if (gate_radius > 0) {
         double add_x = max_path * cos(directions[particle]);
         double add_y = max_path * sin(directions[particle]);
@@ -548,8 +552,8 @@ double Simulation::time_to_hit_gate(const unsigned long particle) {
         const double a = t_add_x * t_add_x + t_add_y * t_add_y;
         const double b = 2 * t_pos_x * t_add_x + 2 * t_pos_y * t_add_y;
         const double c = t_pos_x * t_pos_x + t_pos_y * t_pos_y - 1;
+        // Assume that D is indeed positive because we do not want to pay the price and check
         const double D_sqrt = sqrt(b * b - 4 * a * c);
-        if (D_sqrt < 0) printf("hmmmmm neg D\n");
         // compute roots
         const double t1 = (-b - D_sqrt) / (2 * a);
         const double t2 = (-b + D_sqrt) / (2 * a);
@@ -570,6 +574,10 @@ double Simulation::time_to_hit_gate(const unsigned long particle) {
 }
 
 double Simulation::time_to_hit_middle(unsigned long particle) {
+    /**
+     * Uses a line-line intersection algorithm (with identical nomenclature) from 
+     * https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+     */
     double min_t = 1;
     if (gate_radius > 0) {
         double rx = max_path * cos(directions[particle]);
