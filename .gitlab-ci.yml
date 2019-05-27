@@ -1,7 +1,7 @@
 image: ubuntu
 before_script:
   - pkill apt || echo "No apt running"
-  - apt-get update -qq && apt-get install -y cmake libboost-dev g++
+  - apt-get update -qq && apt-get install -y cmake libboost-all-dev g++
   - mkdir build-debug
   - cd build-debug
   - cmake -DCMAKE_BUILD_TYPE=Debug ..
