@@ -3,6 +3,7 @@ project(terrier)
 
 set(CMAKE_CXX_STANDARD 14)
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 add_executable(terrier main.cpp simulation.cpp simulation.h)
 add_executable(find_anti find_unicorn.cpp simulation.cpp simulation.h)
 add_executable(test_terrier test_simulation.cpp simulation.cpp simulation.h)
