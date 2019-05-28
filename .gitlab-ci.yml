@@ -1,6 +1,7 @@
 image: ubuntu
 before_script:
   - pkill apt || echo "No apt running"
+  - rm /var/lib/apt/lists/lock /var/cache/apt/archives/lock || echo "No lock on apt-get process"
   - apt-get update -qq && apt-get install -y cmake libboost-all-dev g++
   - mkdir build-debug
   - cd build-debug
