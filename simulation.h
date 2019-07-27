@@ -14,7 +14,7 @@
 #include <algorithm>
 
 struct Impact {
-    unsigned long particle;
+    unsigned long particle; // Why can'' these be const?
     double time;
     double stamp;
 
@@ -22,7 +22,8 @@ struct Impact {
         return time > i.time;
     }
 
-    Impact(const unsigned long particle, const double time, const double stamp) : particle(particle), time(time),
+    Impact(const unsigned long particle, const double time, const double stamp) : particle(particle),
+                                                                                  time(time),
                                                                                   stamp(stamp) {
 
     }
@@ -75,7 +76,7 @@ public:
      * @param y y-coordinate of the point
      * @return true if inside the domain, false otherwise.
      */
-    bool is_in_domain(const double &x, const double &y); // todo: make this and other const
+    bool is_in_domain(const double &x, const double &y) const;
 
     /**
      * Check if the point (x,y) is in a circle on side `side`.
@@ -84,7 +85,7 @@ public:
      * @param side `LEFT` or `RIGHT`
      * @return `true` if point in circle, `false` otherwise
      */
-    bool is_in_circle(const double &x, const double &y, const unsigned long &side);
+    bool is_in_circle(const double &x, const double &y, const unsigned long &side) const;
 
     /**
      * Check if point is in the bridge
@@ -92,7 +93,7 @@ public:
      * @param y y-coordinate of the point
      * @return `true` if point in bridge, `false` otherwise
      */
-    bool is_in_bridge(const double &x, const double &y);
+    bool is_in_bridge(const double &x, const double &y) const;
 
     /**
      * Compute the time it takes for a particle to reach the bridge.
@@ -102,7 +103,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with bridge
      */
-    double time_to_hit_bridge(const unsigned long &particle, double &normal_angle);
+    double time_to_hit_bridge(const unsigned long &particle, double &normal_angle) const;
 
     /**
      * Computes the time it takes for a particle to reach the boundary of a reservoir
@@ -112,7 +113,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with circle
      */
-    double time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle);
+    double time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) const;
 
     /**
      * Computes the time it takes for a particle to hit the gate.
@@ -120,14 +121,14 @@ public:
      * @param particle Particle index
      * @return time to next collision with gate
      */
-    double time_to_hit_gate(const unsigned long &particle);
+    double time_to_hit_gate(const unsigned long &particle) const;
 
     /**
      * Time for a particle to hit the central vertical axis
      * @param particle Particle index
      * @return time to passing middle
      */
-    double time_to_hit_middle(const unsigned long &particle);
+    double time_to_hit_middle(const unsigned long &particle) const;
 
     /**
      * Computes the next impact of a particle by finding the minimum impact time of all options.
@@ -166,7 +167,7 @@ public:
      * @param x output variable for x position
      * @param y output variable for y position
      */
-    void get_current_position(const unsigned long &particle, double &x, double &y);
+    void get_current_position(const unsigned long &particle, double &x, double &y) const;
 
     /**
      * Check if particle can enter gate. If gate is below threshold, enters the particle in the gate
@@ -190,7 +191,7 @@ public:
      * @param direction Direction, LEFT or RIGHT
      * @return True if position in gate, false otherwise
      */
-    bool is_in_gate(const double &x, const double &y, const unsigned long &direction);
+    bool is_in_gate(const double &x, const double &y, const unsigned long &direction) const;
 
     /**
      * Remove a particle from the gate.
@@ -222,19 +223,19 @@ public:
     /**
      * Print the current status of the simulation to stdout
      */
-    void print_status();
+    void print_status() const;
 
     /**
      * Write the positions to file at a certain time, which *should* be between the current time and the next collision.
      * However, this is not enforced in this method.
      * @param time Time at which positions would be interpolated.
      */
-    void write_positions_to_file(const double &time);
+    void write_positions_to_file(const double &time) const;
 
     /**
      * Write all timestamps and number of positions to file.
      */
-    void write_totals_to_file();
+    void write_totals_to_file() const;
 
     /**
      * Compute the reflection angle based on an ingoing angle and the normal angle of the surface.
@@ -242,14 +243,14 @@ public:
      * @param normal_angle normal angle of the surface
      * @return outgoing angle of the particle
      */
-    double get_reflection_angle(const double &angle_in, const double &normal_angle);
+    double get_reflection_angle(const double &angle_in, const double &normal_angle) const;
 
     /**
      * Compute the angle a particle should have after a gate explosion (reverse/random)
      * @param particle Particle index
      * @return angle of the particle after exploding the gate
      */
-    double get_retraction_angle(const unsigned long &particle);
+    double get_retraction_angle(const unsigned long &particle) const;
 
     /**
      * Finish up simulation (write results, optional post-processing)

@@ -212,7 +212,7 @@ void Simulation::update(const double &write_dt) {
     measure();
 }
 
-bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
+bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) const {
     return ((int) direction * 2 - 1) * x >= 0 and x * x + y * y < gate_radius * gate_radius;
 }
 
@@ -272,7 +272,7 @@ void Simulation::measure() {
     total_right.push_back(in_right); // Don't really need to store them both...
 }
 
-void Simulation::print_status() {
+void Simulation::print_status() const {
     printf("Time passed: %.2f\n", time);
     for (unsigned long particle = 0; particle < num_particles; particle++) {
         printf("Particle %d at \nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi\n", (int) particle, px, py,
@@ -286,7 +286,7 @@ void Simulation::print_status() {
            (int) currently_in_right_gate.size());
 }
 
-void Simulation::write_positions_to_file(const double &time) {
+void Simulation::write_positions_to_file(const double &time) const {
     std::string filename = "results.dat";
     std::ofstream file;
     if (time == 0) {
@@ -315,7 +315,7 @@ void Simulation::write_positions_to_file(const double &time) {
     file.close();
 }
 
-void Simulation::write_totals_to_file() {
+void Simulation::write_totals_to_file() const {
     std::string filename = "totals.dat";
     std::ofstream file;
     file.open(filename, std::ofstream::out | std::ofstream::trunc);
@@ -352,7 +352,7 @@ void Simulation::couple_bridge() {
     bridge_size = 2 * this->time_to_hit_circle(0, right_center_x, angle);
 }
 
-bool Simulation::is_in_domain(const double &x, const double &y) {
+bool Simulation::is_in_domain(const double &x, const double &y) const {
     if (is_in_bridge(x, y)) {
         return true;
     } else {
@@ -364,7 +364,7 @@ bool Simulation::is_in_domain(const double &x, const double &y) {
     }
 }
 
-bool Simulation::is_in_circle(const double &x, const double &y, const unsigned long &side) {
+bool Simulation::is_in_circle(const double &x, const double &y, const unsigned long &side) const {
     if (side == LEFT) {
         return (x - left_center_x) * (x - left_center_x) + y * y < circle_radius * circle_radius;
     } else {
@@ -373,7 +373,7 @@ bool Simulation::is_in_circle(const double &x, const double &y, const unsigned l
 }
 
 
-bool Simulation::is_in_bridge(const double &x, const double &y) {
+bool Simulation::is_in_bridge(const double &x, const double &y) const {
 /**
  * Note that these function is not mutually exclusive with left and right circle.
  */
@@ -442,7 +442,7 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     next_directions[particle] = next_angle;
 }
 
-void Simulation::get_current_position(const unsigned long &particle, double &x, double &y) {
+void Simulation::get_current_position(const unsigned long &particle, double &x, double &y) const {
     /**
      * Interpolate position at the current time. Returns in referenced variables
      */
@@ -457,7 +457,7 @@ void Simulation::get_current_position(const unsigned long &particle, double &x, 
     }
 }
 
-double Simulation::time_to_hit_bridge(const unsigned long &particle, double &normal_angle) {
+double Simulation::time_to_hit_bridge(const unsigned long &particle, double &normal_angle) const {
     /**
      * Check if we hit the bottom line, and check if we hit the top line, and return a float.
      */
@@ -485,7 +485,8 @@ double Simulation::time_to_hit_bridge(const unsigned long &particle, double &nor
     return min_t * max_path;
 }
 
-double Simulation::time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) {
+double
+Simulation::time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) const {
     /**
      * Compute the time until next impact with one of the circle boundaries
      */
@@ -532,11 +533,11 @@ double Simulation::time_to_hit_circle(const unsigned long &particle, const doubl
     return min_t * max_path;
 }
 
-double Simulation::get_reflection_angle(const double &angle_in, const double &normal_angle) {
+double Simulation::get_reflection_angle(const double &angle_in, const double &normal_angle) const {
     return fmod(2 * normal_angle - angle_in + PI, 2 * PI);
 }
 
-double Simulation::get_retraction_angle(const unsigned long &particle) {
+double Simulation::get_retraction_angle(const unsigned long &particle) const {
     if (explosion_direction_is_random) {
         int side = sgn(px);
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
@@ -549,7 +550,7 @@ double Simulation::get_retraction_angle(const unsigned long &particle) {
     }
 }
 
-double Simulation::time_to_hit_gate(const unsigned long &particle) {
+double Simulation::time_to_hit_gate(const unsigned long &particle) const {
     /**
      * Compute time towards the circular gate by transforming the domain and solving a quadratic equation.
      * In order to ensure positivity of the solution, we use numerical rounding with epsilon for finding roots
@@ -586,7 +587,7 @@ double Simulation::time_to_hit_gate(const unsigned long &particle) {
     }
 }
 
-double Simulation::time_to_hit_middle(const unsigned long &particle) {
+double Simulation::time_to_hit_middle(const unsigned long &particle) const {
     /**
      * Uses a line-line intersection algorithm (with identical nomenclature) from 
      * https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
