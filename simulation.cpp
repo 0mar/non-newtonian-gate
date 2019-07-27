@@ -1,9 +1,7 @@
 //
 // Created by Omar Richardson on 24/10/2018.
 // Hints for optimization:
-// 1. Implement custom heap
-// 2. Be careful with compute_next_impact() calls
-// 3. Just store the number of particles in the left ball
+// 1. Be careful with compute_next_impact() calls
 //
 
 #include "simulation.h"
@@ -269,7 +267,6 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
 void Simulation::measure() {
     measuring_times.push_back(time);
     total_left.push_back(in_left);
-    total_right.push_back(in_right); // Don't really need to store them both...
 }
 
 void Simulation::print_status() const {
@@ -327,8 +324,8 @@ void Simulation::write_totals_to_file() const {
         file << left << "\t";
     }
     file << std::endl;
-    for (unsigned long right: total_right) {
-        file << right << "\t";
+    for (unsigned long left: total_left) {
+        file << num_particles - left << "\t";
     }
     file << std::endl;
 }
