@@ -207,7 +207,13 @@ public:
      */
     void update(const double &write_dt);
 
+    /**
+     * Retrieves which particle will collide next and at what time.
+     * @param particle particle that will have the next collision
+     * @param next_impact time at which the next collision will take place
+     */
     void get_next_impact(unsigned long &particle, double &next_impact);
+
     /**
      * Store a time stamp and the number of particles left and right.
      */
