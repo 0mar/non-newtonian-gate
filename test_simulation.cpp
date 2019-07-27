@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.directions.at(0) = -pi / 2;
         sim.compute_next_impact(0);
         sim.compute_next_impact(0);
-        BOOST_CHECK_CLOSE(sim.next_impact_times.at(0).time, sim.circle_radius, eps); // implement pop
+        BOOST_CHECK_CLOSE(sim.next_impact_times.at(1).time, sim.circle_radius, eps); // implement pop
         BOOST_CHECK_CLOSE(sim.next_directions.at(0), pi / 2, eps);
         // from center of circle to
         sim.x_pos.at(0) = sim.left_center_x;
