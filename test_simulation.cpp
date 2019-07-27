@@ -61,7 +61,6 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.setup();
         sim.start();
         BOOST_CHECK_EQUAL(sim.total_left.at(0), 1000);
-        BOOST_CHECK_EQUAL(sim.total_right.at(0), 0);
         bool correct = true;
         for (unsigned long i = 0; i < 1000; i++) {
             correct &= sim.is_in_circle(sim.x_pos.at(i), sim.y_pos.at(i), sim.LEFT);
