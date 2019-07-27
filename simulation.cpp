@@ -34,7 +34,8 @@ Simulation::Simulation(const int &num_particles, const double &gate_radius) : nu
 
 void Simulation::setup() {
     max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
-    next_impact_times.resize(num_particles);
+    next_impact_times.reserve(num_particles); // Will be filled later
+    last_written_times.resize(num_particles);
     impact_times.resize(num_particles);
     in_left_gate.resize(num_particles);
     in_right_gate.resize(num_particles);
@@ -137,19 +138,32 @@ void Simulation::start_evenly() {
     measure();
 }
 
+void Simulation::get_next_impact(unsigned long &particle, double &next_impact) {
+    bool impact_found = false;
+    while (not impact_found and not next_impact_times.empty()) {
+        Impact &impact = next_impact_times.front();
+//        printf("Candidate impact: particle: %lu with time %.2f\n",impact.particle,impact.time);
+        if (impact.stamp == last_written_times[impact.particle]) {
+            // This only works because we are not doing any floating point arithmetic
+            impact_found = true;
+            particle = impact.particle;
+            next_impact = impact.time;
+        }
+        std::pop_heap(next_impact_times.begin(), next_impact_times.end());
+        next_impact_times.pop_back();
+    }
+    if (not impact_found) {
+        throw std::invalid_argument("No impact found with a correct time stamp");
+    }
+//    printf("Decided impact: particle %lu with time %.2f\n",particle,next_impact);
+}
+
 void Simulation::update(const double &write_dt) {
     // Find next event: the first particle that has a new impact
-    // If we really need more optimization, this is where to get it.
-    double next_impact = next_impact_times.at(0);
-    unsigned long particle = 0;
-    for (unsigned long p = 0; p < num_particles; p++) {
-        if (next_impact > next_impact_times[p]) {
-            next_impact = next_impact_times[p];
-            particle = p; // Todo: Use references here as well?
-            // or another data structure?
-        }
-    }
-
+    unsigned long particle;
+    double next_impact;
+    get_next_impact(particle, next_impact);
+//    printf("Event list size: %lu/%d\n",next_impact_times.size(),num_particles);
     // Write a time slice, if desired
     if (write_dt > 0) {
         while (next_impact > last_written_time + write_dt) {
@@ -265,7 +279,7 @@ void Simulation::print_status() {
                impact_times[particle], directions[particle] / PI);
         printf("Planned impact at\nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi\n",
                next_x_pos[particle],
-               next_y_pos[particle], next_impact_times[particle], next_directions[particle] / PI);
+               next_y_pos[particle], next_impact_times[particle].time, next_directions[particle] / PI);
     }
     printf("Particles left: %d, particles right: %d\n", (int) in_left, (int) in_right);
     printf("Particles in left gate: %d\t in right gate %d\n", (int) currently_in_left_gate.size(),
@@ -286,12 +300,12 @@ void Simulation::write_positions_to_file(const double &time) {
     file << time << std::endl;
     for (unsigned long particle = 0; particle < num_particles; particle++) {
         file << px + (next_x_pos[particle] - px) * (impact_times[particle] - time) /
-                     (impact_times[particle] - next_impact_times[particle]) << " ";
+                     (impact_times[particle] - next_impact_times[particle].time) << " ";
     }
     file << std::endl;
     for (unsigned long particle = 0; particle < num_particles; particle++) {
         file << py + (next_y_pos[particle] - py) * (impact_times[particle] - time) /
-                     (impact_times[particle] - next_impact_times[particle]) << " ";
+                     (impact_times[particle] - next_impact_times[particle].time) << " ";
     }
     file << std::endl;
     for (unsigned long particle = 0; particle < num_particles; particle++) {
@@ -421,7 +435,10 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     }
     next_x_pos[particle] = px + next_time * cos(directions[particle]);
     next_y_pos[particle] = py + next_time * sin(directions[particle]);
-    next_impact_times[particle] = time + next_time;
+    next_impact_times.emplace_back(particle, time + next_time, time);
+    last_written_times[particle] = time;
+    std::push_heap(next_impact_times.begin(), next_impact_times.end());
+//    next_impact_times[particle].time = time + next_time;
     next_directions[particle] = next_angle;
 }
 
@@ -429,14 +446,14 @@ void Simulation::get_current_position(const unsigned long &particle, double &x, 
     /**
      * Interpolate position at the current time. Returns in referenced variables
      */
-    if (impact_times[particle] == next_impact_times[particle]) {
+    if (impact_times[particle] == next_impact_times[particle].time) {
         x = px;
         y = py;
     } else {
         x = px + (next_x_pos[particle] - px) * (impact_times[particle] - time) /
-                 (impact_times[particle] - next_impact_times[particle]);
+                 (impact_times[particle] - next_impact_times[particle].time);
         y = py + (next_y_pos[particle] - py) * (impact_times[particle] - time) /
-                 (impact_times[particle] - next_impact_times[particle]);
+                 (impact_times[particle] - next_impact_times[particle].time);
     }
 }
 

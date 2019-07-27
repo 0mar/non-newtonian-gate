@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.directions.at(0) = -pi / 2;
         sim.compute_next_impact(0);
         sim.compute_next_impact(0);
-        BOOST_CHECK_CLOSE(sim.next_impact_times.at(0), sim.circle_radius, eps);
+        BOOST_CHECK_CLOSE(sim.next_impact_times.at(0).time, sim.circle_radius, eps); // implement pop
         BOOST_CHECK_CLOSE(sim.next_directions.at(0), pi / 2, eps);
         // from center of circle to
         sim.x_pos.at(0) = sim.left_center_x;
@@ -335,12 +335,12 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.x_pos.at(0) = sim.left_center_x;
         sim.y_pos.at(0) = 0;
         sim.next_directions.at(0) = -pi / 2;
-        sim.next_impact_times.at(0) = 0;
+        sim.next_impact_times.at(0).time = 0;
         sim.next_x_pos.at(0) = sim.left_center_x;
         sim.next_y_pos.at(0) = 0;
 
         sim.update(0);
-        BOOST_CHECK_CLOSE(sim.next_impact_times.at(0), sim.circle_radius, eps);
+        BOOST_CHECK_CLOSE(sim.next_impact_times.at(0).time, sim.circle_radius, eps);
         BOOST_CHECK_CLOSE(sim.next_directions.at(0), pi / 2, eps);
         sim.update(0);
         BOOST_CHECK_CLOSE(sim.y_pos.at(0), -sim.circle_radius, eps);
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.start();
         sim.x_pos.at(0) = 0;
         sim.y_pos.at(0) = 0;
-        sim.time = sim.next_impact_times.at(0) / 2;
+        sim.time = sim.next_impact_times.at(0).time / 2;
         double x, y;
         sim.get_current_position(0, x, y);
         BOOST_CHECK_CLOSE(x, sim.next_x_pos.at(0) / 2, eps);

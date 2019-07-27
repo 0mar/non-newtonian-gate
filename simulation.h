@@ -13,6 +13,20 @@
 #include <stdexcept>
 #include <algorithm>
 
+struct Impact {
+    unsigned long particle;
+    double time;
+    double stamp;
+
+    bool operator<(const Impact &i) const {
+        return time > i.time;
+    }
+
+    Impact(const unsigned long particle, const double time, const double stamp) : particle(particle), time(time),
+                                                                                  stamp(stamp) {
+
+    }
+};
 
 class Simulation {
 public:
@@ -61,7 +75,7 @@ public:
      * @param y y-coordinate of the point
      * @return true if inside the domain, false otherwise.
      */
-    bool is_in_domain(const double &x, const double &y);
+    bool is_in_domain(const double &x, const double &y); // todo: make this and other const
 
     /**
      * Check if the point (x,y) is in a circle on side `side`.
@@ -123,7 +137,8 @@ public:
 
     double time;
     double last_written_time;
-    std::vector<double> next_impact_times;
+    std::vector<Impact> next_impact_times;
+    std::vector<double> last_written_times;
     std::vector<double> impact_times;
     std::vector<double> next_x_pos;
     std::vector<double> next_y_pos;
@@ -192,6 +207,7 @@ public:
      */
     void update(const double &write_dt);
 
+    void get_next_impact(unsigned long &particle, double &next_impact);
     /**
      * Store a time stamp and the number of particles left and right.
      */
