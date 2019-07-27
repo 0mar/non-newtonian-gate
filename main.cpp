@@ -47,12 +47,12 @@ void many_particle_animation() {
     }
 }
 
-void standard_simulation(double dt) {
+void standard_simulation(double dt, double time) {
     Simulation simulation = Simulation(100, 0.3);
     simulation.setup();
     simulation.start();
     simulation.write_positions_to_file(0);
-    while (simulation.time < 500) {
+    while (simulation.time < time) {
         simulation.update(dt);
     }
     simulation.finish();
@@ -94,6 +94,15 @@ double test_parameters(double gate_radius, int gate_capacity) {
 
 int main(int argc, char *argv[]) {
     int mode = 0;
+    if (argc == 1) {
+        double time = 1000;
+        int num_it = 50;
+        printf("Running standard simulation for %.2f seconds, %d iterations \n", time, num_it);
+        for (unsigned int i=0;i<num_it;i++) {
+            standard_simulation(0.,time);
+        }
+        return 0;
+    }
     if (argc == 2) {
         mode = std::stoi(argv[1]);
     } else if (argc == 3) {

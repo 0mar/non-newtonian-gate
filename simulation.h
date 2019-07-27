@@ -14,12 +14,13 @@
 #include <algorithm>
 
 struct Impact {
-    unsigned long particle; // Why can'' these be const?
+    unsigned long particle; // Why can't these be const?
     double time;
     double stamp;
 
     bool operator<(const Impact &i) const {
         return time > i.time;
+        // Note: This operator is inverted to ensure a min-heap instead of a max-heap
     }
 
     Impact(const unsigned long particle, const double time, const double stamp) : particle(particle),
