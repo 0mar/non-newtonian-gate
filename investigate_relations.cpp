@@ -60,7 +60,7 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
             while (diff < num_particles * polarisation_ratio and sim.time < final_time) {
                 sim.update(0.0);
                 unsigned long it = sim.total_left.size() - 1;
-                diff = std::abs((int) sim.total_left.at(it) - (int) sim.total_right.at(it));
+                diff = std::abs(2 * (int) sim.total_left.at(it) - num_particles);
             }
             bool has_polarized = (sim.time < final_time);
             if (has_polarized) {
@@ -227,7 +227,7 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.setup();
     simulation.start();
     // simulation.write_positions_to_file(0);
-    while (simulation.total_right.at(simulation.total_right.size() - 1) < simulation.num_particles / 2 and
+    while (simulation.num_particles - simulation.total_left.back() < simulation.num_particles / 2 and
            simulation.time < 1E5) {
         simulation.update(0.0);
     }

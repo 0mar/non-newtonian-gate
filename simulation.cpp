@@ -253,7 +253,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
             // printf("Particle %d not in radius, distance from center: %.4f. Removed from gate list\n", (int) particle, sqrt(x * x + y * y));
             gate_contents[direction].erase(std::remove(gate_contents[direction].begin(),
                                                        gate_contents[direction].end(), particle),
-                                           gate_contents[direction].end());
+                                           gate_contents[direction].end()); //Todo: Is removing during loop smart?
         }
         px = x;
         py = y;

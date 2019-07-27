@@ -65,7 +65,7 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.setup();
     simulation.start();
     // simulation.write_positions_to_file(0);
-    while (simulation.total_right.at(simulation.total_right.size() - 1) < simulation.num_particles / 2 and
+    while (simulation.num_particles - simulation.total_left.back() < simulation.num_particles / 2 and
            simulation.time < 1E5) {
         simulation.update(0.0);
     }

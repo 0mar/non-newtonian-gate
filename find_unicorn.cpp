@@ -36,7 +36,7 @@ double get_cool_down_time(int number_of_particles, int gate_capacity) {
     simulation.setup();
     simulation.start();
     // simulation.write_positions_to_file(0);
-    while (simulation.total_right.at(simulation.total_right.size() - 1) < 10 and simulation.time < 1E5) {
+    while (number_of_particles - simulation.total_left.back() < 10 and simulation.time < 1E5) {
         simulation.update(0.0);
     }
     return simulation.time;
@@ -77,10 +77,9 @@ void unicorn() {
     int diff = 0;
     while (diff < number_of_particles - 10 and simulation.time < 15000) {
         simulation.update(0.0);
-        diff = ((int) simulation.total_right.at(simulation.total_right.size() - 1) -
-                (int) simulation.total_left.at(simulation.total_left.size() - 1));
+        diff = number_of_particles - 2 * (int) simulation.total_left.back();
         diff = std::abs(diff);
-        printf("%.4f\t%d\n", simulation.time, (int) simulation.total_right.at(simulation.total_right.size() - 1));
+        printf("%.4f\t%d\n", simulation.time, number_of_particles - (int) simulation.total_left.back());
     }
 }
 
@@ -97,11 +96,10 @@ void test_high_capacity() {
     int diff = 0;
     while (diff < number_of_particles*0.9 and simulation.time < 150000) {
         simulation.update(0.0);
-        diff = ((int) simulation.total_right.at(simulation.total_right.size() - 1) -
-                (int) simulation.total_left.at(simulation.total_left.size() - 1));
+        diff = number_of_particles - 2 * (int) simulation.total_left.back();
         diff = std::abs(diff);
     }
-    printf("%.4f\t%d\n", simulation.time, (int) simulation.total_right.at(simulation.total_right.size() - 1));
+    printf("%.4f\t%d\n", simulation.time, number_of_particles - (int) simulation.total_left.back());
 }
 
 void find_gate(int start_particles, int end_particle) {
@@ -121,10 +119,8 @@ void find_gate(int start_particles, int end_particle) {
             int diff = 0;
             while (diff < number_of_particles * 0.95 and simulation.time < 10000) {
                 simulation.update(0.0);
-                diff = ((int) simulation.total_right.at(simulation.total_right.size() - 1) -
-                        (int) simulation.total_left.at(simulation.total_left.size() - 1));
+                diff = number_of_particles - 2 * (int) simulation.total_left.back();
                 diff = std::abs(diff);
-                // printf("%.4f\t%d\n", simulation.time, (int) simulation.total_right.at(simulation.total_right.size() - 1));
             }
             total_time += simulation.time;
         }
