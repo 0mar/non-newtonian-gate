@@ -33,6 +33,7 @@ Simulation::Simulation(const int &num_particles, const double &gate_radius) : nu
 void Simulation::setup() {
     max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
     next_impact_times.reserve(num_particles); // Will be filled later
+    next_impact_times_check.resize(num_particles); // Will be filled later
     last_written_times.resize(num_particles);
     impact_times.resize(num_particles);
     in_left_gate.resize(num_particles);
@@ -138,6 +139,19 @@ void Simulation::start_evenly() {
 
 void Simulation::get_next_impact(unsigned long &particle, double &next_impact) {
     bool impact_found = false;
+    double next_impact_check = next_impact_times_check.at(0);
+
+    for (const Impact &impact: next_impact_times) {
+        printf("Particle number: %lu at time %.3f (%.3f) - %.2f\n",impact.particle,impact.time,next_impact_times_check[impact.particle],impact.stamp);
+    }
+    unsigned long particle_check = 0;
+    for (unsigned long p = 0; p < num_particles; p++) {
+        if (next_impact_check > next_impact_times_check.at(p)) {
+            next_impact_check = next_impact_times_check.at(p);
+            particle_check = p;
+        }
+    }
+
     while (not impact_found and not next_impact_times.empty()) {
         Impact &impact = next_impact_times.front();
 //        printf("Candidate impact: particle: %lu with time %.2f\n",impact.particle,impact.time);
@@ -146,12 +160,24 @@ void Simulation::get_next_impact(unsigned long &particle, double &next_impact) {
             impact_found = true;
             particle = impact.particle;
             next_impact = impact.time;
+        } else {
+            printf("Skipping ")
+            std::cout << "Skipping " << impact.particle << std::endl;
         }
         std::pop_heap(next_impact_times.begin(), next_impact_times.end());
         next_impact_times.pop_back();
     }
     if (not impact_found) {
         throw std::invalid_argument("No impact found with a correct time stamp");
+    }
+
+    if  (not (particle==particle_check and next_impact == next_impact_check)) {
+        printf("\nError in computing min distance: particle %lu (%lu), time diff %.2e \n",particle,particle_check,next_impact_check - next_impact);
+        printf("%.2f\n",time);
+        exit(1);
+    }
+    if (time>0.01) {
+
     }
 //    printf("Decided impact: particle %lu with time %.2f\n",particle,next_impact);
 }
@@ -432,10 +458,11 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     }
     next_x_pos[particle] = px + next_time * cos(directions[particle]);
     next_y_pos[particle] = py + next_time * sin(directions[particle]);
-    next_impact_times.emplace_back(particle, time + next_time, time);
-    last_written_times[particle] = time;
+    unsigned long p = particle;
+    next_impact_times_check[p] = time+next_time;
+    next_impact_times.emplace_back(p, time + next_time, time);
+    last_written_times[p] = time;
     std::push_heap(next_impact_times.begin(), next_impact_times.end());
-//    next_impact_times[particle].time = time + next_time;
     next_directions[particle] = next_angle;
 }
 

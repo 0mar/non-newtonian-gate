@@ -140,6 +140,7 @@ public:
     double time;
     double last_written_time;
     std::vector<Impact> next_impact_times;
+    std::vector<double> next_impact_times_check;
     std::vector<double> last_written_times;
     std::vector<double> impact_times;
     std::vector<double> next_x_pos;
