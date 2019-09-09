@@ -1,7 +1,6 @@
 //
 // Created by Omar Richardson on 24/10/2018.
 // Hints for optimization:
-// 1. Implement custom heap
 // 2. Be careful with compute_next_impact() calls
 // 3. Just store the number of particles in the left ball
 //
@@ -18,18 +17,17 @@ int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-Simulation::Simulation(const int &num_particles, const double &gate_radius) : num_particles(num_particles),
-                                                                              gate_radius(gate_radius) {
+Simulation::Simulation(const int &num_particles, const double &gate_radius, const double &circle_radius,
+                       const double &circle_distance, const double &bridge_height, const int &left_gate_capacity,
+                       const int &right_gate_capacity, const bool &random_dir)
+        : num_particles(num_particles), gate_radius(gate_radius), circle_radius(circle_radius),
+          circle_distance(circle_distance), bridge_height(bridge_height),
+          left_gate_capacity(left_gate_capacity), right_gate_capacity(right_gate_capacity),
+          explosion_direction_is_random(random_dir) {
     rd = std::make_shared<std::random_device>();
     rng = std::make_shared<std::mt19937>((*rd)());
     unif_real = std::make_shared<std::uniform_real_distribution<double>>(0, 1);
-    circle_radius = 1;
-    circle_distance = 0.5;
-    bridge_height = 0.3;
-    bridge_size = 0; // Computed later
-    left_gate_capacity = 3;
-    right_gate_capacity = 3;
-    explosion_direction_is_random = true;
+    bridge_size = 0;
 }
 
 void Simulation::setup() {
@@ -145,7 +143,7 @@ void Simulation::update(const double &write_dt) {
     for (unsigned long p = 0; p < num_particles; p++) {
         if (next_impact > next_impact_times[p]) {
             next_impact = next_impact_times[p];
-            particle = p; // Todo: Use references here as well?
+            particle = p;
             // or another data structure?
         }
     }
