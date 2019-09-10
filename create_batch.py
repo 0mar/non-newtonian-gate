@@ -25,9 +25,9 @@ param_names = ['channel_width', 'channel_length', 'urn_radius', 'threshold']
 params = [{'channel_length': [0.2, 0.8], 'channel_width': [0.3, 1]},
           {'channel_width': [0.4, 1.4], 'urn_radius': [0.8, 1.5]},
           {'channel_length': [0.1, 1], 'urn_radius': [0.7, 1.3]},
-          {'channel_width': [0.3, 1], 'threshold': [10, 65]},
-          {'channel_length': [0.3, 1], 'threshold': [10, 65]},
-          {'urn_radius': [0.3, 1], 'threshold': [10, 65]}]
+          {'channel_width': [0.3, 1], 'threshold': [4, 22]},
+          {'channel_length': [0.3, 1], 'threshold': [4, 22]},
+          {'urn_radius': [0.3, 1], 'threshold': [4, 22]}]
 default_values = {'channel_width': 0.5, 'channel_length': 0.5, 'urn_radius': 1, 'threshold': 10}
 
 if __name__ == '__main__':
