@@ -244,7 +244,6 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
     }
-    printf("Reached measuring point\n");
     const double weight = 1./(double)(M_f - M_t);
     while (sim.measuring_times.size() < M_f) {
         sim.update(0.0);
@@ -289,7 +288,7 @@ void omar_relation_finder(int argc, char *argv[]) {
 void matteo_relation_finder(int argc, char *argv[]) {
     const int num_arguments = 4;
     const int num_runs = 4;
-    if (argc != num_arguments) {
+    if (argc != num_arguments + 1) {
         throw std::invalid_argument("Please provide (in order) channel length, channel width, urn radius, threshold");
     }
     const double channel_length = std::stod(argv[1]);
@@ -300,13 +299,14 @@ void matteo_relation_finder(int argc, char *argv[]) {
     const unsigned long M_t = 1E5; // Number of hits until we start measuring
     const unsigned long M_f = 1.5E5; // Number of hits until we stop measuring;
     for (unsigned int i = 0; i < num_runs; i++) {
-        tot_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold);
+        tot_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold) / num_runs;
     }
+    std::cout << tot_chi << std::endl;
 
 }
 
 int main(int argc, char *argv[]) {
+    matteo_relation_finder(argc, argv);
     return 0;
-
 }
 
