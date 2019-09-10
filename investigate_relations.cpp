@@ -240,7 +240,8 @@ get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_l
         const double urn_radius, const int threshold) {
     double chi = 0;
     const int num_particles = 1000;
-    Simulation sim = Simulation(num_particles, 1, 1, channel_length, channel_width / 2, threshold, threshold);
+    Simulation sim = Simulation(num_particles, channel_length / 2, urn_radius, channel_length, channel_width / 2,
+                                threshold, threshold);
     sim.setup();
     std::random_device rd;
     std::mt19937 re(rd);
