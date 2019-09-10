@@ -10,7 +10,7 @@ def generate_param_set(param_coupling, default, identifier='param_file1'):
     x_vals = np.linspace(*param_coupling[x], res)
     y = next(it)
     y_vals = np.linspace(*param_coupling[y], res)
-    with open(identifier + ".in", 'w') as f:
+    with open(identifier+".in", 'w') as f:
         # f.write("# Parameters: %s \n" % " | ".join(param_names))
         for x_val in x_vals:
             values[x] = x_val
