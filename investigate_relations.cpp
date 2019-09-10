@@ -226,7 +226,7 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.left_gate_capacity = gate_capacity;
     simulation.right_gate_capacity = gate_capacity;
     simulation.setup();
-    simulation.start();
+    simulation.start(0);
     // simulation.write_positions_to_file(0);
     while (simulation.total_right.at(simulation.total_right.size() - 1) < simulation.num_particles / 2 and
            simulation.time < 1E5) {
@@ -242,7 +242,8 @@ get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_l
     const int num_particles = 1000;
     Simulation sim = Simulation(num_particles, 1, 1, channel_length, channel_width / 2, threshold, threshold);
     sim.setup();
-    sim.start();
+    const double left_ratio = 0.7;
+    sim.start(left_ratio);
     while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
     }

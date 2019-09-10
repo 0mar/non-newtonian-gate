@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
     BOOST_AUTO_TEST_CASE(test_particle_init) {
         auto sim = get_sim(1000);
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         BOOST_CHECK_EQUAL(sim.total_left.at(0), 1000);
         BOOST_CHECK_EQUAL(sim.total_right.at(0), 0);
         bool correct = true;
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
     BOOST_AUTO_TEST_CASE(test_in_circle) {
         auto sim = get_sim(1, 1);
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         BOOST_CHECK(sim.is_in_gate(-0.5, 0, sim.LEFT));
         BOOST_CHECK(not sim.is_in_gate(-0.5, 0, sim.RIGHT));
         BOOST_CHECK(sim.is_in_gate(+0.5, 0, sim.RIGHT));
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
     BOOST_AUTO_TEST_CASE(test_to_middle) {
         auto sim = get_sim(1, 1);
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         sim.x_pos.at(0) = -.5;
         sim.y_pos.at(0) = 0;
         sim.directions.at(0) = 0;
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
 
         //When lines intersect, we want a hit
         sim.x_pos.at(0) = 0;
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         double time, angle;
         // standard: from center of circle to boundary
         sim.x_pos.at(0) = sim.left_center_x;
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         sim.update(0);
         BOOST_CHECK(sim.is_in_domain(sim.x_pos.at(0), sim.y_pos.at(0)));
         sim.update(0);
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         double pi = 3.141592653589793;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         double time, angle;
         // standard: from center of circle to boundary
         sim.x_pos.at(0) = sim.left_center_x;
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         auto sim = get_sim(1, 0.6);
         double pi = 3.141592653589793;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         double time, angle;
         // standard: from center of circle to boundary
         sim.x_pos.at(0) = sim.left_center_x;
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         // standard: from center of circle to bottom boundary
         sim.x_pos.at(0) = sim.left_center_x;
         sim.y_pos.at(0) = 0;
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         // standard: from center of circle to bottom boundary
         sim.x_pos.at(0) = sim.left_center_x;
         sim.y_pos.at(0) = 0;
@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         // Make an inscribed square, in the direction of the clock
         double side = sim.circle_radius / sqrt(2);
         sim.x_pos.at(0) = -sim.left_center_x - side;
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.bridge_height = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         bool all_correct = true;
         bool left_or_right = true;
         while (sim.time < 40) {
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         double pi = 3.141592653589793;
         sim.circle_distance = 0.5;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         // in left
         sim.x_pos.at(0) = -0.27;
         sim.y_pos.at(0) = 0.02;
@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         auto sim = get_sim(1);
         double pi = 3.141592653589793;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         sim.x_pos.at(0) = 0;
         sim.y_pos.at(0) = 0;
         sim.time = sim.next_impact_times.at(0) / 2;
@@ -455,7 +455,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         // Pick some angle small enough
         double angle = 1. / 12 * pi;
         sim.setup();
-        sim.start(0);
+        sim.start(1);
         sim.x_pos.at(0) = sim.circle_radius * cos(pi - angle);
         sim.y_pos.at(0) = sim.circle_radius * sin(pi - angle);
         BOOST_CHECK(sim.is_in_circle(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
