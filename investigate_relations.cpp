@@ -234,19 +234,23 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     return simulation.time;
 }
 
-double get_chi(const double M_t, const double M_f, const double channel_length, const double channel_width,
+double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length, const double channel_width,
                const double urn_radius, const int threshold) {
     double chi = 0;
     const int num_particles = 1000;
     Simulation sim = Simulation(num_particles, 1, 1, channel_length, channel_width / 2, threshold, threshold);
     sim.setup();
     sim.start();
-
-    while (sim.total_right.size() > M_t and sim.total_left.size() < M_f) {
+    while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
     }
-
-    return
+    printf("Reached measuring point\n");
+    const double weight = 1./(double)(M_f - M_t);
+    while (sim.measuring_times.size() < M_f) {
+        sim.update(0.0);
+        chi += weight*std::fabs(sim.total_left.back() - sim.total_right.back())/sim.num_particles;
+    }
+    return chi;
 }
 
 void omar_relation_finder(int argc, char *argv[]) {
@@ -293,8 +297,8 @@ void matteo_relation_finder(int argc, char *argv[]) {
     const double urn_radius = std::stod(argv[3]);
     const int threshold = std::stoi(argv[4]);
     double tot_chi = 0;
-    const double M_t = 1E5; // Number of hits until we start measuring
-    const double M_f = 1.5E5; // Number of hits until we stop measuring;
+    const unsigned long M_t = 1E5; // Number of hits until we start measuring
+    const unsigned long M_f = 1.5E5; // Number of hits until we stop measuring;
     for (unsigned int i = 0; i < num_runs; i++) {
         tot_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold);
     }
