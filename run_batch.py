@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def generate_param_set(param_coupling, default, out_file='param_file1.txt'):
+def generate_param_set(param_coupling, default, identifier='param_file1'):
     values = default.copy()
     res = 10
     it = iter(param_coupling)
@@ -10,14 +10,13 @@ def generate_param_set(param_coupling, default, out_file='param_file1.txt'):
     x_vals = np.linspace(*param_coupling[x], res)
     y = next(it)
     y_vals = np.linspace(*param_coupling[y], res)
-    executable = "./parameter_test"
-    with open(out_file, 'w') as f:
-        f.write("# Parameters: %s \n" % " | ".join(param_names))
+    with open(identifier + ".in", 'w') as f:
+        # f.write("# Parameters: %s \n" % " | ".join(param_names))
         for x_val in x_vals:
             values[x] = x_val
             for y_val in y_vals:
                 values[y] = y_val
-                cmd = [executable] + ["%.2f" % values[param] for param in param_names]
+                cmd = ["%.2f" % values[param] for param in param_names] + [identifier]
                 cmd_string = " ".join(cmd)
                 f.write(cmd_string + "\n")
 
@@ -33,4 +32,4 @@ default_values = {'channel_width': 0.5, 'channel_length': 0.5, 'urn_radius': 1, 
 
 if __name__ == '__main__':
     for i, param in enumerate(params):
-        generate_param_set(param, default_values, "param_file_%d.jobs" % i)
+        generate_param_set(param, default_values, "param_file_%d" % i)
