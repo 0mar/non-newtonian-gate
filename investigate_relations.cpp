@@ -56,7 +56,7 @@ int get_critical_number_of_particles(double radius, int capacity, double gate_he
             sim.bridge_height = gate_height;
             sim.circle_distance = gate_length; // todo: Remember: approximative.
             sim.setup();
-            sim.start_evenly();
+            sim.start(0.5);
             int diff = 0;
             while (diff < num_particles * polarisation_ratio and sim.time < final_time) {
                 sim.update(0.0);
@@ -289,7 +289,7 @@ void omar_relation_finder(int argc, char *argv[]) {
 
 void matteo_relation_finder(int argc, char *argv[]) {
     const int num_arguments = 5;
-    const int num_runs = 4;
+    const int num_runs = 10;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
         for (unsigned int i = 0; i < argc; i++) {

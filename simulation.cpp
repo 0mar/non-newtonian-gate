@@ -55,40 +55,7 @@ void Simulation::setup() {
     couple_bridge();
 }
 
-void Simulation::start() {
-    /**
-     * Initiate all particles, to the left
-     */
-    time = 0;
-    last_written_time = 0;
-    in_left = 0;
-    in_right = 0;
-    const double box_x_radius = circle_distance / 2 + circle_radius * 2;
-    const double box_y_radius = circle_radius;
-    if (gate_radius >= box_x_radius) {
-        throw std::invalid_argument("Gate radius too large; no initialization possible");
-    }
-    if (bridge_size / 2 > circle_radius) {
-        throw std::invalid_argument("Bridge larger than circle; no initialization possible");
-    }
-    for (unsigned long particle = 0; particle < num_particles; particle++) {
-        double pos_x = 0;
-        double pos_y = 0;
-        while (not is_in_circle(pos_x, pos_y, LEFT) or is_in_gate(pos_x, pos_y, LEFT) or
-               is_in_bridge(pos_x, pos_y)) {
-            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
-            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
-        }
-        px = pos_x;
-        py = pos_y;
-        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
-        compute_next_impact(particle);
-        in_left++;
-    }
-    measure();
-}
-
-void Simulation::start_evenly() {
+void Simulation::start(const double &left_ratio) {
     /**
      * Initiate all particles, as many left as right
      */
@@ -104,7 +71,11 @@ void Simulation::start_evenly() {
     if (bridge_size / 2 > circle_radius) {
         throw std::invalid_argument("Bridge larger than circle; no initialization possible");
     }
-    for (unsigned long particle = 0; particle < num_particles / 2; particle++) {
+    if (left_ratio * num_particles < 0 or left_ratio * num_particles > num_particles) {
+        throw std::domain_error("Please choose ratio between 0 and 1");
+    }
+    const auto num_left_particles = (unsigned long) (left_ratio * num_particles);
+    for (unsigned long particle = 0; particle < num_left_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
         while (not is_in_circle(pos_x, pos_y, LEFT) or is_in_gate(pos_x, pos_y, LEFT) or
@@ -118,7 +89,7 @@ void Simulation::start_evenly() {
         compute_next_impact(particle);
         in_left++;
     }
-    for (unsigned long particle = (unsigned long) num_particles / 2; particle < num_particles; particle++) {
+    for (unsigned long particle = num_left_particles; particle < num_particles; particle++) {
         double pos_x = 0;
         double pos_y = 0;
         while (not is_in_circle(pos_x, pos_y, RIGHT) or is_in_gate(pos_x, pos_y, RIGHT) or

@@ -49,14 +49,9 @@ public:
 
     /**
      * Start the simulation. Initialize particles and times, and compute the next (first) impact.
+     * @param left_ratio ratio of particles that should be initiated on the left side.
      */
-    void start();
-
-    /**
-     * Different start method (could possibly be merged).
-     * As opposed to `start()`, this method puts as much particles left as it does right
-     */
-    void start_evenly();
+    void start(const double &left_ratio);
 
     /**
      * Check if the point (x,y) is in the domain (collection for saying it is either in the left, the right or the gate.
