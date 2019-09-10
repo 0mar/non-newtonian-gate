@@ -242,7 +242,10 @@ get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_l
     const int num_particles = 1000;
     Simulation sim = Simulation(num_particles, 1, 1, channel_length, channel_width / 2, threshold, threshold);
     sim.setup();
-    const double left_ratio = 0.7;
+    std::random_device rd;
+    std::mt19937 re(rd);
+    std::uniform_real_distribution<double> unif(0.7, 1);
+    const double left_ratio = unif(re);
     sim.start(left_ratio);
     while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
