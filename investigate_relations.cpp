@@ -244,7 +244,7 @@ get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_l
                                 threshold, threshold);
     sim.setup();
     std::random_device rd;
-    std::mt19937 re(rd);
+    std::mt19937 re(rd());
     std::uniform_real_distribution<double> unif(0.7, 1);
     const double left_ratio = unif(re);
     sim.start(left_ratio);
@@ -254,7 +254,7 @@ get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_l
     const double weight = 1. / (double) (M_f - M_t);
     while (sim.measuring_times.size() < M_f) {
         sim.update(0.0);
-        chi += weight * std::fabs(sim.total_left.back() - sim.total_right.back()) / sim.num_particles;
+        chi += weight * std::fabs(1. * sim.total_left.back() - 1. * sim.total_right.back()) / sim.num_particles;
     }
     return chi;
 }
