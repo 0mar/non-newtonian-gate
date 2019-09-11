@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
-
+import json
 
 def generate_param_set(param_coupling, default, identifier='param_file1'):
     values = default.copy()
@@ -20,33 +20,9 @@ def generate_param_set(param_coupling, default, identifier='param_file1'):
                 cmd_string = " ".join(cmd)
                 f.write(cmd_string + "\n")
 
-parameter_sets = \
-    {"small": {"relations": [{"channel_length": [0.2, 0.8], "channel_width": [0.3, 1]},
-                             {"channel_width": [0.4, 1.4], "urn_radius": [0.8, 1.5]},
-                             {"channel_length": [0.1, 1], "urn_radius": [0.7, 1.3]},
-                             {"channel_width": [0.3, 1], "threshold": [4, 22]},
-                             {"channel_length": [0.3, 1], "threshold": [4, 22]},
-                             {"urn_radius": [0.7, 1.3], "threshold": [4, 22]}],
-               "defaults": {"channel_length": 0.5, "channel_width": 0.5, "urn_radius": 1, "threshold": 10,
-                            "num_particles": 1000, "M_t": 1E5, "M_f": 1.5E5}},
-     "medium": {"relations": [{'channel_length': [0.2, 0.8], 'channel_width': [0.3, 1]},
-                              {'channel_width': [0.4, 1.4], 'urn_radius': [0.8, 1.5]},
-                              {'channel_length': [0.1, 1], 'urn_radius': [0.7, 1.3]},
-                              {'channel_width': [0.3, 1], 'threshold': [10, 64]},
-                              {'channel_length': [0.3, 1], 'threshold': [10, 64]},
-                              {'urn_radius': [0.7, 1.3], 'threshold': [10, 64]}],
-                "defaults": {"channel_length": 0.5, "channel_width": 0.5, "urn_radius": 1, "threshold": 30,
-                             "num_particles": 3000, "M_t": 5E5, "M_f": 6E5}},
-     "large": {"relations": [{'channel_length': [0.2, 0.8], 'channel_width': [0.3, 1]},
-                             {'channel_width': [0.4, 1.4], 'urn_radius': [0.8, 1.5]},
-                             {'channel_length': [0.1, 1], 'urn_radius': [0.7, 1.3]},
-                             {'channel_width': [0.3, 1], 'threshold': [40, 220]},
-                             {'channel_length': [0.3, 1], 'threshold': [40, 220]},
-                             {'urn_radius': [0.3, 1], 'threshold': [40, 220]}],
-               "defaults": {"channel_length": 0.5, "channel_width": 0.5, "urn_radius": 1, "threshold": 300,
-                            "num_particles": 10000, "M_t": 1E5, "M_f": 1.5E5}}}
-
 if __name__ == '__main__':
+    with open('params.json','r') as param_file:
+        parameter_sets = json.load(param_file)
     for size in parameter_sets.keys():
         default_values = parameter_sets[size]['defaults']
         for i, param in enumerate(parameter_sets[size]['relations']):
