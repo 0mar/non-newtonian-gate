@@ -237,9 +237,8 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
 
 double
 get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length, const double channel_width,
-        const double urn_radius, const int threshold) {
+        const double urn_radius, const int threshold, const int num_particles) {
     double chi = 0;
-    const int num_particles = 1000;
     Simulation sim = Simulation(num_particles, channel_length / 2, urn_radius, channel_length, channel_width / 2,
                                 threshold, threshold);
     sim.setup();
@@ -293,7 +292,7 @@ void omar_relation_finder(int argc, char *argv[]) {
 }
 
 void matteo_relation_finder(int argc, char *argv[]) {
-    const int num_arguments = 5;
+    const int num_arguments = 8;
     const int num_runs = 10;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
@@ -301,18 +300,21 @@ void matteo_relation_finder(int argc, char *argv[]) {
             std::cout << argv[i] << " ";
         }
         std::cout << std::endl;
-        throw std::invalid_argument("Please provide (in order) channel length, width, urn radius, threshold and ID");
+        throw std::invalid_argument(
+                "Please provide (in order) (1) channel length, (2) width, (3) urn radius, (4) threshold, "
+                "(5) number of particles, (6) start point, (7) end point, (8) ID");
     }
     const double channel_length = std::stod(argv[1]);
     const double channel_width = std::stod(argv[2]);
     const double urn_radius = std::stod(argv[3]);
     const int threshold = std::stoi(argv[4]);
-    const std::string id = argv[5];
+    const int num_particles = std::stoi(argv[5]);
+    const int M_t = std::stoi(argv[6]);
+    const int M_f = std::stoi(argv[7]);
+    const std::string id = argv[8];
     double tot_chi = 0;
-    const unsigned long M_t = 1E5; // Number of hits until we start measuring
-    const unsigned long M_f = 1.5E5; // Number of hits until we stop measuring;
     for (unsigned int i = 0; i < num_runs; i++) {
-        tot_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold) / num_runs;
+        tot_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles) / num_runs;
     }
     std::ostringstream s;
     s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << tot_chi << std::endl;
