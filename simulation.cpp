@@ -153,7 +153,7 @@ void Simulation::update(const double &write_dt) {
 
     // Check if the particle explodes
     for (unsigned long direction = 0; direction < 2; direction++) {
-        if (is_in_gate(px, py, direction)) {
+        if (is_in_gate(px, py, direction) and is_going_in(particle)) {
             check_gate_admission(particle, direction);
         } else {
             check_gate_departure(particle, direction);
@@ -169,6 +169,10 @@ void Simulation::update(const double &write_dt) {
 
 bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
     return ((int) direction * 2 - 1) * x >= 0 and x * x + y * y < gate_radius * gate_radius;
+}
+
+bool Simulation::is_going_in(const unsigned long &particle) {
+    return px * cos(directions[particle]) <= 0;
 }
 
 void Simulation::check_gate_admission(const unsigned long &particle, const unsigned long &direction) {
@@ -494,7 +498,7 @@ double Simulation::get_retraction_angle(const unsigned long &particle) {
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
     } else {
         if (cos(directions[particle]) * x_pos[particle] < 0) {
-            return directions[particle] + PI;
+            return get_reflection_angle(particle, 0);
         } else {
             return directions[particle];
         }

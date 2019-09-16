@@ -244,7 +244,7 @@ get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_l
     sim.setup();
     std::random_device rd;
     std::mt19937 re(rd());
-    std::uniform_real_distribution<double> unif(0.7, 1);
+    std::uniform_real_distribution<double> unif(0.5, 1);
     const double left_ratio = unif(re);
     sim.start(left_ratio);
     while (sim.measuring_times.size() < M_t) {
@@ -293,7 +293,7 @@ void omar_relation_finder(int argc, char *argv[]) {
 
 void matteo_relation_finder(int argc, char *argv[]) {
     const int num_arguments = 8;
-    const int num_runs = 10;
+    const int num_runs = 100;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
         for (unsigned int i = 0; i < argc; i++) {

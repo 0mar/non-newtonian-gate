@@ -175,6 +175,8 @@ public:
      */
     bool is_in_gate(const double &x, const double &y, const unsigned long &direction);
 
+    bool is_going_in(const unsigned long &particle);
+
     /**
      * Remove a particle from the gate.
      * @param particle particle index
