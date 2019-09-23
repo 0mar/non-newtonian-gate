@@ -1,13 +1,11 @@
-image: ubuntu
-tags: 
-  - docker
-before_script:
-  - apt-get update -qq && apt-get install -y cmake libboost-all-dev
-  - mkdir build-debug
-  - cd build-debug
-  - cmake -DCMAKE_BUILD_TYPE=Debug ..
-  - make
-
-tester:
-  script:
-    - ./test_terrier
+job:test:
+    image: ubuntu
+    tags: 
+        - docker
+    script:
+        - apt-get update -qq && apt-get install -y cmake libboost-all-dev
+        - mkdir build-debug
+        - cd build-debug
+        - cmake -DCMAKE_BUILD_TYPE=Debug ..
+        - make
+        - ./test_terrier
