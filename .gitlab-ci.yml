@@ -1,4 +1,6 @@
 image: ubuntu
+tags: 
+  - docker
 before_script:
   - apt-get update -qq && apt-get install -y cmake libboost-dev
   - mkdir build-debug
