@@ -479,7 +479,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.RIGHT) and
                     not sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK_CLOSE(sim.directions.at(0), -angle, eps);
-        BOOST_CHECK(sim.gate_contents.at(sim.RIGHT).size() == 1);
+        BOOST_CHECK(sim.gate_contents.at(sim.RIGHT).empty()); // Discount leaving particles
         BOOST_CHECK(sim.gate_contents.at(sim.LEFT).empty());
         sim.update(0);
         BOOST_CHECK_CLOSE(-next_x, sim.x_pos.at(0), eps);
