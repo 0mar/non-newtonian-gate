@@ -151,6 +151,17 @@ public:
      */
     void get_current_position(const unsigned long &particle, double &x, double &y);
 
+
+    /**
+     * (Re)set the particle to some initial position. We also use this method if we lose a particle due to tricky
+     * arithmetical errors (which happen once every 100000 instances)
+     * @param particle Particle index
+     * @param box_x_radius Horizontal radius of the box
+     * @param box_y_radius Vertical radius of the box
+     * @param direction LEFT or RIGHT
+     */
+    void reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
+                        const unsigned long &direction);
     /**
      * Check if particle can enter gate. If gate is below threshold, enters the particle in the gate
      * If the gate exceeds the threshold, explodes the gate

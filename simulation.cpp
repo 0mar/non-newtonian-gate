@@ -55,9 +55,21 @@ void Simulation::setup() {
     couple_bridge();
 }
 
+void Simulation::reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
+                                const unsigned long &direction) {
+    px = 0;
+    py = 0;
+    while (not is_in_circle(px, py, direction) or is_in_gate(px, py, direction) or
+           is_in_bridge(px, py)) {
+        px = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
+        py = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
+    }
+    directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
+}
+
 void Simulation::start(const double &left_ratio) {
     /**
-     * Initiate all particles, as many left as right
+     * Initiate all particles, ratio based on the method argument
      */
     time = 0;
     last_written_time = 0;
@@ -76,30 +88,12 @@ void Simulation::start(const double &left_ratio) {
     }
     const auto num_left_particles = (unsigned long) (left_ratio * num_particles);
     for (unsigned long particle = 0; particle < num_left_particles; particle++) {
-        double pos_x = 0;
-        double pos_y = 0;
-        while (not is_in_circle(pos_x, pos_y, LEFT) or is_in_gate(pos_x, pos_y, LEFT) or
-               is_in_bridge(pos_x, pos_y)) {
-            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
-            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
-        }
-        px = pos_x;
-        py = pos_y;
-        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
+        reset_particle(particle, box_x_radius, box_y_radius, LEFT);
         compute_next_impact(particle);
         in_left++;
     }
     for (unsigned long particle = num_left_particles; particle < num_particles; particle++) {
-        double pos_x = 0;
-        double pos_y = 0;
-        while (not is_in_circle(pos_x, pos_y, RIGHT) or is_in_gate(pos_x, pos_y, RIGHT) or
-               is_in_bridge(pos_x, pos_y)) {
-            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
-            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
-        }
-        px = pos_x;
-        py = pos_y;
-        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
+        reset_particle(particle, box_x_radius, box_y_radius, RIGHT);
         compute_next_impact(particle);
         in_right++;
     }
@@ -388,8 +382,8 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
         next_angle = directions[particle];
     }
     if (next_time == max_path) {
-        printf("Next time, %.2f, maxpath %.2f\n", next_time, max_path);
-        throw std::invalid_argument("No collision found");
+        printf("Next time, %.2f, maxpath %.2f\nParticle has to be reset", next_time, max_path);
+
 
     }
     next_x_pos[particle] = px + next_time * cos(directions[particle]);
