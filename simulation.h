@@ -19,7 +19,7 @@ public:
     Simulation(const int &num_particles, const double &gate_radius, const double &circle_radius = 1.,
                const double &circle_distance = 0.5, const double &bridge_height = 0.3,
                const int &left_gate_capacity = 3, const int &right_gate_capacity = 3,
-               const bool &random_dir = true);
+               const bool &random_dir = false);
 
     // Important parameters
     const int num_particles;
