@@ -19,11 +19,11 @@ int sgn(T val) {
 
 Simulation::Simulation(const int &num_particles, const double &gate_radius, const double &circle_radius,
                        const double &circle_distance, const double &bridge_height, const int &left_gate_capacity,
-                       const int &right_gate_capacity, const bool &random_dir)
+                       const int &right_gate_capacity, const bool &random_dir, const bool &flat_gate)
         : num_particles(num_particles), gate_radius(gate_radius), circle_radius(circle_radius),
           circle_distance(circle_distance), bridge_height(bridge_height),
           left_gate_capacity(left_gate_capacity), right_gate_capacity(right_gate_capacity),
-          explosion_direction_is_random(random_dir) {
+          explosion_direction_is_random(random_dir), gate_is_flat(flat_gate) {
     rd = std::make_shared<std::random_device>();
     rng = std::make_shared<std::mt19937>((*rd)());
     unif_real = std::make_shared<std::uniform_real_distribution<double>>(0, 1);
@@ -118,6 +118,7 @@ void Simulation::update(const double &write_dt) {
         while (next_impact > last_written_time + write_dt) {
             write_positions_to_file(last_written_time + write_dt);
             last_written_time += write_dt;
+            printf("Writing position at %.2f\n", last_written_time);
         }
     }
 
@@ -501,9 +502,23 @@ double Simulation::get_retraction_angle(const unsigned long &particle) {
 
 double Simulation::time_to_hit_gate(const unsigned long &particle) {
     /**
-     * Compute time towards the circular gate by transforming the domain and solving a quadratic equation.
-     * In order to ensure positivity of the solution, we use numerical rounding with epsilon for finding roots
+     * Compute time towards the gate.
+     * If the gate is circular: transform the domain and solve a quadratic equation.
+     * If the gate is flat: Check the time until intersection with the vertical gate lines.
+     * In order to ensure positivity of the solution, we use numerical rounding with epsilon for finding roots.
      */
+    if (gate_is_flat) {
+        const double to_left_gate = (-gate_radius - px) / cos(directions[particle]);
+        const double to_right_gate = (gate_radius - px) / cos(directions[particle]);
+        double min_path = max_path;
+        if (to_left_gate > 0 and to_left_gate < min_path) {
+            min_path = to_left_gate;
+        }
+        if (to_right_gate > 0 and to_right_gate < min_path) {
+            min_path = to_right_gate;
+        }
+        return min_path;
+    }
     if (gate_radius > 0) {
         double add_x = max_path * cos(directions[particle]);
         double add_y = max_path * sin(directions[particle]);

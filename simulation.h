@@ -2,8 +2,8 @@
 // Created by Omar Richardson on 24/10/2018.
 //
 
-#ifndef BLOTZ_SIMULATION_H // todo: fix guard name
-#define BLOTZ_SIMULATION_H
+#ifndef TERRIER_SIMULATION_H // todo: fix guard name
+#define TERRIER_SIMULATION_H
 
 #include <iostream>
 #include <fstream>
@@ -19,7 +19,7 @@ public:
     Simulation(const int &num_particles, const double &gate_radius, const double &circle_radius = 1.,
                const double &circle_distance = 0.5, const double &bridge_height = 0.3,
                const int &left_gate_capacity = 3, const int &right_gate_capacity = 3,
-               const bool &random_dir = false);
+               const bool &random_dir = false, const bool &flat_gate = false);
 
     // Important parameters
     const int num_particles;
@@ -39,7 +39,8 @@ public:
     double bridge_size;
     const unsigned long LEFT = 0;
     const unsigned long RIGHT = 1;
-    bool explosion_direction_is_random;
+    const bool explosion_direction_is_random;
+    const bool gate_is_flat;
 
     /**
      * Compute necessary parameters for the simulation, initialize data structures.
@@ -162,6 +163,7 @@ public:
      */
     void reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
                         const unsigned long &direction);
+
     /**
      * Check if particle can enter gate. If gate is below threshold, enters the particle in the gate
      * If the gate exceeds the threshold, explodes the gate
@@ -260,4 +262,4 @@ private:
 };
 
 
-#endif //BLOTZ_SIMULATION_H
+#endif //TERRIER_SIMULATION_H
