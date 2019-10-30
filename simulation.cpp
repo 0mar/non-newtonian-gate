@@ -137,7 +137,7 @@ void Simulation::update(const double &write_dt) {
         in_left--;
         in_right++;
     } else if (px == 0) {
-        std::cout << "Exactly zero position, administration just lost a particle" << std::endl;
+        std::cout << "Exactly zero position (highly unlikely), so count is now off" << std::endl;
     }
     px = next_x_pos[particle];
     py = next_y_pos[particle];

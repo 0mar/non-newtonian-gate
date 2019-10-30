@@ -491,6 +491,24 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
     }
 
 
+    BOOST_AUTO_TEST_CASE(test_is_going_in) {
+        auto sim = get_sim(1);
+        sim.setup();
+        sim.start(1);
+        sim.x_pos.at(0) = -sim.circle_radius;
+        sim.y_pos.at(0) = 0;
+        double angle = 0.1;
+        const double pi = 3.141592653589793;
+        sim.directions.at(0) = angle;
+        BOOST_CHECK(sim.is_going_in(0));
+        sim.directions.at(0) = -angle;
+        BOOST_CHECK(sim.is_going_in(0));
+        sim.directions.at(0) = pi - angle;
+        BOOST_CHECK(not sim.is_going_in(0));
+        sim.x_pos.at(0) = sim.circle_radius;
+        BOOST_CHECK(sim.is_going_in(0));
+    }
+
 
 
 BOOST_AUTO_TEST_SUITE_END();
