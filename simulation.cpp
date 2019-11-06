@@ -497,7 +497,7 @@ double Simulation::get_retraction_angle(const unsigned long &particle) {
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
     } else {
         if (cos(directions[particle]) * x_pos[particle] < 0) {
-            return get_reflection_angle(particle, 0);
+            return directions[particle] + PI;
         } else {
             return directions[particle];
         }
