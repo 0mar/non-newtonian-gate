@@ -19,7 +19,7 @@ void single_particle_animation() {
     Simulation simulation = Simulation(1, 0);
     simulation.bridge_height = 0.5;
     simulation.setup();
-    simulation.start();
+    simulation.start(1);
     simulation.x_pos.at(0) = -1.1;
     simulation.y_pos.at(0) = 0.34;
     simulation.directions.at(0) = -2.3;
@@ -33,13 +33,12 @@ void single_particle_animation() {
 
 void many_particle_animation() {
     printf("Running the animation for 200 particles, trying det exp\n");
-    Simulation simulation = Simulation(50, 0.7);
+    Simulation simulation = Simulation(300, 0.7);
     simulation.left_gate_capacity = 2;
     simulation.right_gate_capacity = 2;
     simulation.bridge_height = 0.5;
-    simulation.explosion_direction_is_random = false;
     simulation.setup();
-    simulation.start();
+    simulation.start(1);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
     while (simulation.time < 100) {
@@ -50,7 +49,7 @@ void many_particle_animation() {
 void standard_simulation(double dt) {
     Simulation simulation = Simulation(100, 0.3);
     simulation.setup();
-    simulation.start();
+    simulation.start(1);
     simulation.write_positions_to_file(0);
     while (simulation.time < 500) {
         simulation.update(dt);
@@ -63,7 +62,7 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     simulation.left_gate_capacity = gate_capacity;
     simulation.right_gate_capacity = gate_capacity;
     simulation.setup();
-    simulation.start();
+    simulation.start(1);
     // simulation.write_positions_to_file(0);
     while (simulation.total_right.at(simulation.total_right.size() - 1) < simulation.num_particles / 2 and
            simulation.time < 1E5) {

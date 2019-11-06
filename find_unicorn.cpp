@@ -21,7 +21,7 @@ void many_particle_animation() {
     simulation.right_gate_capacity = 2;
     simulation.bridge_height = 0.5;
     simulation.setup();
-    simulation.start();
+    simulation.start(1);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
     while (simulation.time < 100) {
@@ -34,7 +34,7 @@ double get_cool_down_time(int number_of_particles, int gate_capacity) {
     simulation.left_gate_capacity = gate_capacity;
     simulation.right_gate_capacity = 0;
     simulation.setup();
-    simulation.start();
+    simulation.start(1);
     // simulation.write_positions_to_file(0);
     while (simulation.total_right.at(simulation.total_right.size() - 1) < 10 and simulation.time < 1E5) {
         simulation.update(0.0);
@@ -72,7 +72,7 @@ void unicorn() {
     simulation.left_gate_capacity = gate_capacity;
     simulation.right_gate_capacity = gate_capacity;
     simulation.setup();
-    simulation.start_evenly();
+    simulation.start(0.5);
     // simulation.write_positions_to_file(0);
     int diff = 0;
     while (diff < number_of_particles - 10 and simulation.time < 15000) {
@@ -92,7 +92,7 @@ void test_high_capacity() {
     simulation.left_gate_capacity = gate_capacity;
     simulation.right_gate_capacity = gate_capacity;
     simulation.setup();
-    simulation.start_evenly();
+    simulation.start(0.5);
     // simulation.write_positions_to_file(0);
     int diff = 0;
     while (diff < number_of_particles*0.9 and simulation.time < 150000) {
@@ -117,7 +117,7 @@ void find_gate(int start_particles, int end_particle) {
             simulation.left_gate_capacity = gate_capacity;
             simulation.right_gate_capacity = gate_capacity;
             simulation.setup();
-            simulation.start_evenly();
+            simulation.start(0.5);
             int diff = 0;
             while (diff < number_of_particles * 0.95 and simulation.time < 10000) {
                 simulation.update(0.0);

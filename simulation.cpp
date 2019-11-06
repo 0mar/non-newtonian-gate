@@ -1,7 +1,6 @@
 //
 // Created by Omar Richardson on 24/10/2018.
 // Hints for optimization:
-// 1. Implement custom heap
 // 2. Be careful with compute_next_impact() calls
 // 3. Just store the number of particles in the left ball
 //
@@ -18,37 +17,31 @@ int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-Simulation::Simulation(int num_particles, double gate_radius) : num_particles(num_particles) {
-    // Make this const?
-    // Make this static?
+Simulation::Simulation(const int &num_particles, const double &gate_radius, const double &circle_radius,
+                       const double &circle_distance, const double &bridge_height, const int &left_gate_capacity,
+                       const int &right_gate_capacity, const bool &random_dir, const bool &flat_gate)
+        : num_particles(num_particles), gate_radius(gate_radius), circle_radius(circle_radius),
+          circle_distance(circle_distance), bridge_height(bridge_height),
+          left_gate_capacity(left_gate_capacity), right_gate_capacity(right_gate_capacity),
+          explosion_direction_is_random(random_dir), gate_is_flat(flat_gate) {
     rd = std::make_shared<std::random_device>();
     rng = std::make_shared<std::mt19937>((*rd)());
     unif_real = std::make_shared<std::uniform_real_distribution<double>>(0, 1);
-    circle_radius = 1;
-    circle_distance = 0.5;
-    bridge_height = 0.3;
-    bridge_size = 0; // Computed later
-    this->gate_radius = gate_radius;
-    left_gate_capacity = 3;
-    right_gate_capacity = 3;
-    explosion_direction_is_random = true;
+    bridge_size = 0;
 }
 
 void Simulation::setup() {
     max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
-    for (unsigned long particle = 0; particle < num_particles; particle++) {
-        next_impact_times.push_back(0);
-        impact_times.push_back(0);
-        in_left_gate.push_back(0);
-        in_right_gate.push_back(0);
-        x_pos.push_back(0);
-        y_pos.push_back(0);
-        next_x_pos.push_back(0);
-        next_y_pos.push_back(0);
-        directions.push_back(0);
-        next_directions.push_back(0);
-    }
-
+    next_impact_times.resize(num_particles);
+    impact_times.resize(num_particles);
+    in_left_gate.resize(num_particles);
+    in_right_gate.resize(num_particles);
+    x_pos.resize(num_particles);
+    y_pos.resize(num_particles);
+    next_x_pos.resize(num_particles);
+    next_y_pos.resize(num_particles);
+    directions.resize(num_particles);
+    next_directions.resize(num_particles);
     gate_arrays.push_back(in_left_gate);
     gate_arrays.push_back(in_right_gate);
     gate_contents.push_back(currently_in_left_gate);
@@ -62,87 +55,52 @@ void Simulation::setup() {
     couple_bridge();
 }
 
-void Simulation::start() {
-    /**
-     * Initiate all particles, to the left
-     */
-    time = 0;
-    last_written_time = 0;
-    in_left = 0;
-    in_right = 0;
-    double box_x_radius = circle_distance / 2 + circle_radius * 2;
-    double box_y_radius = circle_radius;
-    if (gate_radius >= box_x_radius) {
-        throw std::invalid_argument("Gate radius too large; no initialization possible");
+void Simulation::reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
+                                const unsigned long &direction) {
+    px = 0;
+    py = 0;
+    while (not is_in_circle(px, py, direction) or is_in_gate(px, py, direction) or
+           is_in_bridge(px, py)) {
+        px = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
+        py = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
     }
-    if (bridge_size / 2 > circle_radius) {
-        throw std::invalid_argument("Bridge larger than circle; no initialization possible");
-    }
-    for (unsigned long particle = 0; particle < num_particles; particle++) {
-        double pos_x = 0;
-        double pos_y = 0;
-        while (not is_in_circle(pos_x, pos_y, LEFT) or is_in_gate(pos_x, pos_y, LEFT) or
-               is_in_bridge(pos_x, pos_y)) {
-            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
-            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
-        }
-        px = pos_x;
-        py = pos_y;
-        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
-        compute_next_impact(particle);
-        in_left++;
-    }
-    measure();
+    directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
 }
 
-void Simulation::start_evenly() {
+void Simulation::start(const double &left_ratio) {
     /**
-     * Initiate all particles, as many left as right
+     * Initiate all particles, ratio based on the method argument
      */
     time = 0;
     last_written_time = 0;
     in_left = 0;
     in_right = 0;
-    double box_x_radius = circle_distance / 2 + circle_radius * 2;
-    double box_y_radius = circle_radius;
+    const double box_x_radius = circle_distance / 2 + circle_radius * 2;
+    const double box_y_radius = circle_radius;
     if (gate_radius >= box_x_radius) {
         throw std::invalid_argument("Gate radius too large; no initialization possible");
     }
     if (bridge_size / 2 > circle_radius) {
         throw std::invalid_argument("Bridge larger than circle; no initialization possible");
     }
-    for (unsigned long particle = 0; particle < num_particles / 2; particle++) {
-        double pos_x = 0;
-        double pos_y = 0;
-        while (not is_in_circle(pos_x, pos_y, LEFT) or is_in_gate(pos_x, pos_y, LEFT) or
-               is_in_bridge(pos_x, pos_y)) {
-            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
-            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
-        }
-        px = pos_x;
-        py = pos_y;
-        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
+    if (left_ratio * num_particles < 0 or left_ratio * num_particles > num_particles) {
+        throw std::domain_error("Please choose ratio between 0 and 1");
+    }
+    const auto num_left_particles = (unsigned long) (left_ratio * num_particles);
+    for (unsigned long particle = 0; particle < num_left_particles; particle++) {
+        reset_particle(particle, box_x_radius, box_y_radius, LEFT);
         compute_next_impact(particle);
         in_left++;
     }
-    for (unsigned long particle = (unsigned long)num_particles / 2; particle < num_particles; particle++) {
-        double pos_x = 0;
-        double pos_y = 0;
-        while (not is_in_circle(pos_x, pos_y, RIGHT) or is_in_gate(pos_x, pos_y, RIGHT) or
-               is_in_bridge(pos_x, pos_y)) {
-            pos_x = ((*unif_real)(*rng) - 0.5) * box_x_radius * 2;
-            pos_y = ((*unif_real)(*rng) - 0.5) * box_y_radius * 2;
-        }
-        px = pos_x;
-        py = pos_y;
-        directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
+    for (unsigned long particle = num_left_particles; particle < num_particles; particle++) {
+        reset_particle(particle, box_x_radius, box_y_radius, RIGHT);
         compute_next_impact(particle);
         in_right++;
     }
     measure();
 }
 
-void Simulation::update(double write_dt) {
+void Simulation::update(const double &write_dt) {
     // Find next event: the first particle that has a new impact
     // If we really need more optimization, this is where to get it.
     double next_impact = next_impact_times.at(0);
@@ -151,6 +109,7 @@ void Simulation::update(double write_dt) {
         if (next_impact > next_impact_times[p]) {
             next_impact = next_impact_times[p];
             particle = p;
+            // or another data structure?
         }
     }
 
@@ -159,6 +118,7 @@ void Simulation::update(double write_dt) {
         while (next_impact > last_written_time + write_dt) {
             write_positions_to_file(last_written_time + write_dt);
             last_written_time += write_dt;
+            printf("Writing position at %.2f\n", last_written_time);
         }
     }
 
@@ -177,7 +137,7 @@ void Simulation::update(double write_dt) {
         in_left--;
         in_right++;
     } else if (px == 0) {
-        std::cout << "Exactly zero position, administration just lost a particle" << std::endl;
+        std::cout << "Exactly zero position (highly unlikely), so count is now off" << std::endl;
     }
     px = next_x_pos[particle];
     py = next_y_pos[particle];
@@ -188,7 +148,7 @@ void Simulation::update(double write_dt) {
 
     // Check if the particle explodes
     for (unsigned long direction = 0; direction < 2; direction++) {
-        if (is_in_gate(px, py, direction)) {
+        if (is_in_gate(px, py, direction) and is_going_in(particle)) {
             check_gate_admission(particle, direction);
         } else {
             check_gate_departure(particle, direction);
@@ -202,11 +162,19 @@ void Simulation::update(double write_dt) {
     measure();
 }
 
-bool Simulation::is_in_gate(double x, double y, unsigned long direction) {
-    return ((int) direction * 2 - 1) * x >= 0 and x * x + y * y < gate_radius * gate_radius;
+bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
+    if (gate_is_flat) {
+        return true; // Fixme: unclear what to put in this case. The paper is ambiguous. Talk to matteo.
+    } else {
+        return ((int) direction * 2 - 1) * x >= 0 and x * x + y * y < gate_radius * gate_radius;
+    }
 }
 
-void Simulation::check_gate_admission(unsigned long particle, unsigned long direction) {
+bool Simulation::is_going_in(const unsigned long &particle) {
+    return px * cos(directions[particle]) <= 0;
+}
+
+void Simulation::check_gate_admission(const unsigned long &particle, const unsigned long &direction) {
     if (gate_arrays[direction][particle] == 0) {
         // Not yet in gate, check admission
         if (gate_contents[direction].size() > gate_capacities[direction] - 1) {
@@ -218,7 +186,7 @@ void Simulation::check_gate_admission(unsigned long particle, unsigned long dire
     }
 }
 
-void Simulation::check_gate_departure(unsigned long particle, unsigned long direction) {
+void Simulation::check_gate_departure(const unsigned long &particle, const unsigned long &direction) {
     if (gate_arrays[direction][particle] == 1) {
         // Freshly leaving the gate
         gate_contents[direction].erase(std::remove(gate_contents[direction].begin(),
@@ -228,7 +196,7 @@ void Simulation::check_gate_departure(unsigned long particle, unsigned long dire
     }
 }
 
-void Simulation::explode_gate(unsigned long exp_particle, unsigned long direction) {
+void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned long &direction) {
     do {
         directions[exp_particle] = get_retraction_angle(exp_particle);
         compute_next_impact(exp_particle);
@@ -276,7 +244,7 @@ void Simulation::print_status() {
            (int) currently_in_right_gate.size());
 }
 
-void Simulation::write_positions_to_file(double time) {
+void Simulation::write_positions_to_file(const double &time) {
     std::string filename = "results.dat";
     std::ofstream file;
     if (time == 0) {
@@ -309,8 +277,8 @@ void Simulation::write_totals_to_file() {
     std::string filename = "totals.dat";
     std::ofstream file;
     file.open(filename, std::ofstream::out | std::ofstream::trunc);
-    for (double time: measuring_times) {
-        file << time << "\t";
+    for (double m_time: measuring_times) {
+        file << m_time << "\t";
     }
     file << std::endl;
     for (unsigned long left: total_left) {
@@ -342,7 +310,7 @@ void Simulation::couple_bridge() {
     bridge_size = 2 * this->time_to_hit_circle(0, right_center_x, angle);
 }
 
-bool Simulation::is_in_domain(double x, double y) {
+bool Simulation::is_in_domain(const double &x, const double &y) {
     if (is_in_bridge(x, y)) {
         return true;
     } else {
@@ -354,7 +322,7 @@ bool Simulation::is_in_domain(double x, double y) {
     }
 }
 
-bool Simulation::is_in_circle(const double x, const double y, const unsigned long side) {
+bool Simulation::is_in_circle(const double &x, const double &y, const unsigned long &side) {
     if (side == LEFT) {
         return (x - left_center_x) * (x - left_center_x) + y * y < circle_radius * circle_radius;
     } else {
@@ -363,14 +331,14 @@ bool Simulation::is_in_circle(const double x, const double y, const unsigned lon
 }
 
 
-bool Simulation::is_in_bridge(const double x, const double y) {
+bool Simulation::is_in_bridge(const double &x, const double &y) {
 /**
  * Note that these function is not mutually exclusive with left and right circle.
  */
     return std::abs(x) < bridge_size / 2 and std::abs(y) < bridge_height / 2;
 }
 
-void Simulation::compute_next_impact(const unsigned long particle) {
+void Simulation::compute_next_impact(const unsigned long &particle) {
     /**
      * Start from some x, y, alpha.
      * Compute the location of boundary hit
@@ -419,8 +387,8 @@ void Simulation::compute_next_impact(const unsigned long particle) {
         next_angle = directions[particle];
     }
     if (next_time == max_path) {
-        printf("Next time, %.2f, maxpath %.2f\n", next_time, max_path);
-        throw std::invalid_argument("No collision found");
+        printf("Next time, %.2f, maxpath %.2f\nParticle has to be reset", next_time, max_path);
+
 
     }
     next_x_pos[particle] = px + next_time * cos(directions[particle]);
@@ -429,7 +397,7 @@ void Simulation::compute_next_impact(const unsigned long particle) {
     next_directions[particle] = next_angle;
 }
 
-void Simulation::get_current_position(unsigned long particle, double &x, double &y) {
+void Simulation::get_current_position(const unsigned long &particle, double &x, double &y) {
     /**
      * Interpolate position at the current time. Returns in referenced variables
      */
@@ -444,7 +412,7 @@ void Simulation::get_current_position(unsigned long particle, double &x, double 
     }
 }
 
-double Simulation::time_to_hit_bridge(const unsigned long particle, double &normal_angle) {
+double Simulation::time_to_hit_bridge(const unsigned long &particle, double &normal_angle) {
     /**
      * Check if we hit the bottom line, and check if we hit the top line, and return a float.
      */
@@ -472,7 +440,7 @@ double Simulation::time_to_hit_bridge(const unsigned long particle, double &norm
     return min_t * max_path;
 }
 
-double Simulation::time_to_hit_circle(const unsigned long particle, const double center_x, double &normal_angle) {
+double Simulation::time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) {
     /**
      * Compute the time until next impact with one of the circle boundaries
      */
@@ -519,28 +487,42 @@ double Simulation::time_to_hit_circle(const unsigned long particle, const double
     return min_t * max_path;
 }
 
-double Simulation::get_reflection_angle(const double angle_in, const double normal_angle) {
+double Simulation::get_reflection_angle(const double &angle_in, const double &normal_angle) {
     return fmod(2 * normal_angle - angle_in + PI, 2 * PI);
 }
 
-double Simulation::get_retraction_angle(const unsigned long particle) {
+double Simulation::get_retraction_angle(const unsigned long &particle) {
     if (explosion_direction_is_random) {
         int side = sgn(px);
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
     } else {
         if (cos(directions[particle]) * x_pos[particle] < 0) {
-            return directions[particle] + PI;
+            return get_reflection_angle(particle, 0);
         } else {
             return directions[particle];
         }
     }
 }
 
-double Simulation::time_to_hit_gate(const unsigned long particle) {
+double Simulation::time_to_hit_gate(const unsigned long &particle) {
     /**
-     * Compute time towards the circular gate by transforming the domain and solving a quadratic equation.
-     * In order to ensure positivity of the solution, we use numerical rounding with epsilon for finding roots
+     * Compute time towards the gate.
+     * If the gate is circular: transform the domain and solve a quadratic equation.
+     * If the gate is flat: Check the time until intersection with the vertical gate lines.
+     * In order to ensure positivity of the solution, we use numerical rounding with epsilon for finding roots.
      */
+    if (gate_is_flat) {
+        const double to_left_gate = (-gate_radius - px) / cos(directions[particle]);
+        const double to_right_gate = (gate_radius - px) / cos(directions[particle]);
+        double min_path = max_path;
+        if (to_left_gate > 0 and to_left_gate < min_path) {
+            min_path = to_left_gate;
+        }
+        if (to_right_gate > 0 and to_right_gate < min_path) {
+            min_path = to_right_gate;
+        }
+        return min_path;
+    }
     if (gate_radius > 0) {
         double add_x = max_path * cos(directions[particle]);
         double add_y = max_path * sin(directions[particle]);
@@ -573,7 +555,7 @@ double Simulation::time_to_hit_gate(const unsigned long particle) {
     }
 }
 
-double Simulation::time_to_hit_middle(unsigned long particle) {
+double Simulation::time_to_hit_middle(const unsigned long &particle) {
     /**
      * Uses a line-line intersection algorithm (with identical nomenclature) from 
      * https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect

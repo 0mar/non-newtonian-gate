@@ -2,8 +2,8 @@
 // Created by Omar Richardson on 24/10/2018.
 //
 
-#ifndef BLOTZ_SIMULATION_H
-#define BLOTZ_SIMULATION_H
+#ifndef TERRIER_SIMULATION_H // todo: fix guard name
+#define TERRIER_SIMULATION_H
 
 #include <iostream>
 #include <fstream>
@@ -16,11 +16,14 @@
 
 class Simulation {
 public:
-    Simulation(int num_particles, double gate_radius);
+    Simulation(const int &num_particles, const double &gate_radius, const double &circle_radius = 1.,
+               const double &circle_distance = 0.5, const double &bridge_height = 0.3,
+               const int &left_gate_capacity = 3, const int &right_gate_capacity = 3,
+               const bool &random_dir = false, const bool &flat_gate = false);
 
     // Important parameters
     const int num_particles;
-    double gate_radius;
+    const double gate_radius;
     int left_gate_capacity;
     int right_gate_capacity;
     unsigned long in_left;
@@ -36,7 +39,8 @@ public:
     double bridge_size;
     const unsigned long LEFT = 0;
     const unsigned long RIGHT = 1;
-    bool explosion_direction_is_random;
+    const bool explosion_direction_is_random;
+    const bool gate_is_flat;
 
     /**
      * Compute necessary parameters for the simulation, initialize data structures.
@@ -46,14 +50,9 @@ public:
 
     /**
      * Start the simulation. Initialize particles and times, and compute the next (first) impact.
+     * @param left_ratio ratio of particles that should be initiated on the left side.
      */
-    void start();
-
-    /**
-     * Different start method (could possibly be merged).
-     * As opposed to `start()`, this method puts as much particles left as it does right
-     */
-    void start_evenly();
+    void start(const double &left_ratio);
 
     /**
      * Check if the point (x,y) is in the domain (collection for saying it is either in the left, the right or the gate.
@@ -61,7 +60,7 @@ public:
      * @param y y-coordinate of the point
      * @return true if inside the domain, false otherwise.
      */
-    bool is_in_domain(double x, double y);
+    bool is_in_domain(const double &x, const double &y);
 
     /**
      * Check if the point (x,y) is in a circle on side `side`.
@@ -70,7 +69,7 @@ public:
      * @param side `LEFT` or `RIGHT`
      * @return `true` if point in circle, `false` otherwise
      */
-    bool is_in_circle(double x, double y, unsigned long side);
+    bool is_in_circle(const double &x, const double &y, const unsigned long &side);
 
     /**
      * Check if point is in the bridge
@@ -78,7 +77,7 @@ public:
      * @param y y-coordinate of the point
      * @return `true` if point in bridge, `false` otherwise
      */
-    bool is_in_bridge(double x, double y);
+    bool is_in_bridge(const double &x, const double &y);
 
     /**
      * Compute the time it takes for a particle to reach the bridge.
@@ -88,7 +87,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with bridge
      */
-    double time_to_hit_bridge(unsigned long particle, double &normal_angle);
+    double time_to_hit_bridge(const unsigned long &particle, double &normal_angle);
 
     /**
      * Computes the time it takes for a particle to reach the boundary of a reservoir
@@ -98,7 +97,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with circle
      */
-    double time_to_hit_circle(unsigned long particle, double center_x, double &normal_angle);
+    double time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle);
 
     /**
      * Computes the time it takes for a particle to hit the gate.
@@ -106,20 +105,20 @@ public:
      * @param particle Particle index
      * @return time to next collision with gate
      */
-    double time_to_hit_gate(unsigned long particle);
+    double time_to_hit_gate(const unsigned long &particle);
 
     /**
      * Time for a particle to hit the central vertical axis
      * @param particle Particle index
      * @return time to passing middle
      */
-    double time_to_hit_middle(unsigned long particle);
+    double time_to_hit_middle(const unsigned long &particle);
 
     /**
      * Computes the next impact of a particle by finding the minimum impact time of all options.
      * @param particle Particle index
      */
-    void compute_next_impact(unsigned long particle);
+    void compute_next_impact(const unsigned long &particle);
 
     double time;
     double last_written_time;
@@ -151,7 +150,19 @@ public:
      * @param x output variable for x position
      * @param y output variable for y position
      */
-    void get_current_position(unsigned long particle, double &x, double &y);
+    void get_current_position(const unsigned long &particle, double &x, double &y);
+
+
+    /**
+     * (Re)set the particle to some initial position. We also use this method if we lose a particle due to tricky
+     * arithmetical errors (which happen once every 100000 instances)
+     * @param particle Particle index
+     * @param box_x_radius Horizontal radius of the box
+     * @param box_y_radius Vertical radius of the box
+     * @param direction LEFT or RIGHT
+     */
+    void reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
+                        const unsigned long &direction);
 
     /**
      * Check if particle can enter gate. If gate is below threshold, enters the particle in the gate
@@ -159,14 +170,14 @@ public:
      * @param particle Particle
      * @param direction Which gate is being accessed, LEFT or RIGHT.
      */
-    void check_gate_admission(unsigned long particle, unsigned long direction);
+    void check_gate_admission(const unsigned long &particle, const unsigned long &direction);
 
     /**
      * Explode gate for a particle: give particle in the gate a reverse velocity.
      * @param particle Particle index
      * @param direction Which gate it explodes in, LEFT or RIGHT
      */
-    void explode_gate(unsigned long particle, unsigned long direction);
+    void explode_gate(const unsigned long &particle, const unsigned long &direction);
 
     /**
      * Check if a point is in the LEFT or RIGHT gate.
@@ -175,14 +186,16 @@ public:
      * @param direction Direction, LEFT or RIGHT
      * @return True if position in gate, false otherwise
      */
-    bool is_in_gate(double x, double y, unsigned long direction);
+    bool is_in_gate(const double &x, const double &y, const unsigned long &direction);
+
+    bool is_going_in(const unsigned long &particle);
 
     /**
      * Remove a particle from the gate.
      * @param particle particle index
      * @param direction LEFT or RIGHT
      */
-    void check_gate_departure(unsigned long particle, unsigned long direction);
+    void check_gate_departure(const unsigned long &particle, const unsigned long &direction);
 
     /**
      * Compute the next collision, collide and update all particle positions.
@@ -190,7 +203,7 @@ public:
      * @param write_dt If positive, interpolate and write the positions of particles every `write_dt` to file.
      * If zero, don't write at all.
      */
-    void update(double write_dt);
+    void update(const double &write_dt);
 
     /**
      * Store a time stamp and the number of particles left and right.
@@ -207,7 +220,7 @@ public:
      * However, this is not enforced in this method.
      * @param time Time at which positions would be interpolated.
      */
-    void write_positions_to_file(double time);
+    void write_positions_to_file(const double &time);
 
     /**
      * Write all timestamps and number of positions to file.
@@ -220,14 +233,14 @@ public:
      * @param normal_angle normal angle of the surface
      * @return outgoing angle of the particle
      */
-    double get_reflection_angle(double angle_in, double normal_angle);
+    double get_reflection_angle(const double &angle_in, const double &normal_angle);
 
     /**
      * Compute the angle a particle should have after a gate explosion (reverse/random)
      * @param particle Particle index
      * @return angle of the particle after exploding the gate
      */
-    double get_retraction_angle(unsigned long particle);
+    double get_retraction_angle(const unsigned long &particle);
 
     /**
      * Finish up simulation (write results, optional post-processing)
@@ -249,4 +262,4 @@ private:
 };
 
 
-#endif //BLOTZ_SIMULATION_H
+#endif //TERRIER_SIMULATION_H
