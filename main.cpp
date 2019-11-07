@@ -35,6 +35,7 @@ void many_particle_animation() {
     printf("Running the animation for 200 particles, trying det exp\n");
     Simulation simulation = Simulation(300, 0.7);
     simulation.left_gate_capacity = 2;
+    simulation.gate_is_flat = true;
     simulation.right_gate_capacity = 2;
     simulation.bridge_height = 0.5;
     simulation.setup();
@@ -92,7 +93,7 @@ double test_parameters(double gate_radius, int gate_capacity) {
 }
 
 int main(int argc, char *argv[]) {
-    int mode = 0;
+    int mode = 2;
     if (argc == 2) {
         mode = std::stoi(argv[1]);
     } else if (argc == 3) {

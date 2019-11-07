@@ -13,6 +13,8 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.circle_distance = 0.5;
         sim.left_gate_capacity = 1;
         sim.right_gate_capacity = 1;
+        sim.explosion_direction_is_random = false;
+        sim.gate_is_flat = false;
         return sim;
     }
 
@@ -410,24 +412,40 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.y_pos.at(0) = 0.02;
         sim.directions.at(0) = -0.1;
         double angle = sim.get_retraction_angle(0);
-        BOOST_CHECK(angle > pi / 2 and angle < pi * 3 / 2);
+        if (sim.explosion_direction_is_random) {
+            BOOST_CHECK(angle > pi / 2 and angle < pi * 3 / 2);
+        } else {
+            BOOST_CHECK_CLOSE(angle,sim.directions.at(0)+pi,eps);
+        }
 
         // in right
         sim.x_pos.at(0) = 0.26;
         sim.directions.at(0) = -pi;
         angle = sim.get_retraction_angle(0);
+        if (sim.explosion_direction_is_random) {
         BOOST_CHECK(std::abs(angle) < pi);
+        } else {
+            BOOST_CHECK_CLOSE(angle-pi,sim.directions.at(0),eps);
+        }
         // in bridge
         sim.x_pos.at(0) = -0.22;
         sim.directions.at(0) = -pi;
         angle = sim.get_retraction_angle(0);
+        if (sim.explosion_direction_is_random) {
         BOOST_CHECK(angle > pi / 2 and angle < pi * 3 / 2);
+        } else {
+            BOOST_CHECK_CLOSE(angle,sim.directions.at(0),eps);
+        }
         // past bridge
         sim.x_pos.at(0) = 0.22;
         sim.y_pos.at(0) = 0.22;
         sim.directions.at(0) = pi / 6;
         angle = sim.get_retraction_angle(0);
+        if (sim.explosion_direction_is_random) {
         BOOST_CHECK(cos(angle) > 0);
+        } else {
+            BOOST_CHECK_CLOSE(angle,sim.directions.at(0),eps);
+        }
     }
 
     BOOST_AUTO_TEST_CASE(test_get_current_position) {

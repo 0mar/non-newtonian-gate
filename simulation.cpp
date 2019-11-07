@@ -164,7 +164,7 @@ void Simulation::update(const double &write_dt) {
 
 bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
     if (gate_is_flat) {
-        return true; // Fixme: unclear what to put in this case. The paper is ambiguous. Talk to matteo.
+        return ((int) direction * 2 - 1) * x >= 0 and std::fabs(x) < gate_radius;
     } else {
         return ((int) direction * 2 - 1) * x >= 0 and x * x + y * y < gate_radius * gate_radius;
     }

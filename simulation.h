@@ -39,8 +39,8 @@ public:
     double bridge_size;
     const unsigned long LEFT = 0;
     const unsigned long RIGHT = 1;
-    const bool explosion_direction_is_random;
-    const bool gate_is_flat;
+    bool explosion_direction_is_random;
+    bool gate_is_flat;
 
     /**
      * Compute necessary parameters for the simulation, initialize data structures.
