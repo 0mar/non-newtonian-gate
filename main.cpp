@@ -57,8 +57,8 @@ void standard_simulation(double dt) {
     simulation.finish();
 }
 
-double get_thermalisation_time(double gate_radius, int gate_capacity) {
-    Simulation simulation = Simulation(100, gate_radius);
+double get_thermalisation_time(double bridge_height, int gate_capacity) {
+    Simulation simulation = Simulation(100, bridge_height);
     simulation.left_gate_capacity = gate_capacity;
     simulation.right_gate_capacity = gate_capacity;
     simulation.setup();
@@ -71,22 +71,22 @@ double get_thermalisation_time(double gate_radius, int gate_capacity) {
     return simulation.time;
 }
 
-void converge_thermalisation(double gate_radius, int gate_capacity, unsigned long repeats) {
+void converge_thermalisation(double bridge_height, int gate_capacity, unsigned long repeats) {
     auto results = std::vector<double>();
     results.reserve(repeats);
     for (unsigned long i = 0; i < repeats; i++) {
-        results.push_back(get_thermalisation_time(gate_radius, gate_capacity));
+        results.push_back(get_thermalisation_time(bridge_height, gate_capacity));
         std::cout << i << std::endl;
     }
     std::string name = "therms";
     write_results(name, results);
 }
 
-double test_parameters(double gate_radius, int gate_capacity) {
+double test_parameters(double bridge_height, int gate_capacity) {
     int repeats = 1000;
     double total_time = 0;
     for (int i = 0; i < repeats; i++) {
-        total_time += get_thermalisation_time(gate_radius, gate_capacity);
+        total_time += get_thermalisation_time(bridge_height, gate_capacity);
     }
     return total_time / repeats;
 }
@@ -96,10 +96,10 @@ int main(int argc, char *argv[]) {
     if (argc == 2) {
         mode = std::stoi(argv[1]);
     } else if (argc == 3) {
-        double gate_radius = std::stod(argv[1]);
+        double bridge_height = std::stod(argv[1]);
         int gate_capacity = std::stoi(argv[2]);
-        //printf("Assuming a gate radius of %.2f and a gate capacity of %d\n", gate_radius, gate_capacity);
-        std::cout << test_parameters(gate_radius, gate_capacity) << std::endl;
+        //printf("Assuming a bridge height of %.2f and a gate capacity of %d\n", bridge_height, gate_capacity);
+        std::cout << test_parameters(bridge_height, gate_capacity) << std::endl;
         return 0;
     }
     switch (mode) {
