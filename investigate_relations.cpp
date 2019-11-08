@@ -20,6 +20,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
                const double channel_width, const double urn_radius, const int threshold, const int num_particles) {
     double chi = 0;
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
+    sim.gate_is_flat = true;
     sim.setup();
     std::random_device rd;
     std::mt19937 re(rd());
