@@ -385,14 +385,21 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
         next_angle = directions[particle];
     }
     if (next_time == max_path) {
-        printf("Next time, %.2f, maxpath %.2f\nParticle has to be reset", next_time, max_path);
-
-
+        reset_counter++;
+        printf("Next time = maxpath =%.2f\nParticle has to be reset (%dth time)\n", next_time, reset_counter);
+        printf("Position (%.4f, %.4f) at t=%.2f, angle %.2f pi\n", px, py, impact_times[particle],
+               directions[particle] / PI);
+        const double box_x_radius = circle_distance / 2 + circle_radius * 2;
+        const double box_y_radius = circle_radius;
+        const int direction = px > 0 ? RIGHT : LEFT;
+        reset_particle(particle, box_x_radius, box_y_radius, direction);
+        compute_next_impact(particle);
+    } else {
+        next_x_pos[particle] = px + next_time * cos(directions[particle]);
+        next_y_pos[particle] = py + next_time * sin(directions[particle]);
+        next_impact_times[particle] = time + next_time;
+        next_directions[particle] = next_angle;
     }
-    next_x_pos[particle] = px + next_time * cos(directions[particle]);
-    next_y_pos[particle] = py + next_time * sin(directions[particle]);
-    next_impact_times[particle] = time + next_time;
-    next_directions[particle] = next_angle;
 }
 
 void Simulation::get_current_position(const unsigned long &particle, double &x, double &y) {

@@ -266,6 +266,7 @@ private:
     std::shared_ptr<std::random_device> rd;
     std::shared_ptr<std::mt19937> rng;
     std::shared_ptr<std::uniform_real_distribution<double>> unif_real;
+    int reset_counter = 0;
 
 };
 
