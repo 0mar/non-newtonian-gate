@@ -2,7 +2,7 @@
 // Created by Omar Richardson on 24/10/2018.
 //
 
-#ifndef TERRIER_SIMULATION_H // todo: fix guard name
+#ifndef TERRIER_SIMULATION_H
 #define TERRIER_SIMULATION_H
 
 #include <iostream>
@@ -16,14 +16,13 @@
 
 class Simulation {
 public:
-    Simulation(const int &num_particles, const double &gate_radius, const double &circle_radius = 1.,
-               const double &circle_distance = 0.5, const double &bridge_height = 0.3,
-               const int &left_gate_capacity = 3, const int &right_gate_capacity = 3,
+    Simulation(const int &num_particles, const double &bridge_height, const double &circle_radius = 1.,
+               const double &circle_distance = 0.5, const int &left_gate_capacity = 3,
+               const int &right_gate_capacity = 3,
                const bool &random_dir = false, const bool &flat_gate = false);
 
     // Important parameters
     const int num_particles;
-    const double gate_radius;
     int left_gate_capacity;
     int right_gate_capacity;
     unsigned long in_left;
@@ -36,7 +35,7 @@ public:
     double left_center_x;
     double right_center_x;
     double max_path;
-    double bridge_size;
+    double bridge_length; // measured from the height
     const unsigned long LEFT = 0;
     const unsigned long RIGHT = 1;
     bool explosion_direction_is_random;
@@ -78,6 +77,15 @@ public:
      * @return `true` if point in bridge, `false` otherwise
      */
     bool is_in_bridge(const double &x, const double &y);
+
+    /**
+     * Compute the intersections of a particle with an urn (on the x-axis)
+     * @param particle Particle index
+     * @param center_x x-coordinate of the urn
+     * @param t1 First intersection
+     * @param t2 Second intersection
+     */
+    void circle_intersections(const unsigned &particle, const double &center_x, double &t1, double &t2);
 
     /**
      * Compute the time it takes for a particle to reach the bridge.
