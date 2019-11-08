@@ -33,11 +33,10 @@ void single_particle_animation() {
 
 void many_particle_animation() {
     printf("Running the animation for 200 particles, trying det exp\n");
-    Simulation simulation = Simulation(300, 0.7);
+    Simulation simulation = Simulation(200, 1);
     simulation.left_gate_capacity = 2;
-    simulation.gate_is_flat = true;
+    simulation.gate_is_flat = false;
     simulation.right_gate_capacity = 2;
-    simulation.bridge_height = 0.5;
     simulation.setup();
     simulation.start(1);
     simulation.write_positions_to_file(0);
