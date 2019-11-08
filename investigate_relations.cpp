@@ -16,23 +16,8 @@ void write_results(std::string &id, std::vector<T> &data) {
     results_file << std::endl;
 }
 
-double get_thermalisation_time(double gate_radius, int gate_capacity) {
-    Simulation simulation = Simulation(100, gate_radius);
-    simulation.left_gate_capacity = gate_capacity;
-    simulation.right_gate_capacity = gate_capacity;
-    simulation.setup();
-    simulation.start(0);
-    // simulation.write_positions_to_file(0);
-    while (simulation.total_right.at(simulation.total_right.size() - 1) < simulation.num_particles / 2 and
-           simulation.time < 1E5) {
-        simulation.update(0.0);
-    }
-    return simulation.time;
-}
-
-double
-get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length, const double channel_width,
-        const double urn_radius, const int threshold, const int num_particles) {
+double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
+               const double channel_width, const double urn_radius, const int threshold, const int num_particles) {
     double chi = 0;
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
     sim.setup();
