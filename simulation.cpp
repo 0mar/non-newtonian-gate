@@ -53,7 +53,7 @@ void Simulation::setup() {
     right_center_x = circle_distance / 2 + circle_radius;
     couple_bridge();
     if (debug) {
-        std::string debug_file_name = get_random_string(7) + ".debug";
+        std::string debug_file_name = "debug_logging/" + get_random_string(7) + ".debug";
         std::cout << "Storing debugging information in " + debug_file_name << std::endl;
         debug_file.open(debug_file_name, std::ofstream::out);
         debug_file << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_size\tthreshold\n";
