@@ -42,7 +42,7 @@ public:
     const unsigned long RIGHT = 1;
     bool explosion_direction_is_random;
     bool gate_is_flat;
-    bool debug = true;
+    bool debug = false;
     std::ofstream debug_file;
 
     /**

@@ -75,11 +75,13 @@ std::string Simulation::get_random_string(const std::size_t &length) {
 }
 
 void Simulation::debug_write(const std::string &message) {
-    char s[10];
-    std::time_t now = std::time(nullptr);
-    struct tm *p = localtime(&now);
-    strftime(s, 10, "%H:%M:%S", p);
-    debug_file << s << ":\t" << message << std::endl;
+    if (debug) {
+        char s[10];
+        std::time_t now = std::time(nullptr);
+        struct tm *p = localtime(&now);
+        strftime(s, 10, "%H:%M:%S", p);
+        debug_file << s << ":\t" << message << std::endl;
+    }
 }
 
 void Simulation::reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
@@ -231,6 +233,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
         compute_next_impact(exp_particle);
         debug_explosion_counter++;
         if (debug_explosion_counter > 100) {
+            std::cout << "Explosion problem" << std::endl;
             debug_write("Explosion problem");
             for (unsigned long particle: gate_contents[direction]) {
                 if (particle == exp_particle) {
