@@ -14,6 +14,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.right_gate_capacity = 1;
         sim.explosion_direction_is_random = false;
         sim.gate_is_flat = true;
+        sim.debug = false;
         return sim;
     }
 
@@ -586,6 +587,57 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(not sim.is_going_in(0));
         sim.x_pos.at(0) = sim.circle_radius;
         BOOST_CHECK(sim.is_going_in(0));
+    }
+
+    BOOST_AUTO_TEST_CASE(test_explosion_bug) {
+        auto sim = get_sim(1);
+        sim.gate_is_flat = true;
+        sim.setup();
+        sim.start(1);
+        double delta = 0.001;
+        const double pi = 3.141592653589793;
+        sim.x_pos.at(0) = -sim.bridge_length / 2 - delta * delta;
+        sim.y_pos.at(0) = 0;
+        sim.directions.at(0) = pi / 2 - delta;
+        BOOST_CHECK(sim.is_going_in(0));
+        BOOST_CHECK(not sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
+        BOOST_CHECK(not sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
+        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
+        sim.compute_next_impact(0);
+        sim.update(0);
+        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
+        BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
+        BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
+        sim.update(0);
+        BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
+        BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
+        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
+    }
+
+
+    BOOST_AUTO_TEST_CASE(test_explosion_bug2) {
+        auto sim = get_sim(1);
+        sim.gate_is_flat = true;
+        sim.setup();
+        sim.start(1);
+        double delta = 0.001;
+        const double pi = 3.141592653589793;
+        sim.x_pos.at(0) = -sim.bridge_length / 2 - delta * delta;
+        sim.y_pos.at(0) = sim.bridge_height / 2 - delta;
+        sim.directions.at(0) = pi / 4;
+        BOOST_CHECK(sim.is_going_in(0));
+        BOOST_CHECK(not sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
+        BOOST_CHECK(not sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
+        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
+        sim.compute_next_impact(0);
+        sim.update(0);
+        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
+        BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
+        BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
+        sim.update(0);
+        BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
+        BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
+        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
     }
 
 
