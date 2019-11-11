@@ -231,7 +231,11 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
         compute_next_impact(exp_particle);
         debug_explosion_counter++;
         if (debug_explosion_counter > 100) {
-            debug_write("Explosion over 100, problem");
+            debug_write("Explosion problem");
+            std::string info = "Particle "+std::to_string(exp_particle) + " going "+((direction==1)?"right":"left")+" "+
+                    " had direction "+std::to_string(directions[exp_particle]) + " at ("+std::to_string(x_pos[exp_particle])+","+ std::to_string(y_pos[exp_particle]) +
+                    ") and has retraction angle "+std::to_string(get_retraction_angle(exp_particle));
+            debug_write(info);
         }
     } while (not is_in_domain(next_x_pos[exp_particle], next_y_pos[exp_particle]));
     for (unsigned long particle: gate_contents[direction]) {
