@@ -35,13 +35,14 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
         sim.update(0.0);
         chi += weight * std::fabs(1. * sim.total_left.back() - 1. * sim.total_right.back()) / sim.num_particles;
     }
+    sim.finish();
     return chi;
 }
 
 
 void matteo_relation_finder(int argc, char *argv[]) {
     const int num_arguments = 8;
-    const int num_runs = 100;
+    const int num_runs = 10;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
         for (unsigned int i = 0; i < argc; i++) {
