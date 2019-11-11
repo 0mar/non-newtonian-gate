@@ -56,7 +56,7 @@ void Simulation::setup() {
         std::string debug_file_name = "debug_logging/" + get_random_string(7) + ".debug";
         std::cout << "Storing debugging information in " + debug_file_name << std::endl;
         debug_file.open(debug_file_name, std::ofstream::out);
-        debug_file << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_size\tthreshold\n";
+        debug_file << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_length\tthreshold\n";
         debug_file << num_particles << "\t" << circle_radius << "\t" << circle_distance << "\t"
                    << bridge_height << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
         debug_file << "Process: " << getpid() << std::endl;
@@ -192,7 +192,7 @@ void Simulation::update(const double &write_dt) {
 
 bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
     if (gate_is_flat) {
-        return ((int) direction * 2 - 1) * x >= 0 and std::fabs(x) < bridge_length / 2;
+        return ((int) direction * 2 - 1) * x >= 0 and std::fabs(x) <= bridge_length / 2;
     } else {
         return ((int) direction * 2 - 1) * x >= 0 and not is_in_circle(x, y, direction);
     }
@@ -232,10 +232,16 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
         debug_explosion_counter++;
         if (debug_explosion_counter > 100) {
             debug_write("Explosion problem");
-            std::string info = "Particle "+std::to_string(exp_particle) + " going "+((direction==1)?"right":"left")+" "+
-                    " had direction "+std::to_string(directions[exp_particle]) + " at ("+std::to_string(x_pos[exp_particle])+","+ std::to_string(y_pos[exp_particle]) +
-                    ") and has retraction angle "+std::to_string(get_retraction_angle(exp_particle));
-            debug_write(info);
+            for (unsigned long particle: gate_contents[direction]) {
+                if (particle == exp_particle) {
+                    debug_write("Offending particle: ");
+                }
+                std::string info = "Particle "+std::to_string(particle) + " going "+((direction==1)?"right":"left")+
+                                   " had direction "+std::to_string(directions[particle]/PI) + "pi at ("+std::to_string(px)+","+ std::to_string(py) +
+                                   ") and has retraction angle "+std::to_string(get_retraction_angle(particle)/PI)+"pi";
+                debug_write(info);
+            }
+
         }
     } while (not is_in_domain(next_x_pos[exp_particle], next_y_pos[exp_particle]));
     for (unsigned long particle: gate_contents[direction]) {
@@ -377,7 +383,7 @@ bool Simulation::is_in_bridge(const double &x, const double &y) {
 /**
  * Note that these function is not mutually exclusive with left and right circle, and is not to be confused by `is_in_gate`.
  */
-    return std::abs(x) < bridge_length / 2 and std::abs(y) < bridge_height / 2;
+    return std::abs(x) <= bridge_length / 2 and std::abs(y) <= bridge_height / 2;
 }
 
 void Simulation::compute_next_impact(const unsigned long &particle) {
