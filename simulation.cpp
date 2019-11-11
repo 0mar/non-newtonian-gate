@@ -225,9 +225,14 @@ void Simulation::check_gate_departure(const unsigned long &particle, const unsig
 }
 
 void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned long &direction) {
+    int debug_explosion_counter = 0;
     do {
         directions[exp_particle] = get_retraction_angle(exp_particle);
         compute_next_impact(exp_particle);
+        debug_explosion_counter++;
+        if (debug_explosion_counter > 100) {
+            debug_write("Explosion over 100, problem");
+        }
     } while (not is_in_domain(next_x_pos[exp_particle], next_y_pos[exp_particle]));
     for (unsigned long particle: gate_contents[direction]) {
 //            printf("Bouncing particle %d with position (%.3f, %.3f)\n", particle,px,py);
@@ -427,8 +432,8 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
         const double box_x_radius = circle_distance / 2 + circle_radius * 2;
         const double box_y_radius = circle_radius;
         const int direction = px > 0 ? RIGHT : LEFT;
-        reset_particle(particle, box_x_radius, box_y_radius, direction);
         debug_write("Resetting particle " + std::to_string(particle));
+        reset_particle(particle, box_x_radius, box_y_radius, direction);
         compute_next_impact(particle);
     } else {
         next_x_pos[particle] = px + next_time * cos(directions[particle]);
