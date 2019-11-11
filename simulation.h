@@ -12,7 +12,9 @@
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
-
+#include <ctime>
+#include <sstream>
+#include <unistd.h>
 
 class Simulation {
 public:
@@ -40,12 +42,27 @@ public:
     const unsigned long RIGHT = 1;
     bool explosion_direction_is_random;
     bool gate_is_flat;
+    const bool debug = true;
+    std::ofstream debug_file;
 
     /**
      * Compute necessary parameters for the simulation, initialize data structures.
      * Run only once per simulation. Different runs require new setups and (therefore) new objects.
      */
     void setup();
+
+    /**
+     * Need a way to generate random strings for debugging file names
+     * @param length length of the string
+     * @return random string
+     */
+    std::string get_random_string(const std::size_t &length);
+
+    /**
+     * Write a message to std::cout
+     * @param message Debug message
+     */
+    void debug_write(const std::string &message);
 
     /**
      * Start the simulation. Initialize particles and times, and compute the next (first) impact.

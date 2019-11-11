@@ -51,8 +51,35 @@ void Simulation::setup() {
 
     left_center_x = -circle_distance / 2 - circle_radius;
     right_center_x = circle_distance / 2 + circle_radius;
-
     couple_bridge();
+    if (debug) {
+        std::string debug_file_name = get_random_string(7) + ".debug";
+        std::cout << "Storing debugging information in " + debug_file_name << std::endl;
+        debug_file.open(debug_file_name, std::ofstream::out);
+        debug_file << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_size\tthreshold\n";
+        debug_file << num_particles << "\t" << circle_radius << "\t" << circle_distance << "\t"
+                   << bridge_height << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
+        debug_file << "Process: " << getpid() << std::endl;
+    }
+
+}
+
+std::string Simulation::get_random_string(const std::size_t &length) {
+    std::string random_string;
+    const std::string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::uniform_int_distribution<> distribution(0, chars.size() - 1);
+    for (std::size_t i = 0; i < length; i++) {
+        random_string += chars[distribution(*rng)];
+    }
+    return random_string;
+}
+
+void Simulation::debug_write(const std::string &message) {
+    char s[10];
+    std::time_t now = std::time(nullptr);
+    struct tm *p = localtime(&now);
+    strftime(s, 10, "%H:%M:%S", p);
+    debug_file << s << ":\t" << message << std::endl;
 }
 
 void Simulation::reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
@@ -117,6 +144,9 @@ void Simulation::update(const double &write_dt) {
             last_written_time += write_dt;
             printf("Writing position at %.2f\n", last_written_time);
         }
+    }
+    if (total_left.size() % 10000 == 0) {
+        debug_write("Now at " + std::to_string(total_left.size()));
     }
 
     // Update the data of the particle with the collision
@@ -207,6 +237,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
 //            printf("Position updated to (%.3f, %.3f)\n", x, y);
         if (not is_in_domain(x, y)) {
             printf("Particle %d not in domain\n", (int) particle);
+            debug_write("Particle " + std::to_string(particle) + " not found in domain");
         } else if (not is_in_gate(x, y, direction)) {
             // printf("Particle %d not in radius, distance from center: %.4f. Removed from gate list\n", (int) particle, sqrt(x * x + y * y));
             gate_contents[direction].erase(std::remove(gate_contents[direction].begin(),
@@ -291,6 +322,10 @@ void Simulation::write_totals_to_file() {
 
 void Simulation::finish() {
     write_totals_to_file();
+    debug_write("Finished at t=" + std::to_string(time) + " with " + std::to_string(total_left.size()) + " bounces");
+    if (debug) {
+        debug_file.close();
+    }
 }
 
 void Simulation::couple_bridge() {
@@ -393,6 +428,7 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
         const double box_y_radius = circle_radius;
         const int direction = px > 0 ? RIGHT : LEFT;
         reset_particle(particle, box_x_radius, box_y_radius, direction);
+        debug_write("Resetting particle " + std::to_string(particle));
         compute_next_impact(particle);
     } else {
         next_x_pos[particle] = px + next_time * cos(directions[particle]);
@@ -474,27 +510,27 @@ double Simulation::time_to_hit_circle(const unsigned long &particle, const doubl
     double add_x = max_path * cos(directions[particle]);
     double add_y = max_path * sin(directions[particle]);
     circle_intersections(particle, center_x, t1, t2);
-        // Find minimal root between 0 and 1 not in bridge
-        double impact_x = 0;
-        double impact_y = 0;
-        if (EPS < t1 and t1 < min_t) {
-            impact_x = px + t1 * add_x;
-            impact_y = py + t1 * add_y;
-            // Only hitting the circle if not in the bridge
-            if (not is_in_bridge(impact_x, impact_y)) {
-                normal_angle = atan2(0 - impact_y, center_x - impact_x);
-                min_t = t1 - EPS;
-            }
+    // Find minimal root between 0 and 1 not in bridge
+    double impact_x = 0;
+    double impact_y = 0;
+    if (EPS < t1 and t1 < min_t) {
+        impact_x = px + t1 * add_x;
+        impact_y = py + t1 * add_y;
+        // Only hitting the circle if not in the bridge
+        if (not is_in_bridge(impact_x, impact_y)) {
+            normal_angle = atan2(0 - impact_y, center_x - impact_x);
+            min_t = t1 - EPS;
         }
-        if (EPS < t2 and t2 < min_t) {
-            impact_x = px + t2 * add_x;
-            impact_y = py + t2 * add_y;
-            // Only hitting the circle if not in the bridge
-            if (not is_in_bridge(impact_x, impact_y)) {
-                normal_angle = atan2(0 - impact_y, center_x - impact_x);
-                min_t = t2 - EPS;
-            }
+    }
+    if (EPS < t2 and t2 < min_t) {
+        impact_x = px + t2 * add_x;
+        impact_y = py + t2 * add_y;
+        // Only hitting the circle if not in the bridge
+        if (not is_in_bridge(impact_x, impact_y)) {
+            normal_angle = atan2(0 - impact_y, center_x - impact_x);
+            min_t = t2 - EPS;
         }
+    }
     return min_t * max_path;
 }
 
