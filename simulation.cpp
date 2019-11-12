@@ -192,7 +192,7 @@ void Simulation::update(const double &write_dt) {
     // Do something useful with this information
     measure();
     if (total_left.size() < 5000) {
-        write_bounce_map_to_file(particle);
+        write_bounce_map_to_file(particle); // Todo: Remove when no longer in debug mode
     }
 }
 
