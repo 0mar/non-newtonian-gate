@@ -31,7 +31,6 @@ Simulation::Simulation(const int &num_particles, const double &bridge_height, co
 }
 
 void Simulation::setup() {
-    max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
     next_impact_times.resize(num_particles);
     impact_times.resize(num_particles);
     in_left_gate.resize(num_particles);
@@ -48,10 +47,10 @@ void Simulation::setup() {
     gate_contents.push_back(currently_in_right_gate);
     gate_capacities.push_back(left_gate_capacity);
     gate_capacities.push_back(right_gate_capacity);
-
+    couple_bridge();
     left_center_x = -circle_distance / 2 - circle_radius;
     right_center_x = circle_distance / 2 + circle_radius;
-    couple_bridge();
+    max_path = circle_distance + bridge_height + circle_radius * 4; // Upper bound for the longest path
     if (debug) {
         std::string debug_file_name = "debug_logging/" + get_random_string(7) + ".debug";
         std::cout << "Storing debugging information in " + debug_file_name << std::endl;
@@ -61,7 +60,6 @@ void Simulation::setup() {
                    << bridge_height << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
         debug_file << "Process: " << getpid() << std::endl;
     }
-
 }
 
 std::string Simulation::get_random_string(const std::size_t &length) {
@@ -111,6 +109,9 @@ void Simulation::start(const double &left_ratio) {
     }
     if (left_ratio * num_particles < 0 or left_ratio * num_particles > num_particles) {
         throw std::domain_error("Please choose ratio between 0 and 1");
+    }
+    if (distance_as_channel_length and not gate_is_flat) {
+        throw std::domain_error("If the gate is not flat, the bridge correction should not be applied");
     }
     const auto num_left_particles = (unsigned long) (left_ratio * num_particles);
     for (unsigned long particle = 0; particle < num_left_particles; particle++) {
