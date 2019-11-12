@@ -284,7 +284,7 @@ void Simulation::print_status() {
                impact_times[particle], directions[particle] / PI);
         printf("Planned impact at\nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi\n",
                next_x_pos[particle],
-               next_y_pos[particle], next_impact_times[particle], next_directions[particle] / PI);
+               next_y_pos[particle], next_impact_times[particle], next_directions[partidwqdqcle] / PI);
     }
     printf("Particles left: %d, particles right: %d\n", (int) in_left, (int) in_right);
     printf("Particles in left gate: %d\t in right gate %d\n", (int) currently_in_left_gate.size(),
@@ -320,6 +320,8 @@ void Simulation::write_positions_to_file(const double &time) {
     file.close();
 }
 
+v
+
 void Simulation::write_totals_to_file() {
     std::string filename = "totals.dat";
     std::ofstream file;
@@ -336,6 +338,17 @@ void Simulation::write_totals_to_file() {
         file << right << "\t";
     }
     file << std::endl;
+    file.close();
+}
+
+void Simulation::write_bounce_map_to_file() {
+    std::string filename = "bounces.dat";
+    std::ofstream file;
+    file.open(filename, std::ios_base::app);
+    for (unsigned long particle = 0; particle < num_particles; particle++) {
+        file << px << " " << py << std::endl;
+    }
+    file.close();
 }
 
 void Simulation::finish() {

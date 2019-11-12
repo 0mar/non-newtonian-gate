@@ -12,6 +12,7 @@ void write_results(std::string &id, std::vector<double> &data) {
         results_file << datum << "\t";
     }
     results_file << std::endl;
+    results_file.close();
 }
 
 void single_particle_animation() {

@@ -248,6 +248,11 @@ public:
     void write_positions_to_file(const double &time);
 
     /**
+     * Write bounce_map
+     */
+    void write_bounce_map_to_file();
+
+    /**
      * Write all timestamps and number of positions to file.
      */
     void write_totals_to_file();

@@ -14,6 +14,7 @@ void write_results(std::string &id, std::vector<T> &data) {
         results_file << datum << "\t";
     }
     results_file << std::endl;
+    results_file.close();
 }
 
 double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
