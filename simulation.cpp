@@ -284,7 +284,7 @@ void Simulation::print_status() {
                impact_times[particle], directions[particle] / PI);
         printf("Planned impact at\nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi\n",
                next_x_pos[particle],
-               next_y_pos[particle], next_impact_times[particle], next_directions[partidwqdqcle] / PI);
+               next_y_pos[particle], next_impact_times[particle], next_directions[particle] / PI);
     }
     printf("Particles left: %d, particles right: %d\n", (int) in_left, (int) in_right);
     printf("Particles in left gate: %d\t in right gate %d\n", (int) currently_in_left_gate.size(),
@@ -319,8 +319,6 @@ void Simulation::write_positions_to_file(const double &time) {
     file << std::endl;
     file.close();
 }
-
-v
 
 void Simulation::write_totals_to_file() {
     std::string filename = "totals.dat";
