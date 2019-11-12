@@ -190,6 +190,9 @@ void Simulation::update(const double &write_dt) {
 
     // Do something useful with this information
     measure();
+    if (total_left.size() < 5000) {
+        write_bounce_map_to_file(particle);
+    }
 }
 
 bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
@@ -239,9 +242,11 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
                 if (particle == exp_particle) {
                     debug_write("Offending particle: ");
                 }
-                std::string info = "Particle "+std::to_string(particle) + " going "+((direction==1)?"right":"left")+
-                                   " had direction "+std::to_string(directions[particle]/PI) + "pi at ("+std::to_string(px)+","+ std::to_string(py) +
-                                   ") and has retraction angle "+std::to_string(get_retraction_angle(particle)/PI)+"pi";
+                std::string info =
+                        "Particle " + std::to_string(particle) + " going " + ((direction == 1) ? "right" : "left") +
+                        " had direction " + std::to_string(directions[particle] / PI) + "pi at (" + std::to_string(px) +
+                        "," + std::to_string(py) +
+                        ") and has retraction angle " + std::to_string(get_retraction_angle(particle) / PI) + "pi";
                 debug_write(info);
             }
 
@@ -339,13 +344,11 @@ void Simulation::write_totals_to_file() {
     file.close();
 }
 
-void Simulation::write_bounce_map_to_file() {
+void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
     std::string filename = "bounces.dat";
     std::ofstream file;
     file.open(filename, std::ios_base::app);
-    for (unsigned long particle = 0; particle < num_particles; particle++) {
-        file << px << " " << py << std::endl;
-    }
+    file << px << " " << py << std::endl;
     file.close();
 }
 
@@ -363,13 +366,14 @@ void Simulation::couple_bridge() {
      * We need to make the bridge a little bit longer so the ends connect too.
      * We do this by computing the intersections between the bridge lines and the circle
      */
-    double lx = 0;
-    double ly = bridge_height / 2;
-    double angle;
-    x_pos.at(0) = lx;
-    y_pos.at(0) = ly;
-    directions.at(0) = 0;
-    bridge_length = 2 * this->time_to_hit_circle(0, right_center_x, angle);
+    const double discrepancy =
+            2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(bridge_height, 2) / 4) - 2 * circle_radius;
+    if (distance_as_channel_length) {
+        bridge_length = circle_distance;
+        circle_distance = bridge_length + discrepancy;
+    } else {
+        bridge_length = circle_distance - discrepancy;
+    }
 }
 
 bool Simulation::is_in_domain(const double &x, const double &y) {

@@ -43,6 +43,11 @@ public:
     bool explosion_direction_is_random;
     bool gate_is_flat;
     bool debug = false;
+    bool distance_as_channel_length = false;
+    // There is a (geometrical) difference between the distance between the urns and the length of the channel
+    // if the gate is flat. While the former is nicer from a modelling point of view,
+    // The latter provides an easier mathematical analysis.
+    // To facilitate this, this boolean switch assumes circle distances as bridge lengths (and corrects for them)
     std::ofstream debug_file;
 
     /**
@@ -250,7 +255,7 @@ public:
     /**
      * Write bounce_map
      */
-    void write_bounce_map_to_file();
+    void write_bounce_map_to_file(const unsigned long &particle);
 
     /**
      * Write all timestamps and number of positions to file.

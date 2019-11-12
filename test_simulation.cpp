@@ -24,6 +24,48 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_EQUAL(sim.num_particles, 1000);
     }
 
+    BOOST_AUTO_TEST_CASE(test_bridge_length) {
+        auto sim = get_sim(1);
+        sim.circle_radius = 1;
+        sim.circle_distance = 0.5;
+        sim.bridge_height = 0.1;
+        sim.setup();
+        const double cutoff_radius = std::sqrt(std::pow(sim.circle_radius, 2) - std::pow(sim.bridge_height, 2) / 4);
+        BOOST_CHECK_CLOSE(sim.circle_distance, sim.bridge_length + 2 * cutoff_radius - 2 * sim.circle_radius, eps);
+    }
+
+    BOOST_AUTO_TEST_CASE(test_new_bridge_coupling) {
+        auto sim = get_sim(1);
+        sim.distance_as_channel_length = false;
+        sim.setup();
+        double lx = 0;
+        double ly = sim.bridge_height / 2 + eps * 0.01;
+        double angle;
+        sim.x_pos.at(0) = lx;
+        sim.y_pos.at(0) = ly;
+        sim.directions.at(0) = 0;
+        BOOST_CHECK_CLOSE(sim.bridge_length, 2 * sim.time_to_hit_circle(0, sim.right_center_x, angle), eps);
+    }
+
+    BOOST_AUTO_TEST_CASE(test_bridge_compensation) {
+        auto sim = get_sim(1);
+        const double old_circle_distance = sim.circle_distance;
+        sim.distance_as_channel_length = true;
+        sim.setup();
+        BOOST_CHECK_CLOSE(old_circle_distance, sim.bridge_length, eps);
+        BOOST_CHECK(sim.circle_distance < sim.bridge_length);
+    }
+
+    BOOST_AUTO_TEST_CASE(test_bridge_coupling) {
+        auto sim = get_sim(1);
+        sim.bridge_height = 0.1;
+        sim.circle_distance = 0.5;
+        sim.setup();
+        BOOST_CHECK(sim.bridge_length > sim.circle_distance);
+        BOOST_CHECK(sim.is_in_domain(sim.bridge_length / 2 - 0.001, sim.bridge_height / 2 - 0.001));
+        BOOST_CHECK(not sim.is_in_circle(sim.bridge_length / 2 - 0.001, sim.bridge_height / 2 - 0.001, sim.RIGHT));
+    }
+
     BOOST_AUTO_TEST_CASE(test_inside_methods) {
         auto sim = get_sim(100);
         sim.circle_radius = 1;
@@ -235,16 +277,6 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(sim.is_in_domain(sim.x_pos.at(0), sim.y_pos.at(0)));
         sim.update(0);
         BOOST_CHECK(sim.is_in_domain(sim.x_pos.at(0), sim.y_pos.at(0)));
-    }
-
-    BOOST_AUTO_TEST_CASE(test_bridge_coupling) {
-        auto sim = get_sim(1);
-        sim.bridge_height = 0.1;
-        sim.circle_distance = 0.5;
-        sim.setup();
-        BOOST_CHECK(sim.bridge_length > sim.circle_distance);
-        BOOST_CHECK(sim.is_in_domain(sim.bridge_length / 2 - 0.001, sim.bridge_height / 2 - 0.001));
-        BOOST_CHECK(not sim.is_in_circle(sim.bridge_length / 2 - 0.001, sim.bridge_height / 2 - 0.001, sim.RIGHT));
     }
 
     BOOST_AUTO_TEST_CASE(test_circle_bridge_connection) {
@@ -602,16 +634,13 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(sim.is_going_in(0));
         BOOST_CHECK(not sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(not sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
-        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
         sim.compute_next_impact(0);
         sim.update(0);
-        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
         BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
         sim.update(0);
         BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
-        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
     }
 
 
@@ -628,16 +657,13 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(sim.is_going_in(0));
         BOOST_CHECK(not sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(not sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
-        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
         sim.compute_next_impact(0);
         sim.update(0);
-        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
         BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
         sim.update(0);
         BOOST_CHECK(sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
         BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
-        std::cout << sim.x_pos.at(0) << " " << sim.y_pos.at(0) << std::endl;
     }
 
 
