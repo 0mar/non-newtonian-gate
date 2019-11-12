@@ -28,7 +28,12 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     std::mt19937 re(rd());
     std::uniform_real_distribution<double> unif(0.5, 1);
     const double left_ratio = unif(re);
-    sim.start(left_ratio);
+    try {
+        sim.start(left_ratio);
+    } catch (const std::invalid_argument &ex) {
+        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n",channel_width,urn_radius);
+        return 0;
+    }
     while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
     }
