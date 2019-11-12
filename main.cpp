@@ -34,12 +34,17 @@ void single_particle_animation() {
 
 void many_particle_animation() {
     printf("Running the animation for 200 particles, trying det exp\n");
-    Simulation simulation = Simulation(200, 1);
-    simulation.left_gate_capacity = 2;
-    simulation.gate_is_flat = false;
-    simulation.right_gate_capacity = 2;
+    Simulation simulation = Simulation(1000, 1);
+    simulation.left_gate_capacity = 4;
+    simulation.gate_is_flat = true;
+    simulation.right_gate_capacity = 4;
+    simulation.circle_distance = 0.5;
+    simulation.bridge_height = 0.5;
+    simulation.circle_radius = 0.7;
+    simulation.distance_as_channel_length = true;
+
     simulation.setup();
-    simulation.start(1);
+    simulation.start(0.7);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
     while (simulation.time < 100) {
