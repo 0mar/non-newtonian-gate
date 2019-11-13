@@ -1,19 +1,6 @@
 #include <iostream>
-#include <memory>
 #include "simulation.h"
 #include <string>
-#include <fstream>
-
-
-void write_results(std::string &id, std::vector<double> &data) {
-    std::ofstream results_file;
-    results_file.open(id + ".txt");
-    for (double datum: data) {
-        results_file << datum << "\t";
-    }
-    results_file << std::endl;
-    results_file.close();
-}
 
 void single_particle_animation() {
     printf("Running the animation for a single particle\n");
@@ -34,12 +21,11 @@ void single_particle_animation() {
 
 void many_particle_animation() {
     printf("Running the animation for 200 particles, trying det exp\n");
-    Simulation simulation = Simulation(1000, 1);
+    Simulation simulation = Simulation(1000, 0.5);
     simulation.left_gate_capacity = 4;
     simulation.gate_is_flat = true;
     simulation.right_gate_capacity = 4;
     simulation.circle_distance = 0.5;
-    simulation.bridge_height = 0.5;
     simulation.circle_radius = 0.7;
     simulation.distance_as_channel_length = true;
 
@@ -50,6 +36,7 @@ void many_particle_animation() {
     while (simulation.time < 100) {
         simulation.update(dt);
     }
+    simulation.finish();
 }
 
 void standard_simulation(double dt) {
@@ -63,62 +50,61 @@ void standard_simulation(double dt) {
     simulation.finish();
 }
 
-double get_thermalisation_time(double bridge_height, int gate_capacity) {
-    Simulation simulation = Simulation(100, bridge_height);
-    simulation.left_gate_capacity = gate_capacity;
-    simulation.right_gate_capacity = gate_capacity;
-    simulation.setup();
-    simulation.start(1);
-    // simulation.write_positions_to_file(0);
-    while (simulation.total_right.at(simulation.total_right.size() - 1) < simulation.num_particles / 2 and
-           simulation.time < 1E5) {
-        simulation.update(0.0);
-    }
-    return simulation.time;
-}
+void mass_spread_demo(const int &num_res) {
+    printf("Running the animation for 1000 particles, trying det exp\n");
 
-void converge_thermalisation(double bridge_height, int gate_capacity, unsigned long repeats) {
-    auto results = std::vector<double>();
-    results.reserve(repeats);
-    for (unsigned long i = 0; i < repeats; i++) {
-        results.push_back(get_thermalisation_time(bridge_height, gate_capacity));
-        std::cout << i << std::endl;
-    }
-    std::string name = "therms";
-    write_results(name, results);
-}
+    std::ofstream results_file;
+    results_file.open("chis.txt");
 
-double test_parameters(double bridge_height, int gate_capacity) {
-    int repeats = 1000;
-    double total_time = 0;
-    for (int i = 0; i < repeats; i++) {
-        total_time += get_thermalisation_time(bridge_height, gate_capacity);
+    std::vector<std::vector<double>> all_chis;
+    for (unsigned long j = 0; j < num_res; j++) {
+        Simulation simulation = Simulation(1000, 0.5);
+        simulation.left_gate_capacity = 4;
+        simulation.gate_is_flat = true;
+        simulation.right_gate_capacity = 4;
+        simulation.circle_distance = 0.5;
+        simulation.circle_radius = 0.7;
+        simulation.distance_as_channel_length = true;
+        simulation.write_bounces = false;
+        simulation.setup();
+        simulation.start(0.7);
+        simulation.write_positions_to_file(0);
+        double chi = 0;
+        std::vector<double> chis;
+        while (simulation.total_left.size() < 1E6) {
+            simulation.update(0);
+            chi = std::fabs(1. * simulation.total_left.back() - 1. * simulation.total_right.back()) /
+                  simulation.num_particles;
+            chis.push_back(chi);
+        }
+        all_chis.push_back(chis);
     }
-    return total_time / repeats;
+    for (unsigned long el = 0; el < all_chis[0].size(); el++) {
+        for (auto chis:all_chis) {
+            results_file << chis.at(el) << ",";
+        }
+        results_file << std::endl;
+    }
+    results_file << std::endl;
+    results_file.close();
 }
 
 int main(int argc, char *argv[]) {
-    int mode = 2;
+    int mode = 0;
     if (argc == 2) {
         mode = std::stoi(argv[1]);
-    } else if (argc == 3) {
-        double bridge_height = std::stod(argv[1]);
-        int gate_capacity = std::stoi(argv[2]);
-        //printf("Assuming a bridge height of %.2f and a gate capacity of %d\n", bridge_height, gate_capacity);
-        std::cout << test_parameters(bridge_height, gate_capacity) << std::endl;
-        return 0;
     }
     switch (mode) {
         case 1: {
-            single_particle_animation();
+            mass_spread_demo(20);
             break;
         }
         case 2: {
-            many_particle_animation();
+            single_particle_animation();
             break;
         }
         default: {
-            converge_thermalisation(0.5, 5, 100000);
+            many_particle_animation();
             break;
         }
     }
