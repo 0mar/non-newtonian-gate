@@ -145,8 +145,8 @@ void Simulation::update(const double &write_dt) {
         while (next_impact > last_written_time + write_dt) {
             write_positions_to_file(last_written_time + write_dt);
             last_written_time += write_dt;
-            printf("Writing position at %.2f\n", last_written_time);
         }
+        printf("Writing position at %.2f\n", last_written_time);
     }
     if (total_left.size() % 10000 == 0) {
         debug_write("Now at " + std::to_string(total_left.size()));
@@ -191,7 +191,7 @@ void Simulation::update(const double &write_dt) {
 
     // Do something useful with this information
     measure();
-    if (total_left.size() < 5000) {
+    if (write_bounces and total_left.size() < 5000) {
         write_bounce_map_to_file(particle); // Todo: Remove when no longer in debug mode
     }
 }

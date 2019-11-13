@@ -44,6 +44,7 @@ public:
     bool gate_is_flat;
     bool debug = false;
     bool distance_as_channel_length = false;
+    bool write_bounces = false;
     // There is a (geometrical) difference between the distance between the urns and the length of the channel
     // if the gate is flat. While the former is nicer from a modelling point of view,
     // The latter provides an easier mathematical analysis.
