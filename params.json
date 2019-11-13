@@ -68,8 +68,8 @@
       "urn_radius": 1,
       "threshold": 10,
       "num_particles": 1000,
-      "M_t": 1E5,
-      "M_f": 1.5E5
+      "M_t": 1E6,
+      "M_f": 1.5E6
     }
   },
   "medium": {
