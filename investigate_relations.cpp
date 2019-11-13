@@ -42,7 +42,8 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
         sim.update(0.0);
     }
     if (write_all_chi) {
-        s << sim.measuring_times.size() << "," << sim.get_mass_spread() << ",";
+        s << sim.measuring_times.size() << "," << sim.get_mass_spread() << "," << channel_width << "," << urn_radius
+          << "," << channel_length << "," << threshold;
     }
     const double weight = 1. / (double) (M_f - M_t);
     while (sim.measuring_times.size() < M_f) {
