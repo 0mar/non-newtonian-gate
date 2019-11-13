@@ -24,6 +24,21 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_EQUAL(sim.num_particles, 1000);
     }
 
+    BOOST_AUTO_TEST_CASE(test_mass_spread) {
+        auto sim = get_sim(1000);
+        sim.setup();
+        sim.start(0.5);
+        BOOST_CHECK_CLOSE(sim.get_mass_spread(), 0, eps);
+        auto sim2 = get_sim(100);
+        sim2.setup();
+        sim2.start(0.75);
+        BOOST_CHECK_CLOSE(sim2.get_mass_spread(), .5, eps);
+        auto sim3 = get_sim(50);
+        sim3.setup();
+        sim3.start(1);
+        BOOST_CHECK_CLOSE(sim3.get_mass_spread(), 1, eps);
+    }
+
     BOOST_AUTO_TEST_CASE(test_bridge_length) {
         auto sim = get_sim(1);
         sim.circle_radius = 1;

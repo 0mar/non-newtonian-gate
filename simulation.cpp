@@ -353,6 +353,10 @@ void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
     file.close();
 }
 
+double Simulation::get_mass_spread() {
+    return (1. * total_left.back() - 1. * total_right.back()) / num_particles;
+}
+
 void Simulation::finish() {
     write_totals_to_file();
     debug_write("Finished at t=" + std::to_string(time) + " with " + std::to_string(total_left.size()) + " bounces");

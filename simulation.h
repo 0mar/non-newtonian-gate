@@ -264,6 +264,12 @@ public:
     void write_totals_to_file();
 
     /**
+     * Compute the mass spread in the urns. Equal distribution of mass yields 0, one urn full and the other returns 0.
+     * @return mass spread between 0 and 1.
+     */
+    double get_mass_spread();
+
+    /**
      * Compute the reflection angle based on an ingoing angle and the normal angle of the surface.
      * @param angle_in incoming angle of the particle
      * @param normal_angle normal angle of the surface
