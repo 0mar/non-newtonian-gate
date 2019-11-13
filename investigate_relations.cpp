@@ -43,7 +43,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     }
     if (write_all_chi) {
         s << sim.measuring_times.size() << "," << sim.get_mass_spread() << "," << channel_width << "," << urn_radius
-          << "," << channel_length << "," << threshold;
+          << "," << channel_length << "," << threshold << std::endl;
     }
     const double weight = 1. / (double) (M_f - M_t);
     while (sim.measuring_times.size() < M_f) {
@@ -51,7 +51,8 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
         chi += weight * sim.get_mass_spread();
     }
     if (write_all_chi) {
-        s << sim.measuring_times.size() << "," << sim.get_mass_spread() << std::endl;
+        s << sim.measuring_times.size() << "," << sim.get_mass_spread() << "," << channel_width << "," << urn_radius
+          << "," << channel_length << "," << threshold << std::endl;
         std::ofstream result_file(id + ".chi", std::ios::app);
         result_file << s.str();
         result_file.close();
