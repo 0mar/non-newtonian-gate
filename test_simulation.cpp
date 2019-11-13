@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK_CLOSE(sim.get_mass_spread(), 0, eps);
         auto sim2 = get_sim(100);
         sim2.setup();
-        sim2.start(0.75);
+        sim2.start(.25);
         BOOST_CHECK_CLOSE(sim2.get_mass_spread(), .5, eps);
         auto sim3 = get_sim(50);
         sim3.setup();

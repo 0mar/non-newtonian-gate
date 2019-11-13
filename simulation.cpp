@@ -354,7 +354,7 @@ void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
 }
 
 double Simulation::get_mass_spread() {
-    return (1. * total_left.back() - 1. * total_right.back()) / num_particles;
+    return std::fabs(1. * total_left.back() - 1. * total_right.back()) / num_particles;
 }
 
 void Simulation::finish() {
