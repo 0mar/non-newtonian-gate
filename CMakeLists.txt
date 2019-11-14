@@ -3,7 +3,7 @@ project(terrier)
 
 set(CMAKE_CXX_STANDARD 14)
 find_package(Boost COMPONENTS unit_test_framework)
-if (BOOST_FOUND)
+if (Boost_FOUND)
     message("Boost is found")
     include_directories(${Boost_INCLUDE_DIRS})
     add_executable(test_terrier test_simulation.cpp simulation.cpp simulation.h)
