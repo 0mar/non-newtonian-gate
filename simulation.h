@@ -16,7 +16,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <numeric>
-#include <list>
+
 class Simulation {
 public:
     Simulation(const int &num_particles, const double &bridge_height, const double &circle_radius = 1.,
@@ -298,8 +298,6 @@ private:
 
     void sort_indices();
 
-    void debug_is(std::vector<unsigned long> vec, std::list<unsigned long> list);
-
     unsigned long find_index(const unsigned long &particle);
 
     void reindex_particle(const unsigned long &particle, const bool &was_minimum);
@@ -310,8 +308,7 @@ private:
     std::shared_ptr<std::mt19937> rng;
     std::shared_ptr<std::uniform_real_distribution<double>> unif_real;
     int reset_counter = 0;
-    std::list<unsigned long> sorted_indices;
-
+    std::vector<unsigned long> sorted_indices;
 };
 
 
