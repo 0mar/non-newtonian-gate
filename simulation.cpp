@@ -396,35 +396,48 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     double next_time = max_path;
     double next_angle = 0;
     double angle;
-    double to_bridge = time_to_hit_bridge(particle, angle);
     // this flow is not supah dupah
-    if (to_bridge < next_time) {
-        next_time = to_bridge;
-        next_angle = get_reflection_angle(directions[particle], angle);
-    }
-    double to_left = time_to_hit_circle(particle, left_center_x, angle);
-    if (to_left < next_time) {
-        next_time = to_left;
-        next_angle = get_reflection_angle(directions[particle], angle);
-    }
-    double to_right = time_to_hit_circle(particle, right_center_x, angle);
-    if (to_right < next_time) {
-        next_time = to_right;
-        next_angle = get_reflection_angle(directions[particle], angle);
-    }
-    double to_gate = time_to_hit_gate(particle);
-    if (to_gate < next_time) {
-        next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
-        next_angle = directions[particle];
-//        if (is_in_gate_radius(px, py) and is_in_gate_radius(nx, ny)) {
-//            printf("Small movement (%.3e) for particle %d detected\n", next_time, particle);
-//        }
-    }
-    double to_middle = time_to_hit_middle(particle);
+    if (is_in_gate(px, py, LEFT) or is_in_gate(px, py, RIGHT)) {
+        double to_bridge = time_to_hit_bridge(particle, angle);
+        if (to_bridge < next_time) {
+            next_time = to_bridge;
+            next_angle = get_reflection_angle(directions[particle], angle);
+        }
+        double to_gate = time_to_hit_gate(particle);
+        if (to_gate < next_time) {
+            next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
+            next_angle = directions[particle];
+        }
+        double to_middle = time_to_hit_middle(particle);
 
-    if (to_middle < next_time) {
-        next_time = to_middle + EPS;
-        next_angle = directions[particle];
+        if (to_middle < next_time) {
+            next_time = to_middle + EPS;
+            next_angle = directions[particle];
+        }
+    } else if (is_in_circle(px, py, LEFT)) {
+        double to_left = time_to_hit_circle(particle, left_center_x, angle);
+        if (to_left < next_time) {
+            next_time = to_left;
+            next_angle = get_reflection_angle(directions[particle], angle);
+        }
+        double to_gate = time_to_hit_gate(particle);
+        if (to_gate < next_time) {
+            next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
+            next_angle = directions[particle];
+        }
+    } else if (is_in_circle(px, py, RIGHT)) {
+        double to_right = time_to_hit_circle(particle, right_center_x, angle);
+        if (to_right < next_time) {
+            next_time = to_right;
+            next_angle = get_reflection_angle(directions[particle], angle);
+        }
+        double to_gate = time_to_hit_gate(particle);
+        if (to_gate < next_time) {
+            next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
+            next_angle = directions[particle];
+        }
+    } else {
+        std::cout << "Particle, where are you?" << std::endl;
     }
     if (next_time == max_path) {
         reset_counter++;
