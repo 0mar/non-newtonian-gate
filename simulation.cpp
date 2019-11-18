@@ -32,6 +32,7 @@ Simulation::Simulation(const int &num_particles, const double &bridge_height, co
 
 void Simulation::setup() {
     next_impact_times.resize(num_particles);
+    sorted_indices.resize(num_particles);
     impact_times.resize(num_particles);
     in_left_gate.resize(num_particles);
     in_right_gate.resize(num_particles);
@@ -202,7 +203,7 @@ unsigned long Simulation::find_index(const unsigned long &particle) {
 void Simulation::insert_index(const unsigned long &particle) {
     const double &impact_time = next_impact_times[particle];
     unsigned long l = 0;
-    unsigned long r = num_particles;
+    unsigned long r = num_particles - 1;
     while (l < r) {
         unsigned long m = (l + r) / 2;
         double m_time = next_impact_times[sorted_indices[m]];
@@ -212,20 +213,7 @@ void Simulation::insert_index(const unsigned long &particle) {
             r = m;
         }
     }
-    l--;
-    printf("%.7f\t%.7f\t%.7f\n", next_impact_times[sorted_indices[l]], impact_time,
-           next_impact_times[sorted_indices[l + 1]]);
-    if (l < num_particles) {
-        if (not(next_impact_times[sorted_indices[l]] < impact_time and
-                next_impact_times[sorted_indices[l + 1]] > impact_time)) {
-            throw std::invalid_argument("Drama");
-        }
-        sorted_indices.insert(sorted_indices.begin() + l, particle);
-    } else {
-        std::cout << "Wow new collision is last" << std::endl;
-        sorted_indices.push_back(particle);
-    }
-
+    sorted_indices.insert(sorted_indices.begin() + l, particle);
 }
 
 void Simulation::reindex_particle(const unsigned long &particle, const bool &was_minimum) {
