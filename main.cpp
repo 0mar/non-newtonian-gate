@@ -39,7 +39,7 @@ void many_particle_animation() {
     simulation.finish();
 }
 
-void time_test(const int num_times = 5) { // Starting point: 7 seconds
+void time_test(const int num_times = 1) { // Starting point: 7 seconds
     printf("Running the animation for 10000 particles, timing\n");
     double average_time = 0;
     for (unsigned long i = 0; i < num_times; i++) {
@@ -53,7 +53,7 @@ void time_test(const int num_times = 5) { // Starting point: 7 seconds
         simulation.distance_as_channel_length = true;
         simulation.setup();
         simulation.start(0.25);
-        while (simulation.measuring_times.size() < 1E6) {
+        while (simulation.measuring_times.size() < 7E5) {
             simulation.update(0);
         }
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
