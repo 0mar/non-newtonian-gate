@@ -68,8 +68,8 @@
       "urn_radius": 1,
       "threshold": 10,
       "num_particles": 1000,
-      "M_t": 1E6,
-      "M_f": 1.5E6
+      "M_t": 2E6,
+      "M_f": 3E6
     }
   },
   "medium": {
@@ -141,8 +141,8 @@
       "urn_radius": 1,
       "threshold": 30,
       "num_particles": 3000,
-      "M_t": 5E5,
-      "M_f": 6E5
+      "M_t": 5E6,
+      "M_f": 6E6
     }
   },
   "large": {
@@ -214,8 +214,8 @@
       "urn_radius": 1,
       "threshold": 100,
       "num_particles": 10000,
-      "M_t": 1E6,
-      "M_f": 1.1E6
+      "M_t": 5E6,
+      "M_f": 6E6
     }
   }
 }
