@@ -33,6 +33,7 @@ Simulation::Simulation(const int &num_particles, const double &bridge_height, co
 void Simulation::setup() {
     next_impact_times.resize(num_particles);
     sorted_indices.resize(num_particles);
+    sorted_indices2.resize(num_particles);
     impact_times.resize(num_particles);
     in_left_gate.resize(num_particles);
     in_right_gate.resize(num_particles);
@@ -134,7 +135,7 @@ void Simulation::start(const double &left_ratio) {
 void Simulation::update(const double &write_dt) {
     // Find next event: the first particle that has a new impact
     // If we really need more optimization, this is where to get it.
-    unsigned long particle = sorted_indices[0];
+    unsigned long particle = sorted_indices.front();
     double next_impact = next_impact_times[particle];
     // Write a time slice, if desired
     if (write_dt > 0) {
@@ -186,16 +187,25 @@ void Simulation::update(const double &write_dt) {
 
 void Simulation::sort_indices() {
     std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
-    std::sort(sorted_indices.begin(), sorted_indices.end(), [this](size_t i1, size_t i2) {
+    std::iota(sorted_indices2.begin(), sorted_indices2.end(), 0);
+
+    sorted_indices.sort([this](size_t i1, size_t i2) {
+        return next_impact_times[i1] < next_impact_times[i2];
+    });
+    std::sort(sorted_indices2.begin(), sorted_indices2.end(), [this](size_t i1, size_t i2) {
         return next_impact_times[i1] < next_impact_times[i2];
     });
 }
 
 unsigned long Simulation::find_index(const unsigned long &particle) {
+    debug_is(sorted_indices2, sorted_indices);
     auto it = std::find(sorted_indices.begin(), sorted_indices.end(), particle);
+    auto it2 = std::find(sorted_indices2.begin(), sorted_indices2.end(), particle);
     if (it != sorted_indices.end()) {
         return std::distance(sorted_indices.begin(), it);
     } else {
+        std::cout << "Lost " << particle << std::endl;
+        std::cout << "Sized " << sorted_indices.size() << " and " << sorted_indices2.size() << std::endl;
         throw std::invalid_argument("Particle not found?! New DS broken");
     }
 }
@@ -204,25 +214,35 @@ void Simulation::insert_index(const unsigned long &particle) {
     const double &impact_time = next_impact_times[particle];
     unsigned long l = 0;
     unsigned long r = num_particles - 1;
+    unsigned long m_old = 0;
+    auto it = sorted_indices.begin();
     while (l < r) {
         unsigned long m = (l + r) / 2;
-        double m_time = next_impact_times[sorted_indices[m]];
+        std::advance(it, m - m_old);
+        double m_time = next_impact_times[*it];
+        m_old = m;
         if (m_time < impact_time) {
             l = m + 1;
         } else {
             r = m;
         }
     }
-    sorted_indices.insert(sorted_indices.begin() + l, particle);
+    std::advance(it, l - m_old);
+    sorted_indices.insert(it, particle);
+    sorted_indices2.insert(sorted_indices2.begin() + l, particle);
 }
 
 void Simulation::reindex_particle(const unsigned long &particle, const bool &was_minimum) {
     if (was_minimum) {
-        sorted_indices.erase(sorted_indices.begin());
+        sorted_indices.pop_front();
+        sorted_indices2.erase(sorted_indices2.begin());
     } else {
         unsigned long old_index = find_index(particle);
-        sorted_indices.erase(sorted_indices.begin() + old_index);
+        sorted_indices.remove(particle);
+        sorted_indices2.erase(sorted_indices2.begin() + old_index);
     }
+    debug_is(sorted_indices2, sorted_indices);
+
     insert_index(particle);
 }
 
@@ -672,4 +692,19 @@ double Simulation::time_to_hit_middle(const unsigned long &particle) {
         min_t = t + EPS;
     }
     return min_t * max_path;
+}
+
+void Simulation::debug_is(std::vector<unsigned long> vec, std::list<unsigned long> list) {
+    auto it = list.begin();
+    bool same = true;
+    for (unsigned long i = 0; i < vec.size(); i++) {
+        if (*it != vec[i]) {
+            std::cout << *it << " " << vec[i] << "   ";
+            same = false;
+        }
+        it++;
+    }
+    if (!same) {
+        printf("Arrays diverged\n");
+    }
 }
