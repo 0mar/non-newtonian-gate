@@ -30,4 +30,4 @@ if __name__ == '__main__':
     for size in parameter_sets.keys():
         default_values = parameter_sets[size]['defaults']
         for i, param in enumerate(parameter_sets[size]['relations']):
-            generate_param_set(param, default_values, "param_file_%s_%d" % (size,i))
+            generate_param_set(param, default_values, "input/param_file_%s_%d" % (size,i))
