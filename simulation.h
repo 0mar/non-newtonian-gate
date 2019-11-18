@@ -15,6 +15,7 @@
 #include <ctime>
 #include <sstream>
 #include <unistd.h>
+#include <numeric>
 
 class Simulation {
 public:
@@ -44,6 +45,7 @@ public:
     bool debug = false;
     bool distance_as_channel_length = false;
     bool write_bounces = false;
+    int expected_collisions = 0;
     // There is a (geometrical) difference between the distance between the urns and the length of the channel
     // if the gate is flat. While the former is nicer from a modelling point of view,
     // The latter provides an easier mathematical analysis.
@@ -294,11 +296,19 @@ private:
      */
     void couple_bridge();
 
+    void sort_indices();
+
+    unsigned long find_index(const unsigned long &particle);
+
+    void reindex_particle(const unsigned long &particle, const bool &was_minimum);
+
+    void insert_index(const unsigned long &particle);
 
     std::shared_ptr<std::random_device> rd;
     std::shared_ptr<std::mt19937> rng;
     std::shared_ptr<std::uniform_real_distribution<double>> unif_real;
     int reset_counter = 0;
+    std::vector<unsigned long> sorted_indices;
 
 };
 
