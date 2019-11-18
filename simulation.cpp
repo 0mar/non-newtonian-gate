@@ -196,6 +196,8 @@ unsigned long Simulation::find_index(const unsigned long &particle) {
     if (it != sorted_indices.end()) {
         return std::distance(sorted_indices.begin(), it);
     } else {
+        printf("Lost particle %lu with position (%.7f,%.7f) running on time %.2f (%.5e)\n", particle, px, py,
+               next_impact_times[particle], next_impact_times[particle] - time);
         throw std::invalid_argument("Particle not found?! New DS broken");
     }
 }
