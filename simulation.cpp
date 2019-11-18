@@ -462,7 +462,6 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
 //        }
     }
     double to_middle = time_to_hit_middle(particle);
-
     if (to_middle < next_time) {
         next_time = to_middle + EPS;
         next_angle = directions[particle];

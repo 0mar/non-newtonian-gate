@@ -309,7 +309,6 @@ private:
     std::shared_ptr<std::uniform_real_distribution<double>> unif_real;
     int reset_counter = 0;
     std::vector<unsigned long> sorted_indices;
-
 };
 
 
