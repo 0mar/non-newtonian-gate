@@ -214,8 +214,10 @@ void Simulation::insert_index(const unsigned long &particle) {
         }
     }
     sorted_indices.insert(sorted_indices.begin() + l, particle);
-    if (l == num_particles - 1) {
-        printf("Is %f smaller than %f?\n", next_impact_times[sorted_indices[l]], next_impact_times[sorted_indices[l]]);
+    if (l == num_particles - 2) {
+        if (next_impact_times[sorted_indices[l]] > next_impact_times[sorted_indices[l + 1]]) {
+            printf("Increase of %e\n", next_impact_times[sorted_indices[l + 1]] - next_impact_times[sorted_indices[l]]);
+        }
     }
 }
 
