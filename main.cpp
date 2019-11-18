@@ -39,7 +39,7 @@ void many_particle_animation() {
     simulation.finish();
 }
 
-void time_test(const int num_times = 5) {
+void time_test(const int num_times = 5) { // Starting point: 7 seconds
     printf("Running the animation for 10000 particles, timing\n");
     double average_time = 0;
     for (unsigned long i = 0; i < num_times; i++) {

@@ -28,7 +28,6 @@ public:
     int left_gate_capacity;
     int right_gate_capacity;
     unsigned long in_left;
-    unsigned long in_right;
     // Other parameters
     double circle_radius;
     double circle_distance;
@@ -168,7 +167,6 @@ public:
     std::vector<unsigned long> total_left;
     std::vector<unsigned long> currently_in_left_gate;
     std::vector<unsigned long> currently_in_right_gate;
-    std::vector<unsigned long> total_right;
     std::vector<std::vector<unsigned long>> gate_contents;
     std::vector<std::vector<unsigned long>> gate_arrays;
     std::vector<double> gate_capacities;

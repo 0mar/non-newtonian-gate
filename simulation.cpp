@@ -101,7 +101,6 @@ void Simulation::start(const double &left_ratio) {
     time = 0;
     last_written_time = 0;
     in_left = 0;
-    in_right = 0;
     const double box_x_radius = circle_distance / 2 + circle_radius * 2;
     const double box_y_radius = circle_radius;
     if (bridge_height / 2 >= box_y_radius) {
@@ -122,7 +121,6 @@ void Simulation::start(const double &left_ratio) {
     for (unsigned long particle = num_left_particles; particle < num_particles; particle++) {
         reset_particle(particle, box_x_radius, box_y_radius, RIGHT);
         compute_next_impact(particle);
-        in_right++;
     }
     measure();
 }
@@ -148,9 +146,6 @@ void Simulation::update(const double &write_dt) {
         }
         printf("Writing position at %.2f\n", last_written_time);
     }
-    if (total_left.size() % 10000 == 0) {
-        debug_write("Now at " + std::to_string(total_left.size()));
-    }
 
     // Update the data of the particle with the collision
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
@@ -161,11 +156,9 @@ void Simulation::update(const double &write_dt) {
 
     // Process the location of the particle
     if (px > 0 and next_x_pos[particle] < 0) {
-        in_right--;
         in_left++;
     } else if (px < 0 and next_x_pos[particle] > 0) {
         in_left--;
-        in_right++;
     } else if (px == 0) {
         std::cout << "Exactly zero position (highly unlikely), so count is now off" << std::endl;
         // if this happens often (read: twice) you have a bug, otherwise, ignore
@@ -191,9 +184,6 @@ void Simulation::update(const double &write_dt) {
 
     // Do something useful with this information
     measure();
-    if (write_bounces and total_left.size() < 5000) {
-        write_bounce_map_to_file(particle); // Todo: Remove when no longer in debug mode
-    }
 }
 
 bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
@@ -231,31 +221,11 @@ void Simulation::check_gate_departure(const unsigned long &particle, const unsig
 }
 
 void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned long &direction) {
-    int debug_explosion_counter = 0;
     do {
         directions[exp_particle] = get_retraction_angle(exp_particle);
         compute_next_impact(exp_particle);
-        debug_explosion_counter++;
-        if (debug_explosion_counter > 100) {
-            std::cout << "Explosion problem" << std::endl;
-            debug_write("Explosion problem");
-            for (unsigned long particle: gate_contents[direction]) {
-                if (particle == exp_particle) {
-                    debug_write("Offending particle: ");
-                }
-                std::string info =
-                        "Particle " + std::to_string(particle) + " going " + ((direction == 1) ? "right" : "left") +
-                        " had direction " + std::to_string(directions[particle] / PI) + "pi at (" + std::to_string(px) +
-                        "," + std::to_string(py) +
-                        ") and has retraction angle " + std::to_string(get_retraction_angle(particle) / PI) + "pi";
-                debug_write(info);
-            }
-
-        }
     } while (not is_in_domain(next_x_pos[exp_particle], next_y_pos[exp_particle]));
     for (unsigned long particle: gate_contents[direction]) {
-//            printf("Bouncing particle %d with position (%.3f, %.3f)\n", particle,px,py);
-//            printf("Last impact time: %.2f\tNext impact time%.2f\n",impact_times(particle),next_impact_times(particle));
         double x, y;
         get_current_position(particle, x, y);
 //            printf("Position updated to (%.3f, %.3f)\n", x, y);
@@ -280,7 +250,6 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
 void Simulation::measure() {
     measuring_times.push_back(time);
     total_left.push_back(in_left);
-    total_right.push_back(in_right); // Don't really need to store them both...
 }
 
 void Simulation::print_status() {
@@ -292,7 +261,7 @@ void Simulation::print_status() {
                next_x_pos[particle],
                next_y_pos[particle], next_impact_times[particle], next_directions[particle] / PI);
     }
-    printf("Particles left: %d, particles right: %d\n", (int) in_left, (int) in_right);
+    printf("Particles left: %d, particles right: %d\n", (int) in_left, (int) (num_particles - in_left));
     printf("Particles in left gate: %d\t in right gate %d\n", (int) currently_in_left_gate.size(),
            (int) currently_in_right_gate.size());
 }
@@ -338,8 +307,8 @@ void Simulation::write_totals_to_file() {
         file << left << "\t";
     }
     file << std::endl;
-    for (unsigned long right: total_right) {
-        file << right << "\t";
+    for (unsigned long left: total_left) {
+        file << num_particles - left << "\t";
     }
     file << std::endl;
     file.close();
@@ -354,7 +323,7 @@ void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
 }
 
 double Simulation::get_mass_spread() {
-    return std::fabs(1. * total_left.back() - 1. * total_right.back()) / num_particles;
+    return std::fabs(2. * total_left.back() - num_particles) / num_particles;
 }
 
 void Simulation::finish() {
@@ -502,12 +471,12 @@ double Simulation::time_to_hit_bridge(const unsigned long &particle, double &nor
     double sy = 0;
     // q_bottom = (left_x, bottom_y) and q_top = (left_x, top_y)
     // u = (q − p) × r / (r × s)
-    double u1 = ((-bridge_length / 2 - px) * ry - (-bridge_height / 2 - py) * rx) / (rx * sy - ry * sx);
-    double u2 = ((-bridge_length / 2 - px) * ry - (bridge_height / 2 - py) * rx) / (rx * sy - ry * sx);
+    const double denom = rx * sy - ry * sx;
+    double u1 = ((-bridge_length / 2 - px) * ry - (-bridge_height / 2 - py) * rx) / denom;
+    double u2 = ((-bridge_length / 2 - px) * ry - (bridge_height / 2 - py) * rx) / denom;
     // t = (q − p) × s / (r × s)
-    double t1 = ((-bridge_length / 2 - px) * sy - (-bridge_height / 2 - py) * sx) / (rx * sy - ry * sx);
-    double t2 = ((-bridge_length / 2 - px) * sy - (bridge_height / 2 - py) * sx) /
-                (rx * sy - ry * sx); //todo: could be faster
+    double t1 = ((-bridge_length / 2 - px) * sy - (-bridge_height / 2 - py) * sx) / denom;
+    double t2 = ((-bridge_length / 2 - px) * sy - (bridge_height / 2 - py) * sx) / denom;
     double min_t = 1;
     if (EPS < t1 and t1 < min_t and 0 <= u1 and u1 <= 1) {
         min_t = t1 - EPS;
