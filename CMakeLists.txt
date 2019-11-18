@@ -23,4 +23,5 @@ target_link_libraries(terrier)
 target_link_libraries(find_anti)
 target_link_libraries(parameter_test)
 
-file(COPY visualise.py parameter_exploration.py create_batch.py run_batch.sh params.json DESTINATION .)
+add_custom_command(TARGET parameter_test POST_BUILD COMMAND ${CMAKE_SOURCE_DIR}/populate.sh "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}")
+
