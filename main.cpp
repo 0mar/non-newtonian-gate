@@ -20,17 +20,16 @@ void single_particle_animation() {
 }
 
 void many_particle_animation() {
-    printf("Running the animation for 200 particles, trying det exp\n");
+    printf("Running the animation for 1000 particles, writing animation\n");
     Simulation simulation = Simulation(1000, 0.5);
-    simulation.left_gate_capacity = 4;
+    simulation.left_gate_capacity = 5;
     simulation.gate_is_flat = true;
-    simulation.right_gate_capacity = 4;
+    simulation.right_gate_capacity = 5;
     simulation.circle_distance = 0.5;
-    simulation.circle_radius = 0.7;
+    simulation.circle_radius = 1;
     simulation.distance_as_channel_length = true;
-
     simulation.setup();
-    simulation.start(0.7);
+    simulation.start(0.25);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
     while (simulation.time < 100) {
@@ -51,12 +50,9 @@ void standard_simulation(double dt) {
 }
 
 void mass_spread_demo(const int &num_res) {
-    printf("Running the animation for 1000 particles, trying det exp\n");
-
+    printf("Running the simulation for 1000 particles (million collisions, writing mass spread\n");
     std::ofstream results_file;
-    results_file.open("chis.txt");
-
-    std::vector<std::vector<double>> all_chis;
+    std::ostringstream s;
     for (unsigned long j = 0; j < num_res; j++) {
         Simulation simulation = Simulation(1000, 0.5);
         simulation.left_gate_capacity = 4;
@@ -69,23 +65,17 @@ void mass_spread_demo(const int &num_res) {
         simulation.setup();
         simulation.start(0.7);
         simulation.write_positions_to_file(0);
-        double chi = 0;
-        std::vector<double> chis;
-        while (simulation.total_left.size() < 1E6) {
+        while (simulation.measuring_times.size() < 1E6) {
+            if (simulation.measuring_times.size() % 100 == 0) {
+                s << simulation.get_mass_spread() << ",";
+            }
             simulation.update(0);
-            chi = std::fabs(1. * simulation.total_left.back() - 1. * simulation.total_right.back()) /
-                  simulation.num_particles;
-            chis.push_back(chi);
         }
-        all_chis.push_back(chis);
+        s << simulation.get_mass_spread();
+        s << std::endl;
     }
-    for (unsigned long el = 0; el < all_chis[0].size(); el++) {
-        for (auto chis:all_chis) {
-            results_file << chis.at(el) << ",";
-        }
-        results_file << std::endl;
-    }
-    results_file << std::endl;
+    results_file.open("mass_spread_over_time.txt");
+    results_file << s.str();
     results_file.close();
 }
 
