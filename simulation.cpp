@@ -33,7 +33,6 @@ Simulation::Simulation(const int &num_particles, const double &bridge_height, co
 void Simulation::setup() {
     next_impact_times.resize(num_particles);
     impact_times.resize(num_particles);
-    sorted_indices.resize(num_particles);
     in_left_gate.resize(num_particles);
     in_right_gate.resize(num_particles);
     x_pos.resize(num_particles);
@@ -134,8 +133,8 @@ void Simulation::start(const double &left_ratio) {
 void Simulation::update(const double &write_dt) {
     // Find next event: the first particle that has a new impact
     // If we really need more optimization, this is where to get it.
-    unsigned long particle = sorted_indices.at(0);
-    double next_impact = next_impact_times.at(particle);
+    unsigned long particle = sorted_indices[0];
+    double next_impact = next_impact_times[particle];
     // Write a time slice, if desired
     if (write_dt > 0) {
         while (next_impact > last_written_time + write_dt) {
@@ -201,12 +200,32 @@ unsigned long Simulation::find_index(const unsigned long &particle) {
 }
 
 void Simulation::insert_index(const unsigned long &particle) {
-    const double &impact_time = next_impact_times.at(particle);
-    unsigned long min_index = 0;
-    while (min_index < sorted_indices.size() and next_impact_times.at(sorted_indices.at(min_index)) < impact_time) {
-        min_index++;// Todo: is a smart search faster?
+    const double &impact_time = next_impact_times[particle];
+    unsigned long l = 0;
+    unsigned long r = num_particles;
+    while (l < r) {
+        unsigned long m = (l + r) / 2;
+        double m_time = next_impact_times[sorted_indices[m]];
+        if (m_time < impact_time) {
+            l = m + 1;
+        } else {
+            r = m;
+        }
     }
-    sorted_indices.insert(sorted_indices.begin() + min_index, particle);// todo: Is a linked list faster?
+    l--;
+    printf("%.7f\t%.7f\t%.7f\n", next_impact_times[sorted_indices[l]], impact_time,
+           next_impact_times[sorted_indices[l + 1]]);
+    if (l < num_particles) {
+        if (not(next_impact_times[sorted_indices[l]] < impact_time and
+                next_impact_times[sorted_indices[l + 1]] > impact_time)) {
+            throw std::invalid_argument("Drama");
+        }
+        sorted_indices.insert(sorted_indices.begin() + l, particle);
+    } else {
+        std::cout << "Wow new collision is last" << std::endl;
+        sorted_indices.push_back(particle);
+    }
+
 }
 
 void Simulation::reindex_particle(const unsigned long &particle, const bool &was_minimum) {
@@ -666,5 +685,3 @@ double Simulation::time_to_hit_middle(const unsigned long &particle) {
     }
     return min_t * max_path;
 }
-
-
