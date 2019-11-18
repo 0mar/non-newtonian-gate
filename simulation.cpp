@@ -33,6 +33,7 @@ Simulation::Simulation(const int &num_particles, const double &bridge_height, co
 void Simulation::setup() {
     next_impact_times.resize(num_particles);
     impact_times.resize(num_particles);
+    sorted_indices.resize(num_particles);
     in_left_gate.resize(num_particles);
     in_right_gate.resize(num_particles);
     x_pos.resize(num_particles);
@@ -59,6 +60,10 @@ void Simulation::setup() {
         debug_file << num_particles << "\t" << circle_radius << "\t" << circle_distance << "\t"
                    << bridge_height << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
         debug_file << "Process: " << getpid() << std::endl;
+    }
+    if (expected_collisions > 0) {
+        measuring_times.reserve(expected_collisions);
+        total_left.reserve(expected_collisions);
     }
 }
 
@@ -122,22 +127,15 @@ void Simulation::start(const double &left_ratio) {
         reset_particle(particle, box_x_radius, box_y_radius, RIGHT);
         compute_next_impact(particle);
     }
+    sort_indices();
     measure();
 }
 
 void Simulation::update(const double &write_dt) {
     // Find next event: the first particle that has a new impact
     // If we really need more optimization, this is where to get it.
-    double next_impact = next_impact_times.at(0);
-    unsigned long particle = 0;
-    for (unsigned long p = 0; p < num_particles; p++) {
-        if (next_impact > next_impact_times[p]) {
-            next_impact = next_impact_times[p];
-            particle = p;
-            // or another data structure?
-        }
-    }
-
+    unsigned long particle = sorted_indices[0];
+    double next_impact = next_impact_times[particle];
     // Write a time slice, if desired
     if (write_dt > 0) {
         while (next_impact > last_written_time + write_dt) {
@@ -181,9 +179,64 @@ void Simulation::update(const double &write_dt) {
 
     // Find out when the next collision takes place
     compute_next_impact(particle);
-
+    reindex_particle(particle, true);
     // Do something useful with this information
     measure();
+}
+
+void Simulation::sort_indices() {
+    std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+    std::sort(sorted_indices.begin(), sorted_indices.end(), [this](size_t i1, size_t i2) {
+        return next_impact_times[i1] < next_impact_times[i2];
+    });
+}
+
+unsigned long Simulation::find_index(const unsigned long &particle) {
+    auto it = std::find(sorted_indices.begin(), sorted_indices.end(), particle);
+    if (it != sorted_indices.end()) {
+        return std::distance(sorted_indices.begin(), it);
+    } else {
+        throw std::invalid_argument("Particle not found?! New DS broken");
+    }
+}
+
+void Simulation::insert_index(const unsigned long &particle) {
+    const double &impact_time = next_impact_times[particle];
+    unsigned long l = 0;
+    unsigned long r = num_particles;
+    while (l < r) {
+        unsigned long m = (l + r) / 2;
+        double m_time = next_impact_times[sorted_indices[m]];
+        if (m_time < impact_time) {
+            l = m + 1;
+        } else {
+            r = m;
+        }
+    }
+    l--;
+    printf("%.7f\t%.7f\t%.7f\n", next_impact_times[sorted_indices[l]], impact_time,
+           next_impact_times[sorted_indices[l + 1]]);
+    if (l < num_particles) {
+        if (not(next_impact_times[sorted_indices[l]] < impact_time and
+                next_impact_times[sorted_indices[l + 1]] > impact_time)) {
+            throw std::invalid_argument("Drama");
+        }
+        sorted_indices.insert(sorted_indices.begin() + l, particle);
+    } else {
+        std::cout << "Wow new collision is last" << std::endl;
+        sorted_indices.push_back(particle);
+    }
+
+}
+
+void Simulation::reindex_particle(const unsigned long &particle, const bool &was_minimum) {
+    if (was_minimum) {
+        sorted_indices.erase(sorted_indices.begin());
+    } else {
+        unsigned long old_index = find_index(particle);
+        sorted_indices.erase(sorted_indices.begin() + old_index);
+    }
+    insert_index(particle);
 }
 
 bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
@@ -243,6 +296,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
         directions[particle] = get_retraction_angle(particle);
         impact_times[particle] = time;
         compute_next_impact(particle);
+        reindex_particle(particle, false);
 //            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
     }
 }
@@ -396,48 +450,35 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     double next_time = max_path;
     double next_angle = 0;
     double angle;
+    double to_bridge = time_to_hit_bridge(particle, angle);
     // this flow is not supah dupah
-    if (is_in_gate(px, py, LEFT) or is_in_gate(px, py, RIGHT)) {
-        double to_bridge = time_to_hit_bridge(particle, angle);
-        if (to_bridge < next_time) {
-            next_time = to_bridge;
-            next_angle = get_reflection_angle(directions[particle], angle);
-        }
-        double to_gate = time_to_hit_gate(particle);
-        if (to_gate < next_time) {
-            next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
-            next_angle = directions[particle];
-        }
-        double to_middle = time_to_hit_middle(particle);
+    if (to_bridge < next_time) {
+        next_time = to_bridge;
+        next_angle = get_reflection_angle(directions[particle], angle);
+    }
+    double to_left = time_to_hit_circle(particle, left_center_x, angle);
+    if (to_left < next_time) {
+        next_time = to_left;
+        next_angle = get_reflection_angle(directions[particle], angle);
+    }
+    double to_right = time_to_hit_circle(particle, right_center_x, angle);
+    if (to_right < next_time) {
+        next_time = to_right;
+        next_angle = get_reflection_angle(directions[particle], angle);
+    }
+    double to_gate = time_to_hit_gate(particle);
+    if (to_gate < next_time) {
+        next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
+        next_angle = directions[particle];
+//        if (is_in_gate_radius(px, py) and is_in_gate_radius(nx, ny)) {
+//            printf("Small movement (%.3e) for particle %d detected\n", next_time, particle);
+//        }
+    }
+    double to_middle = time_to_hit_middle(particle);
 
-        if (to_middle < next_time) {
-            next_time = to_middle + EPS;
-            next_angle = directions[particle];
-        }
-    } else if (is_in_circle(px, py, LEFT)) {
-        double to_left = time_to_hit_circle(particle, left_center_x, angle);
-        if (to_left < next_time) {
-            next_time = to_left;
-            next_angle = get_reflection_angle(directions[particle], angle);
-        }
-        double to_gate = time_to_hit_gate(particle);
-        if (to_gate < next_time) {
-            next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
-            next_angle = directions[particle];
-        }
-    } else if (is_in_circle(px, py, RIGHT)) {
-        double to_right = time_to_hit_circle(particle, right_center_x, angle);
-        if (to_right < next_time) {
-            next_time = to_right;
-            next_angle = get_reflection_angle(directions[particle], angle);
-        }
-        double to_gate = time_to_hit_gate(particle);
-        if (to_gate < next_time) {
-            next_time = to_gate + EPS; // In the circle should be guaranteed in; out should be out
-            next_angle = directions[particle];
-        }
-    } else {
-        std::cout << "Particle, where are you?" << std::endl;
+    if (to_middle < next_time) {
+        next_time = to_middle + EPS;
+        next_angle = directions[particle];
     }
     if (next_time == max_path) {
         reset_counter++;
@@ -645,3 +686,5 @@ double Simulation::time_to_hit_middle(const unsigned long &particle) {
     }
     return min_t * max_path;
 }
+
+
