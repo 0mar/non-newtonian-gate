@@ -67,7 +67,7 @@ set ylabel "{y_label}"
 {param1_name}={param1_value:.2f}
 {param2_name}={param2_value:.2f}
 f(x,y)=threshold_line({params})
-set terminal pdf
+set terminal png
 set output "{plot_name}"
 splot '{out_name}' u {ratio} with pm3d nocontour, f(x,y) with lines lw 3 dt 10 lc rgb "white"
 
@@ -103,7 +103,7 @@ def output_gnu(prefix=''):
                 param2_val = df[param2_name][0]
                 params = ",".join(param_names+["num_particles"]).replace(x_label,'x').replace(y_label,'y')
 
-                plot_name = "%s/plot-N%s-%s-%s.pdf"%(plot_dir,num_particles, x_label,y_label)
+                plot_name = "%s/plot-N%s-%s-%s.png"%(plot_dir,num_particles, x_label,y_label)
                 full_string = plot_string.format(x_label=x_label, y_label=y_label,x1=str(x1),x2=str(x2),y1=str(y1),y2=str(y2),
                                                  param1_name=param1_name,param2_name=param2_name,param1_value=param1_val,param2_value=param2_val,
                                                  params=params,plot_name=plot_name,out_name=data_name,ratio=ratios[i])
