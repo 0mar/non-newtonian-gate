@@ -1,6 +1,7 @@
 #include <iostream>
 #include "simulation.h"
 #include <string>
+#include <chrono>
 
 void single_particle_animation() {
     printf("Running the animation for a single particle\n");
@@ -38,19 +39,32 @@ void many_particle_animation() {
     simulation.finish();
 }
 
-void standard_simulation(double dt) {
-    Simulation simulation = Simulation(100, 0.3);
-    simulation.setup();
-    simulation.start(1);
-    simulation.write_positions_to_file(0);
-    while (simulation.time < 500) {
-        simulation.update(dt);
+void time_test(const int num_times = 5) {
+    printf("Running the animation for 10000 particles, timing\n");
+    double average_time = 0;
+    for (unsigned long i = 0; i < num_times; i++) {
+        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+        Simulation simulation = Simulation(10000, 0.5);
+        simulation.left_gate_capacity = 5;
+        simulation.gate_is_flat = true;
+        simulation.right_gate_capacity = 5;
+        simulation.circle_distance = 0.5;
+        simulation.circle_radius = 1;
+        simulation.distance_as_channel_length = true;
+        simulation.setup();
+        simulation.start(0.25);
+        while (simulation.measuring_times.size() < 1E6) {
+            simulation.update(0);
+        }
+        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> time_span = t2 - t1;
+        average_time += time_span.count() / num_times;
     }
-    simulation.finish();
+    printf("Time took: %.3f ms\n", average_time);
 }
 
 void mass_spread_demo(const int &num_res) {
-    printf("Running the simulation for 1000 particles (million collisions, writing mass spread\n");
+    printf("Running the simulation for 1000 particles (million collisions), writing mass spread\n");
     std::ofstream results_file;
     std::ostringstream s;
     for (unsigned long j = 0; j < num_res; j++) {
@@ -90,7 +104,7 @@ int main(int argc, char *argv[]) {
             break;
         }
         case 2: {
-            single_particle_animation();
+            time_test();
             break;
         }
         default: {

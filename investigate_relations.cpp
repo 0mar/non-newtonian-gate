@@ -57,7 +57,6 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
         result_file << s.str();
         result_file.close();
     }
-    sim.finish();
     return chi;
 }
 
