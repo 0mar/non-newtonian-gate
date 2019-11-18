@@ -5,7 +5,7 @@ import sys
 
 def generate_param_set(param_coupling, default, identifier='param_file1'):
     values = default.copy()
-    res = 10
+    res = 20
     it = iter(param_coupling)
     x = next(it)
     x_vals = np.linspace(*param_coupling[x], res)
