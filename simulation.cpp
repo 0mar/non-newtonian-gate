@@ -278,6 +278,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
     do {
         directions[exp_particle] = get_retraction_angle(exp_particle);
         compute_next_impact(exp_particle);
+        reindex_particle(exp_particle, false);
     } while (not is_in_domain(next_x_pos[exp_particle], next_y_pos[exp_particle]));
     for (unsigned long particle: gate_contents[direction]) {
         double x, y;
