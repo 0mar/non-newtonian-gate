@@ -1,7 +1,10 @@
+#!/usr/bin/env bash
 ./create_batch.py;
-for input in input/param_file_{small,medium,large}_*.in
-do ./run_batch.sh $input;
-done;
+for input_file in input/param_file_{small,medium,large}_*.in
+do 
+    echo $input_file
+    ./run_batch.sh $input_file
+done
 ./plot_data.py;
 alert;
 
