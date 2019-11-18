@@ -74,14 +74,14 @@ splot '{out_name}' u {ratio} with pm3d nocontour, f(x,y) with lines lw 3 dt 10 l
 """
 
 def output_gnu(prefix=''):
-    filename_format='param_file_%s_%d.out'
+    filename_format='input/param_file_%s_%d.out'
     nums_particles=["1E3","3E3","1E4"]
     data_name_fmt='%s/dyn-N%s-%s-%s.dat'
     param_names = ["length","width","radius","threshold"]
     ratios = ['4:5:1','5:3:1','4:3:1','5:6:1','4:6:1','3:6:1']
     for si,size in enumerate(["small","medium","large"]):
         num_particles = nums_particles[si]
-        gnu_plot_filename = '%s/gnu_plot_%s.gpi'%(input_dir,size)
+        gnu_plot_filename = 'gnu_plot_%s.gpi'%size
         with open(gnu_plot_filename,'w') as gnu_plot_file:
             gnu_plot_file.write(intro.format(num_particles=int(float(num_particles))))
             for i in range(6):
@@ -90,7 +90,7 @@ def output_gnu(prefix=''):
                 sub_df = df.loc[:, (df != df.iloc[0]).any()]
                 x_label = sub_df.columns[0]
                 y_label = sub_df.columns[1]
-                data_name = data_name_fmt%(input_dir/num_particles,x_label,y_label)
+                data_name = data_name_fmt%(input_dir,num_particles,x_label,y_label)
                 df.to_csv(data_name,sep='\t',columns=['chi','num_particles','radius','length','width','threshold'], index=False, header=False)
                 unused_cols = set(param_names) - set(sub_df.columns)
                 x1 = df[x_label].min()
