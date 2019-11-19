@@ -32,11 +32,11 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         auto sim2 = get_sim(100);
         sim2.setup();
         sim2.start(.25);
-        BOOST_CHECK_CLOSE(sim2.get_mass_spread(), .5, eps);
+        BOOST_CHECK_CLOSE(std::fabs(sim2.get_mass_spread()), .5, eps);
         auto sim3 = get_sim(50);
         sim3.setup();
         sim3.start(1);
-        BOOST_CHECK_CLOSE(sim3.get_mass_spread(), 1, eps);
+        BOOST_CHECK_CLOSE(std::fabs(sim3.get_mass_spread()), 1, eps);
     }
 
     BOOST_AUTO_TEST_CASE(test_bridge_length) {
