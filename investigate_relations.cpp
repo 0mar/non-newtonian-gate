@@ -20,7 +20,7 @@ void write_results(std::string &id, std::vector<T> &data) {
 double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
                const double channel_width, const double urn_radius, const int threshold, const int num_particles,
                const std::string &id) {
-    const bool write_all_chi = true;
+    const bool write_all_chi = false;
     double chi = 0;
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
@@ -30,7 +30,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     std::mt19937 re(rd());
     std::uniform_real_distribution<double> unif(0.5, 1);
     std::ostringstream s;
-    const double left_ratio =0.75; // todo: Not random atm
+    const double left_ratio = 0.75; // todo: Not random atm
     try {
         sim.start(left_ratio);
     } catch (const std::invalid_argument &ex) {
@@ -61,8 +61,44 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     return chi;
 }
 
+double get_chi_development(const unsigned long M_t, const unsigned long M_f, const double channel_length,
+                           const double channel_width, const double urn_radius, const int threshold,
+                           const int num_particles,
+                           const std::string &id) {
+
+    double chi = 0;
+    const int num_points = 500;
+    const unsigned long step_size = M_f / num_points;
+    Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
+    sim.gate_is_flat = true;
+    sim.distance_as_channel_length = true;
+    sim.setup();
+    std::random_device rd;
+    std::mt19937 re(rd());
+    std::uniform_real_distribution<double> unif(0.5, 1);
+    std::ostringstream s;
+    const double left_ratio = 0.75; // todo: Not random atm
+    try {
+        sim.start(left_ratio);
+    } catch (const std::invalid_argument &ex) {
+        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
+        return 0;
+    }
+
+    while (sim.measuring_times.size() < M_f) {
+        sim.update(0.0);
+        if (sim.measuring_times.size() % step_size == 0) {
+            s << sim.measuring_times.size() << "," << std::fabs(sim.get_mass_spread()) << std::endl;
+        }
+    }
+    std::ofstream result_file(id + ".chi", std::ios::app);
+    result_file << s.str();
+    result_file.close();
+    return chi;
+}
 
 void matteo_relation_finder(int argc, char *argv[]) {
+    bool chi_writer = true;
     const int num_arguments = 8;
     const int num_runs = 1;
     if (argc != num_arguments + 1) {
@@ -84,15 +120,22 @@ void matteo_relation_finder(int argc, char *argv[]) {
     const int M_f = std::stoi(argv[7]);
     const std::string id = argv[8];
     double av_chi = 0;
-    for (unsigned int i = 0; i < num_runs; i++) {
-        av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id) / num_runs;
+    if (chi_writer) {
+        std::cout << "Writing mass spread evolution for single parameters" << std::endl;
+        double chi = get_chi_development(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles,
+                                         id);
+    } else {
+        for (unsigned int i = 0; i < num_runs; i++) {
+            av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id) /
+                      num_runs;
+        }
+        std::ostringstream s;
+        s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi
+          << std::endl;
+        std::ofstream result_file(id + ".out", std::ios::app);
+        result_file << s.str();
+        result_file.close();
     }
-    std::ostringstream s;
-    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi << std::endl;
-    std::ofstream result_file(id + ".out", std::ios::app);
-    result_file << s.str();
-    result_file.close();
-
 }
 
 int main(int argc, char *argv[]) {
