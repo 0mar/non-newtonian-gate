@@ -50,6 +50,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
         sim.update(0.0);
         chi += weight * sim.get_mass_spread();
     }
+    chi = std::fabs(chi);
     if (write_all_chi) {
         s << sim.measuring_times.size() << "," << sim.get_mass_spread() << "," << channel_width << "," << urn_radius
           << "," << channel_length << "," << threshold << std::endl;
