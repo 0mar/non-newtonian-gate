@@ -23,8 +23,8 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     const bool write_all_chi = false;
     double chi = 0;
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
-    sim.gate_is_flat = true;
-    sim.distance_as_channel_length = true;
+    sim.gate_is_flat = false;
+    sim.distance_as_channel_length = false;
     sim.setup();
     std::random_device rd;
     std::mt19937 re(rd());
@@ -41,23 +41,12 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
     }
-    if (write_all_chi) {
-        s << sim.measuring_times.size() << "," << sim.get_mass_spread() << "," << channel_width << "," << urn_radius
-          << "," << channel_length << "," << threshold << std::endl;
-    }
     const double weight = 1. / (double) (M_f - M_t);
     while (sim.measuring_times.size() < M_f) {
         sim.update(0.0);
         chi += weight * sim.get_mass_spread();
     }
     chi = std::fabs(chi);
-    if (write_all_chi) {
-        s << sim.measuring_times.size() << "," << sim.get_mass_spread() << "," << channel_width << "," << urn_radius
-          << "," << channel_length << "," << threshold << std::endl;
-        std::ofstream result_file(id + ".chi", std::ios::app);
-        result_file << s.str();
-        result_file.close();
-    }
     return chi;
 }
 
@@ -167,7 +156,6 @@ void find_relation_time(int argc, char *argv[]) {
 }
 
 void matteo_relation_finder(int argc, char *argv[]) {
-    bool chi_writer = true;
     const int num_arguments = 8;
     const int num_runs = 1;
     if (argc != num_arguments + 1) {
@@ -189,27 +177,20 @@ void matteo_relation_finder(int argc, char *argv[]) {
     const int M_f = std::stoi(argv[7]);
     const std::string id = argv[8];
     double av_chi = 0;
-    if (chi_writer) {
-        std::cout << "Writing mass spread evolution for single parameters" << std::endl;
-        double chi = get_chi_development(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles,
-                                         id);
-    } else {
-        for (unsigned int i = 0; i < num_runs; i++) {
-            av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id) /
-                      num_runs;
-        }
-        std::ostringstream s;
-        s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi
-          << std::endl;
-        std::ofstream result_file(id + ".out", std::ios::app);
-        result_file << s.str();
-        result_file.close();
+    for (unsigned int i = 0; i < num_runs; i++) {
+        av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id) /
+                  num_runs;
     }
+    std::ostringstream s;
+    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi
+      << std::endl;
+    std::ofstream result_file(id + ".out", std::ios::app);
+    result_file << s.str();
+    result_file.close();
 }
 
 int main(int argc, char *argv[]) {
-//    matteo_relation_finder(argc, argv);
-    find_relation_time(argc, argv);
+    matteo_relation_finder(argc, argv);
     return 0;
 }
 
