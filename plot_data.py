@@ -9,26 +9,50 @@ input_dir = 'input'
 if not os.path.exists(plot_dir):
     os.makedirs(plot_dir)
 
-def plot(filename,size):
+def threshold(length,width,radius,threshold,num_particles):
+    area = np.pi*radius**2 - radius**2*np.asin(width/(2*radius))+width*np.sqrt(4*radius**2 - width**2)/4
+    return num_particles*width*length/(8*threshold*area*0.8)
+
+def plot(filename,size,num_particles):
+    param_names = ["length","width","radius","threshold"]
     plt.figure(figsize=(22,15))
     for i in range(6):
         row = i//3
         col = i%3
-        df = pd.read_csv(filename%i,header=None,names=["length","width","radius","threshold","chi"])
-        df = df.loc[:, (df!= df.iloc[0]).any()]
-        x = df[df.columns[0]].values
-        y = df[df.columns[1]].values
-        chi = df[df.columns[2]].values
+        df = pd.read_csv(filename%(size,i),header=None,names=["length","width","radius","threshold","chi"])
+        df['num_particles']=int(float(num_particles))
+        sub_df = df.loc[:, (df != df.iloc[0]).any()]
+        x_label = sub_df.columns[0]
+        y_label = sub_df.columns[1]
+        x = df[x_label].values
+        y = df[y_label].values
+        chi = df[sub_df.columns[2]].values
+        unused_cols = set(param_names) - set(sub_df.columns)
+        
+        param1_name = unused_cols.pop()
+        param2_name = unused_cols.pop()
+        param1_val = df[param1_name][0]
+        param2_val = df[param2_name][0]
+        params = ",".join(param_names+["num_particles"]).replace(x_label,'x').replace(y_label,'y')
+       
+        x_ = np.linspace(np.min(x),np.max(x))
+        y_ = np.linspace(np.min(y),np.max(y))
+        X,Y = np.meshgrid(x_,y_)
+        Z = threshold({param1_name:param1_val,param2_name:param2_val,x_label:X,y_label:Y,'num_particles':int(float(num_particles))})
+        
         plt.subplot(2,3,i+1)
-        plt.scatter(x,y,c=chi,s=500)
+        plt.scatter(x,y,c=chi,s=300,marker='s',cmap='autumn')
         plt.colorbar()
-        plt.xlabel(df.columns[0])
-        plt.ylabel(df.columns[1])
+        plt.contour(X,Y,Z,[1])
+        
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
     plt.savefig("%s/omar-recreation-%s.pdf"%(plot_dir,size))
 
-for size in ["small","medium","large"]:
+for size in ["small","large"]:
     filename = '%s/param_file_%s_%s.out'%(input_dir,size,"%d")
-    plot(filename,size)
+    num_particles = {"small":"1E3","large":"1E4"}[size]
+    plot(filename,size,num_particles)
 
 intro = """
 reset
@@ -79,7 +103,7 @@ def output_gnu(prefix=''):
     data_name_fmt='%s/dyn-N%s-%s-%s.dat'
     param_names = ["length","width","radius","threshold"]
     ratios = ['4:5:1','5:3:1','4:3:1','5:6:1','4:6:1','3:6:1']
-    for si,size in enumerate(["small","medium","large"]):
+    for si,size in enumerate(["small","large"]):
         num_particles = nums_particles[si]
         gnu_plot_filename = 'gnu_plot_%s.gpi'%size
         with open(gnu_plot_filename,'w') as gnu_plot_file:
