@@ -1,8 +1,5 @@
 //
 // Created by Omar Richardson on 24/10/2018.
-// Hints for optimization:
-// 2. Be careful with compute_next_impact() calls
-// 3. Just store the number of particles in the left ball
 //
 
 #include "simulation.h"
@@ -153,20 +150,16 @@ void Simulation::update(const double &write_dt) {
     }
 
     // Process the location of the particle
-    if (px > 0 and next_x_pos[particle] < 0) {
+    if (px > 0 and next_x_pos[particle] <= 0) {
         in_left++;
-    } else if (px < 0 and next_x_pos[particle] > 0) {
+    } else if (px <= 0 and next_x_pos[particle] > 0) {
         in_left--;
-    } else if (px == 0) {
-        std::cout << "Exactly zero position (highly unlikely), so count is now off" << std::endl;
-        // if this happens often (read: twice) you have a bug, otherwise, ignore
     }
     px = next_x_pos[particle];
     py = next_y_pos[particle];
     directions[particle] = next_directions[particle];
     impact_times[particle] = next_impact;
     time = next_impact;
-
 
     // Check if the particle explodes
     for (unsigned long direction = 0; direction < 2; direction++) {
