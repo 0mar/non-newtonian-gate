@@ -31,7 +31,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     std::mt19937 re(rd());
     std::uniform_real_distribution<double> unif(0.5, 1);
     std::ostringstream s;
-    const double left_ratio = 0.75; // todo: Not random atm
+    const double left_ratio = 0.75; // Not random atm
     try {
         sim.start(left_ratio);
     } catch (const std::invalid_argument &ex) {
