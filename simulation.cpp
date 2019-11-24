@@ -279,19 +279,19 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
             printf("Particle %d not in domain\n", (int) particle);
             debug_write("Particle " + std::to_string(particle) + " not found in domain");
         } else if (not is_in_gate(x, y, direction)) {
-            // printf("Particle %d not in radius, distance from center: %.4f. Removed from gate list\n", (int) particle, sqrt(x * x + y * y));
-            gate_contents[direction].erase(std::remove(gate_contents[direction].begin(),
-                                                       gate_contents[direction].end(), particle),
-                                           gate_contents[direction].end());
+            printf("Error (non-fatal): Particle %lu not found in gate, position: (%.4f,%.4f)\n", particle, x, y);
+            printf("Gates have bounds (+/-%.2f, +/-%.2f)\n", bridge_length / 2, bridge_height / 2);
         }
         px = x;
         py = y;
         directions[particle] = get_retraction_angle(particle);
         impact_times[particle] = time;
         compute_next_impact(particle);
+        gate_arrays[direction][particle] = 0; // Attention, only in the one-way blocking case.
         reindex_particle(particle, false);
 //            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
     }
+    gate_contents[direction].clear(); // Attention, only in the one-way blocking case.
 }
 
 void Simulation::measure() {
