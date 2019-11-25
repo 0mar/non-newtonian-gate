@@ -162,15 +162,13 @@ public:
     std::vector<double> y_pos;
     std::vector<double> directions;
     std::vector<double> next_directions;
-    std::vector<unsigned long> in_left_gate;
-    std::vector<unsigned long> in_right_gate;
 
     std::vector<double> measuring_times;
     std::vector<unsigned long> total_left;
     std::vector<unsigned long> currently_in_left_gate;
     std::vector<unsigned long> currently_in_right_gate;
     std::vector<std::vector<unsigned long>> gate_contents;
-    std::vector<std::vector<unsigned long>> gate_arrays; // Todo: Should be bool
+    std::vector<std::vector<bool>> gate_arrays;
     std::vector<double> gate_capacities;
 
     /**

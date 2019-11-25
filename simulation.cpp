@@ -31,16 +31,14 @@ void Simulation::setup() {
     next_impact_times.resize(num_particles);
     sorted_indices.resize(num_particles);
     impact_times.resize(num_particles);
-    in_left_gate.resize(num_particles);
-    in_right_gate.resize(num_particles);
     x_pos.resize(num_particles);
     y_pos.resize(num_particles);
     next_x_pos.resize(num_particles);
     next_y_pos.resize(num_particles);
     directions.resize(num_particles);
     next_directions.resize(num_particles);
-    gate_arrays.push_back(in_left_gate);
-    gate_arrays.push_back(in_right_gate);
+    gate_arrays.emplace_back(std::vector<bool>(num_particles));
+    gate_arrays.emplace_back(std::vector<bool>(num_particles));
     gate_contents.push_back(currently_in_left_gate);
     gate_contents.push_back(currently_in_right_gate);
     gate_capacities.push_back(left_gate_capacity);
@@ -161,7 +159,7 @@ void Simulation::update(const double &write_dt) {
     impact_times[particle] = next_impact;
     time = next_impact;
 
-    // Check if the particle explodes
+    // Check if the particle activates the threshold
     for (unsigned long direction = 0; direction < 2; direction++) {
         if (is_in_gate(px, py, direction) and is_going_in(particle)) {
             check_gate_admission(particle, direction);
@@ -170,7 +168,7 @@ void Simulation::update(const double &write_dt) {
         }
     }
 
-    // Find out when the next collision takes place
+    // Find out when this particle collides next
     compute_next_impact(particle);
     reindex_particle(particle, true);
     // Do something useful with this information
@@ -246,24 +244,24 @@ bool Simulation::is_going_in(const unsigned long &particle) {
 }
 
 void Simulation::check_gate_admission(const unsigned long &particle, const unsigned long &direction) {
-    if (gate_arrays[direction][particle] == 0) {
+    if (not gate_arrays[direction][particle]) {
         // Not yet in gate, check admission
         if (gate_contents[direction].size() > gate_capacities[direction] - 1) {
             explode_gate(particle, direction);
         } else {
             gate_contents[direction].push_back(particle);
-            gate_arrays[direction][particle] = 1;
+            gate_arrays[direction][particle] = true;
         }
     }
 }
 
 void Simulation::check_gate_departure(const unsigned long &particle, const unsigned long &direction) {
-    if (gate_arrays[direction][particle] == 1) {
+    if (gate_arrays[direction][particle]) {
         // Freshly leaving the gate
         gate_contents[direction].erase(std::remove(gate_contents[direction].begin(),
                                                    gate_contents[direction].end(), particle),
                                        gate_contents[direction].end());
-        gate_arrays[direction][particle] = 0;
+        gate_arrays[direction][particle] = false;
     }
 }
 
@@ -287,7 +285,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
         directions[particle] = get_retraction_angle(particle);
         impact_times[particle] = time;
         compute_next_impact(particle);
-        gate_arrays[direction][particle] = 0; // Attention, only in the one-way blocking case.
+        gate_arrays[direction][particle] = false; // Attention, only in the one-way blocking case.
         reindex_particle(particle, false);
 //            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
     }
