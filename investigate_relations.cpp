@@ -20,16 +20,12 @@ void write_results(std::string &id, std::vector<T> &data) {
 double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
                const double channel_width, const double urn_radius, const int threshold, const int num_particles,
                const std::string &id) {
-    const bool write_all_chi = false;
     double chi = 0;
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
-    sim.gate_is_flat = false;
-    sim.distance_as_channel_length = false;
+    sim.gate_is_flat = true;
+    sim.distance_as_channel_length = true;
     sim.expected_collisions = M_f;
     sim.setup();
-    std::random_device rd;
-    std::mt19937 re(rd());
-    std::uniform_real_distribution<double> unif(0.5, 1);
     std::ostringstream s;
     const double left_ratio = 0.75; // Not random atm
     try {
