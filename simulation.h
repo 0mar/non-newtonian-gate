@@ -169,7 +169,7 @@ public:
     std::vector<unsigned long> currently_in_right_gate;
     std::vector<std::vector<unsigned long>> gate_contents;
     std::vector<std::vector<bool>> gate_arrays;
-    std::vector<double> gate_capacities;
+    std::vector<int> gate_capacities;
 
     /**
      * Compute the current position of a particle, based on the `time` variable

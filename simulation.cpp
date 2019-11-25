@@ -244,9 +244,10 @@ bool Simulation::is_going_in(const unsigned long &particle) {
 }
 
 void Simulation::check_gate_admission(const unsigned long &particle, const unsigned long &direction) {
+//    printf("%4.5f: New particle in gate %ld, old number %lu\n",time, direction, gate_contents[direction].size());
     if (not gate_arrays[direction][particle]) {
         // Not yet in gate, check admission
-        if (gate_contents[direction].size() > gate_capacities[direction] - 1) {
+        if (gate_contents[direction].size() >= gate_capacities[direction]) {
             explode_gate(particle, direction);
         } else {
             gate_contents[direction].push_back(particle);
@@ -266,6 +267,7 @@ void Simulation::check_gate_departure(const unsigned long &particle, const unsig
 }
 
 void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned long &direction) {
+//    printf("%4.5f: Exploding gate %ld, %lu/%d particles already inside and new one entering\n",time,direction,gate_contents[direction].size(),gate_capacities[direction]);
     do {
         directions[exp_particle] = get_retraction_angle(exp_particle);
     } while (not is_in_domain(next_x_pos[exp_particle], next_y_pos[exp_particle]));
@@ -290,6 +292,8 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
 //            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
     }
     gate_contents[direction].clear(); // Attention, only in the one-way blocking case.
+//    printf("%4.5f: Now gate contains %ld particles\n",time,gate_contents[direction].size());
+
 }
 
 void Simulation::measure() {
