@@ -9,17 +9,22 @@ input_dir = 'input'
 if not os.path.exists(plot_dir):
     os.makedirs(plot_dir)
 
-def threshold(length,width,radius,threshold,num_particles):
-    area = np.pi*radius**2 - radius**2*np.asin(width/(2*radius))+width*np.sqrt(4*radius**2 - width**2)/4
+
+def threshold(params):
+    length, width, radius, threshold, num_particles = params['length'], params['width'], params['radius'], params[
+        'threshold'], params['num_particles']
+    area = np.pi * radius ** 2 - radius ** 2 * np.arcsin(width / (2 * radius)) + width * np.sqrt(
+        4 * radius ** 2 - width ** 2) / 4
     return num_particles*width*length/(8*threshold*area*0.8)
 
-def plot(filename,size,num_particles):
+
+def plot(filename, num_particles):
     param_names = ["length","width","radius","threshold"]
     plt.figure(figsize=(22,15))
     for i in range(6):
         row = i//3
         col = i%3
-        df = pd.read_csv(filename%(size,i),header=None,names=["length","width","radius","threshold","chi"])
+        df = pd.read_csv(filename % i, header=None, names=["length", "width", "radius", "threshold", "chi"])
         df['num_particles']=int(float(num_particles))
         sub_df = df.loc[:, (df != df.iloc[0]).any()]
         x_label = sub_df.columns[0]
@@ -47,12 +52,12 @@ def plot(filename,size,num_particles):
         
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-    plt.savefig("%s/omar-recreation-%s.pdf"%(plot_dir,size))
+    plt.savefig("%s/omar-recreation-%s.pdf" % (plot_dir, num_particles))
 
 for size in ["small","large"]:
     filename = '%s/param_file_%s_%s.out'%(input_dir,size,"%d")
     num_particles = {"small":"1E3","large":"1E4"}[size]
-    plot(filename,size,num_particles)
+    plot(filename, num_particles)
 
 intro = """
 reset
@@ -99,7 +104,7 @@ splot '{out_name}' u {ratio} with pm3d nocontour, f(x,y) with lines lw 3 dt 10 l
 
 def output_gnu(prefix=''):
     filename_format='input/param_file_%s_%d.out'
-    nums_particles=["1E3","3E3","1E4"]
+    nums_particles = ["1E3", "1E4"]
     data_name_fmt='%s/dyn-N%s-%s-%s.dat'
     param_names = ["length","width","radius","threshold"]
     ratios = ['4:5:1','5:3:1','4:3:1','5:6:1','4:6:1','3:6:1']
