@@ -15,7 +15,7 @@ def threshold(params):
         'threshold'], params['num_particles']
     area = np.pi * radius ** 2 - radius ** 2 * np.arcsin(width / (2 * radius)) + width * np.sqrt(
         4 * radius ** 2 - width ** 2) / 4
-    return num_particles*width*length/(8*threshold*area*0.8)
+    return num_particles*width*length/(8*threshold*area*0.75)
 
 
 def plot(filename, num_particles):
