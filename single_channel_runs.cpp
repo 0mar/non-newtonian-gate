@@ -57,8 +57,7 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
-    sim.second_height = 0.04;
-    sim.second_length = 1;
+    sim.expected_collisions = M_f;
     sim.setup();
     std::random_device rd;
     std::mt19937 re(rd());
@@ -74,17 +73,9 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
     }
     double dt = 0;
     while (sim.measuring_times.size() < M_f) {
-//        if (sim.measuring_times.size() ==M_t) {
-//            dt = 0.025;
-//            sim.last_written_time = sim.time;
-//        }
-//        if (sim.measuring_times.size() == M_t + 10000){
-//            dt = 0;
-//        }
         sim.update(dt);
         if (sim.measuring_times.size() % step_size == 0) {
-            s << sim.measuring_times.size() << "," << sim.time << "," << sim.first_channel_surplus << ","
-              << sim.second_channel_surplus << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
+            s << sim.measuring_times.size() << "," << sim.time << "," << std::fabs(sim.get_mass_spread())
               << std::endl;
         }
     }
@@ -92,18 +83,6 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
     result_file << s.str();
     result_file.close();
     return chi;
-}
-
-void test_currents() {
-    const double channel_length = 1;
-    const double channel_width = 0.3;
-    const double urn_radius = 1;
-    const int threshold = 5;
-    const int num_particles = 1000;
-    const int M_t = 4E6;
-    const int M_f = 8E6;
-    const std::string id = "test_currents";
-    get_chi_development(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id);
 }
 
 unsigned long find_sandwich_time(const double channel_length,
@@ -137,7 +116,7 @@ unsigned long find_sandwich_time(const double channel_length,
         sim_bottom.update(0.0);
         if (sim_top.measuring_times.size() % step_size == 0) {
             s << sim_top.measuring_times.size() << "," << std::fabs(sim_top.get_mass_spread()) << ", "
-              << std::fabs(sim_bottom.get_mass_spread()) << std::endl; // todo remove
+              << std::fabs(sim_bottom.get_mass_spread()) << std::endl;
         }
         chi_diff = std::fabs(std::fabs(sim_top.get_mass_spread()) - std::fabs(sim_bottom.get_mass_spread()));
     }
@@ -211,8 +190,7 @@ void matteo_relation_finder(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    //    matteo_relation_finder(argc, argv);
-    test_currents();
+    matteo_relation_finder(argc, argv);
     return 0;
 }
 
