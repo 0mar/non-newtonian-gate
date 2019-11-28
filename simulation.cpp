@@ -101,17 +101,8 @@ void Simulation::start(const double &left_ratio) {
     time = 0;
     last_written_time = 0;
     in_left = 0;
-    if (bridge_height / 2 >= box_y_radius) {
-        throw std::invalid_argument("Bridge height too large; no initialization possible");
-    }
-    if (second_height / 2 >= box_y_radius) {
-        throw std::invalid_argument("Second bridge height too large; no initialization possible");
-    }
     if (left_ratio * num_particles < 0 or left_ratio * num_particles > num_particles) {
         throw std::domain_error("Please choose ratio between 0 and 1");
-    }
-    if (distance_as_channel_length and not gate_is_flat) {
-        throw std::domain_error("If the gate is not flat, the bridge correction should not be applied");
     }
     const auto num_left_particles = (unsigned long) (left_ratio * num_particles);
     for (unsigned long particle = 0; particle < num_left_particles; particle++) {
@@ -440,6 +431,15 @@ void Simulation::couple_bridge() {
         if (second_height > 0) {
             box_x_radius += second_length;
         }
+    }
+    if (bridge_height / 2 >= box_y_radius) {
+        throw std::invalid_argument("Bridge height too large; no initialization possible");
+    }
+    if (second_height / 2 >= box_y_radius) {
+        throw std::invalid_argument("Second bridge height too large; no initialization possible");
+    }
+    if (distance_as_channel_length and not gate_is_flat) {
+        throw std::domain_error("If the gate is not flat, the bridge correction should not be applied");
     }
 }
 

@@ -25,16 +25,16 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
     sim.expected_collisions = M_f;
-    sim.setup();
+
     std::ostringstream s;
     const double left_ratio = 0.75; // Not random atm
     try {
-        sim.start(left_ratio);
+        sim.setup();
     } catch (const std::invalid_argument &ex) {
         printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
         return 0;
     }
-
+    sim.start(left_ratio);
     while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
     }
