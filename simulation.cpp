@@ -146,7 +146,7 @@ void Simulation::update(const double &write_dt) {
     // Check if the particle requires boundary conditions
     check_boundary_condition(particle);
     // Update the data of the particle with the collision
-    std::cout << "1: " << first_channel_surplus << "\t2: " << second_channel_surplus << std::endl;
+//    std::cout << "1: " << first_channel_surplus << "\t2: " << second_channel_surplus << std::endl;
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
         printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py);
         next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
@@ -163,7 +163,7 @@ void Simulation::update(const double &write_dt) {
     directions[particle] = next_directions[particle];
     impact_times[particle] = next_impact;
     time = next_impact;
-
+//    write_bounce_map_to_file(particle);
     //Todo: Is the count right?
     // Check if the particle activates the threshold
     for (unsigned long direction = 0; direction < 2; direction++) {
@@ -421,7 +421,6 @@ void Simulation::couple_bridge() {
     box_y_radius = circle_radius;
     const double discrepancy =
             2 * circle_radius - 2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(bridge_height, 2) / 4);
-    std::cout << discrepancy << std::endl;
     if (distance_as_channel_length) {
         bridge_length = circle_distance;
         circle_distance = bridge_length - discrepancy;
@@ -543,8 +542,10 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     if (next_time == max_path) {
         reset_counter++;
         printf("Next time = maxpath =%.2f\nParticle has to be reset (%dth time)\n", next_time, reset_counter);
-        printf("Position (%.4f, %.4f) at t=%.2f, angle %.2f pi\n", px, py, impact_times[particle],
+        printf("Position (%.4f, %.4f) at t=%.2f (%lu collisions), angle %.2f pi\n", px, py, impact_times[particle],
+               measuring_times.size(),
                directions[particle] / PI);
+        printf("Bounding box: (%.2f,%.2f)\n", box_x_radius, box_y_radius);
         const int direction = px > 0 ? RIGHT : LEFT;
         debug_write("Resetting particle " + std::to_string(particle));
         reset_particle(particle, direction);
@@ -613,16 +614,17 @@ double Simulation::time_to_hit_second_bridge(const unsigned long &particle, doub
     const int sign = sgn(px);
     double rx = max_path * cos(directions[particle]);
     double ry = max_path * sin(directions[particle]);
-    double sx = -sign * second_length / 2;
+    const double addition = sign * 0.1;
+    double sx = -sign * second_length / 2 - addition;
     double sy = 0;
     // q_bottom = (left_x, bottom_y) and q_top = (left_x, top_y)
     // u = (q − p) × r / (r × s)
     const double denom = rx * sy - ry * sx;
-    double u1 = ((sign * box_x_radius - px) * ry - (-second_height / 2 - py) * rx) / denom;
-    double u2 = ((sign * box_x_radius - px) * ry - (second_height / 2 - py) * rx) / denom;
+    double u1 = ((sign * box_x_radius + addition - px) * ry - (-second_height / 2 - py) * rx) / denom;
+    double u2 = ((sign * box_x_radius + addition - px) * ry - (second_height / 2 - py) * rx) / denom;
     // t = (q − p) × s / (r × s)
-    double t1 = ((sign * box_x_radius - px) * sy - (-second_height / 2 - py) * sx) / denom;
-    double t2 = ((sign * box_x_radius - px) * sy - (second_height / 2 - py) * sx) / denom;
+    double t1 = ((sign * box_x_radius + addition - px) * sy - (-second_height / 2 - py) * sx) / denom;
+    double t2 = ((sign * box_x_radius + addition - px) * sy - (second_height / 2 - py) * sx) / denom;
     double min_t = 1;
     if (EPS < t1 and t1 < min_t and 0 <= u1 and u1 <= 1) {
         min_t = t1 - EPS;
@@ -697,7 +699,7 @@ double Simulation::get_retraction_angle(const unsigned long &particle) {
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
     } else {
         if (cos(directions[particle]) * x_pos[particle] < 0) {
-            return directions[particle] + PI;
+            return -directions[particle] + PI; // Fixme should also work for specular
         } else {
             return directions[particle];
         }
