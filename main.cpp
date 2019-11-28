@@ -22,17 +22,25 @@ void single_particle_animation() {
 
 void many_particle_animation() {
     printf("Running the animation for 1000 particles, writing animation\n");
-    Simulation simulation = Simulation(1000, 0.3);
-    simulation.left_gate_capacity = 5;
+    Simulation simulation = Simulation(2, 0.5);
+    simulation.left_gate_capacity = 0;
     simulation.gate_is_flat = true;
-    simulation.right_gate_capacity = 5;
-    simulation.circle_distance = 1;
+    simulation.right_gate_capacity = 0;
+    simulation.circle_distance = 0.5;
     simulation.circle_radius = 1;
     simulation.second_length = 1;
-    simulation.second_height = 0.02;
+    simulation.second_height = 0.3;
     simulation.distance_as_channel_length = true;
     simulation.setup();
-    simulation.start(0.25);
+    simulation.start(0);
+    simulation.x_pos[0] = simulation.left_center_x;
+    simulation.y_pos[0] = 0;
+    simulation.directions[0] = 0;
+    simulation.compute_next_impact(0);
+    simulation.x_pos[1] = simulation.right_center_x;
+    simulation.y_pos[1] = 0;
+    simulation.directions[1] = M_PI;
+    simulation.compute_next_impact(1);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
     while (simulation.time < 100) {
