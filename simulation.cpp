@@ -164,7 +164,6 @@ void Simulation::update(const double &write_dt) {
     impact_times[particle] = next_impact;
     time = next_impact;
 //    write_bounce_map_to_file(particle);
-    //Todo: Is the count right?
     // Check if the particle activates the threshold
     for (unsigned long direction = 0; direction < 2; direction++) {
         if (is_in_gate(px, py, direction) and is_going_in(particle)) {
@@ -315,7 +314,6 @@ void Simulation::check_boundary_condition(const unsigned long &particle) {
 }
 
 void Simulation::count_first_gate_crossing(const unsigned long &particle) {
-    // Todo: Simplify with sign
     if (px < 0 and next_x_pos[particle] > 0) {
         first_channel_surplus++;
     } else if (px > 0 and next_x_pos[particle] < 0) {
