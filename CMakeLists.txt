@@ -18,10 +18,12 @@ endif ()
 add_executable(terrier main.cpp simulation.cpp simulation.h)
 add_executable(find_anti find_unicorn.cpp simulation.cpp simulation.h)
 
-add_executable(parameter_test investigate_relations.cpp simulation.cpp simulation.h)
+add_executable(single_channel single_channel_runs.cpp simulation.cpp simulation.h)
+add_executable(double_channel double_channel_runs.cpp simulation.cpp simulation.h)
 target_link_libraries(terrier)
 target_link_libraries(find_anti)
-target_link_libraries(parameter_test)
+target_link_libraries(single_channel)
+target_link_libraries(double_channel)
 
 add_custom_command(TARGET parameter_test POST_BUILD COMMAND ${CMAKE_SOURCE_DIR}/populate.sh "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}")
 

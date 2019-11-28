@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ./create_batch.py;
-for input_file in input/param_file_{small,large}_*.in
+for input_file in single_channel_data/param_file_{small,large}_*.in
 do 
     echo $input_file
     ./run_batch.sh $input_file
