@@ -3,7 +3,7 @@ import numpy as np
 import json
 import sys
 
-def single_channel_param_set(param_coupling, default, identifier='param_file1'):
+def single_channel_param_set(param_coupling, default ):
     values = default.copy()
     res = 20
     it = iter(param_coupling)
@@ -22,7 +22,7 @@ def single_channel_param_set(param_coupling, default, identifier='param_file1'):
                 f.write(cmd_string + "\n")
 
 if __name__ == '__main__':
-    filename = 'params.json'
+    filename = 'params_single_channel.json'
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     with open(filename,'r') as param_file:
