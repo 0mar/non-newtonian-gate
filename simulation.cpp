@@ -614,7 +614,10 @@ double Simulation::time_to_hit_second_bridge(const unsigned long &particle, doub
     const int sign = sgn(px);
     double rx = max_path * cos(directions[particle]);
     double ry = max_path * sin(directions[particle]);
-    const double addition = sign * 0.1;
+    // Extend the length of the second bridge past the boundary condition.
+    // Otherwise, there is an infinitisemal hole between the bridge and the boundary.
+    // This can really be any number larger than 0, since the domain does not extend beyond the boundary
+    const double addition = sign * 0.01;
     double sx = -sign * second_length / 2 - addition;
     double sy = 0;
     // q_bottom = (left_x, bottom_y) and q_top = (left_x, top_y)
