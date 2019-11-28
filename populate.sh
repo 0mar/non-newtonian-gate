@@ -8,5 +8,5 @@ then
 fi
 SOURCE="$1"
 BUILD="$2"
-cp "$SOURCE"/create_*.py "$SOURCE"/params_*.json "$SOURCE"/run_batch.sh "$SOURCE"/plot_data.py "$SOURCE"/visualise.py "$SOURCE"/*_full.sh "$BUILD"
+cp "$SOURCE"/create_*.py "$SOURCE"/params_*.json "$SOURCE"/*_batch.sh "$SOURCE"/plot_data.py "$SOURCE"/visualise.py "$SOURCE"/*_full.sh "$BUILD"
 mkdir -p single_channel_data/plots double_channel_data/plots
