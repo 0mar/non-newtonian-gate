@@ -184,20 +184,31 @@ class VisualScene:
 
     def draw_bridge(self):
         """
-        Draws a line segment in the scene on its relative location. Can be used for (debugging) paths
         :return: None
         """
         x_0 = self.convert_relative_coordinate(
-            np.array((-self.data_reader.bridge_size / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((-self.data_reader.bridge_length / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
         x_1 = self.convert_relative_coordinate(
-            np.array((self.data_reader.bridge_size / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((self.data_reader.bridge_length / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
         x_2 = self.convert_relative_coordinate(
-            np.array((-self.data_reader.bridge_size / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((-self.data_reader.bridge_length / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
         x_3 = self.convert_relative_coordinate(
-            np.array((self.data_reader.bridge_size / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((self.data_reader.bridge_length / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
         self.canvas.create_rectangle(tuple(x_0) + tuple(x_3), fill='white', outline='white', width=3)
         self.canvas.create_line(tuple(x_0) + tuple(x_1), fill='black', width=2)
         self.canvas.create_line(tuple(x_2) + tuple(x_3), fill='black', width=2)
+        bridge_start_x,bridge_y = self.convert_relative_coordinate(np.array((self.data_reader.box_radius[0], self.data_reader.second_height / 2)) / self.data_reader.size)
+        if self.data_reader.second_height > 0:
+            box_size = np.array([self.data_reader.second_length/2,-self.data_reader.second_height])/self.data_reader.size
+            box1_start = np.array([-self.data_reader.box_radius[0],self.data_reader.second_height/2])/self.data_reader.size
+            box2_start = np.array([self.data_reader.box_radius[0]-self.data_reader.second_length/2,self.data_reader.second_height/2])/self.data_reader.size
+            for box_start in [box1_start,box2_start]:
+                top_left = self.convert_relative_coordinate(box_start)
+                bottom_right = self.convert_relative_coordinate(box_start+box_size)
+                self.canvas.create_rectangle(top_left[0],top_left[1],bottom_right[0],bottom_right[1],fill='white',outline='white',width=3)
+                self.canvas.create_line(top_left[0],top_left[1],bottom_right[0],top_left[1],fill='black',width=2)
+                self.canvas.create_line(top_left[0],bottom_right[1],bottom_right[0],bottom_right[1],fill='black',width=2)
+
 
     def convert_relative_coordinate(self, coord):
         """
@@ -220,9 +231,11 @@ class DataReader:
             self.filename = filename
         self.file = open(self.filename, 'r')
         self.num_particles = self.gate_radius = self.circle_radius = 0
-        self.circle_distance = self.bridge_height = self.bridge_size = 0
+        self.circle_distance = self.bridge_height = self.bridge_length = 0
+        self.second_height = self.second_length = 0
         self.read_parameters()
-        self.size = np.array([self.circle_radius * 4 + self.circle_distance, self.circle_radius * 2]) * 0.55
+        self.box_radius = np.array([self.circle_radius * 4 + self.circle_distance + self.second_length*0.97, self.circle_radius * 2])/2
+        self.size = self.box_radius * 1.1
         self.times = []
         self.positions = np.zeros((self.num_particles, 2))
         self.directions = np.zeros(self.num_particles)
@@ -235,7 +248,7 @@ class DataReader:
         parameters = self.file.readline().split()
         for name, parameter in zip(names, parameters):
             if not hasattr(self, name):
-                print("Jammer, %s zit er niet in ", name)
+                print("Jammer, %s zit er niet in"%name)
             else:
                 setattr(self, name, float(parameter))
         self.num_particles = int(self.num_particles)
@@ -252,6 +265,7 @@ class DataReader:
                 self.positions[i, 1] = float(raw_pos_y[i])
                 self.directions[i] = float(raw_dirs[i])
         except ValueError:
+            print("Simulation is done")
             self.time = -1
 
 
