@@ -22,12 +22,14 @@ void single_particle_animation() {
 
 void many_particle_animation() {
     printf("Running the animation for 1000 particles, writing animation\n");
-    Simulation simulation = Simulation(1000, 0.5);
+    Simulation simulation = Simulation(1000, 0.3);
     simulation.left_gate_capacity = 5;
     simulation.gate_is_flat = true;
     simulation.right_gate_capacity = 5;
-    simulation.circle_distance = 0.5;
+    simulation.circle_distance = 1;
     simulation.circle_radius = 1;
+    simulation.second_length = 1;
+    simulation.second_height = 0.02;
     simulation.distance_as_channel_length = true;
     simulation.setup();
     simulation.start(0.25);
