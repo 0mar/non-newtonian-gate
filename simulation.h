@@ -28,6 +28,8 @@ public:
     const int num_particles;
     int left_gate_capacity;
     int right_gate_capacity;
+    int first_channel_surplus; // Defined from left to right
+    int second_channel_surplus; // Defined from right to left
     unsigned long in_left;
     // Other parameters
     double circle_radius;
@@ -50,6 +52,7 @@ public:
     bool debug = false;
     bool distance_as_channel_length = false;
     bool write_bounces = false;
+
     unsigned long expected_collisions = 0;
     // There is a (geometrical) difference between the distance between the urns and the length of the channel
     // if the gate is flat. While the former is nicer from a modelling point of view,
@@ -227,6 +230,8 @@ public:
      */
 
     void check_boundary_condition(const unsigned long &particle);
+
+    void count_first_gate_crossing(const unsigned long &particle);
 
     bool is_in_gate(const double &x, const double &y, const unsigned long &direction);
 

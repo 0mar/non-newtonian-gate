@@ -123,6 +123,8 @@ void Simulation::start(const double &left_ratio) {
         reset_particle(particle, RIGHT);
         compute_next_impact(particle);
     }
+    first_channel_surplus = 0;
+    second_channel_surplus = 0;
     sort_indices();
     measure();
 }
@@ -140,11 +142,13 @@ void Simulation::update(const double &write_dt) {
         }
         printf("Writing position at %.2f\n", last_written_time);
     }
+    count_first_gate_crossing(particle);
     // Check if the particle requires boundary conditions
     check_boundary_condition(particle);
     // Update the data of the particle with the collision
+    std::cout << "1: " << first_channel_surplus << "\t2: " << second_channel_surplus << std::endl;
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
-        // printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py);
+        printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py);
         next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
         next_y_pos[particle] = 0;
     }
@@ -302,9 +306,20 @@ void Simulation::check_boundary_condition(const unsigned long &particle) {
     if (second_height > 0) {
         if (next_x_pos[particle] < -box_x_radius) {
             next_x_pos[particle] += 2 * box_x_radius;
+            second_channel_surplus--;
         } else if (next_x_pos[particle] > box_x_radius) {
             next_x_pos[particle] -= 2 * box_x_radius;
+            second_channel_surplus++;
         }
+    }
+}
+
+void Simulation::count_first_gate_crossing(const unsigned long &particle) {
+    // Todo: Simplify with sign
+    if (px < 0 and next_x_pos[particle] > 0) {
+        first_channel_surplus++;
+    } else if (px > 0 and next_x_pos[particle] < 0) {
+        first_channel_surplus--;
     }
 }
 
