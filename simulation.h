@@ -155,6 +155,8 @@ public:
      */
     double time_to_hit_middle(const unsigned long &particle);
 
+    double time_to_hit_bounds(const unsigned long &particle);
+
     /**
      * Computes the next impact of a particle by finding the minimum impact time of all options.
      * @param particle Particle index

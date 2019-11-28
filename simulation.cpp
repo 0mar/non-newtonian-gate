@@ -140,15 +140,14 @@ void Simulation::update(const double &write_dt) {
         }
         printf("Writing position at %.2f\n", last_written_time);
     }
-
+    // Check if the particle requires boundary conditions
+    check_boundary_condition(particle);
     // Update the data of the particle with the collision
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
         // printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py);
         next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
         next_y_pos[particle] = 0;
     }
-    // Check if the particle requires boundary conditions
-    check_boundary_condition(particle);
     // Process the location of the particle
     if (px > 0 and next_x_pos[particle] <= 0) {
         in_left++;
@@ -161,6 +160,7 @@ void Simulation::update(const double &write_dt) {
     impact_times[particle] = next_impact;
     time = next_impact;
 
+    //Todo: Is the count right?
     // Check if the particle activates the threshold
     for (unsigned long direction = 0; direction < 2; direction++) {
         if (is_in_gate(px, py, direction) and is_going_in(particle)) {
@@ -300,10 +300,10 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
 
 void Simulation::check_boundary_condition(const unsigned long &particle) {
     if (second_height > 0) {
-        if (px < -box_x_radius) {
-            px += 2*box_x_radius;
-        } else if (px > box_x_radius) {
-            px -= 2*box_x_radius;
+        if (next_x_pos[particle] < -box_x_radius) {
+            next_x_pos[particle] += 2 * box_x_radius;
+        } else if (next_x_pos[particle] > box_x_radius) {
+            next_x_pos[particle] -= 2 * box_x_radius;
         }
     }
 }
@@ -332,9 +332,10 @@ void Simulation::write_positions_to_file(const double &time) {
     std::ofstream file;
     if (time == 0) {
         file.open(filename, std::ofstream::out | std::ofstream::trunc);
-        file << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_size\n";
+        file
+                << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_length\tsecond_height\tsecond_length\n";
         file << num_particles << " " << circle_radius << " " << circle_distance << " "
-             << bridge_height << " " << bridge_length << second_height  << " " << second_length << std::endl;
+             << bridge_height << " " << bridge_length << " " << second_height << " " << second_length << std::endl;
         file.close();
     }
     file.open(filename, std::ios_base::app);
@@ -409,30 +410,27 @@ void Simulation::couple_bridge() {
     if (distance_as_channel_length) {
         bridge_length = circle_distance;
         circle_distance = bridge_length - discrepancy;
-    } else {
-        bridge_length = circle_distance + discrepancy;
-        if (bridge_length <= 0) {
+        if (circle_distance <= 0) {
             throw std::invalid_argument("Bridge length smaller than zero for this configuration");
         }
-    }
-    box_x_radius = bridge_length / 2 + 2 * circle_radius - discrepancy;
-    if (second_height > 0) {
-        const double second_discrepancy =
-                2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(second_height, 2) / 4) - 2 * circle_radius;
-
-        if (distance_as_channel_length) {
-            second_length = circle_distance;
-            circle_distance = second_length - second_discrepancy;
-        } else {
-            second_length = circle_distance + second_discrepancy;
-            if (second_length <= 0) {
+        box_x_radius = circle_distance / 2 + 2 * circle_radius;
+        if (second_height > 0) {
+            const double second_discrepancy =
+                    2 * circle_radius - 2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(second_height, 2) / 4);
+            box_x_radius += (second_length - second_discrepancy) / 2;
+            if (second_length - second_discrepancy <= 0) {
                 throw std::invalid_argument("Second bridge length smaller than zero for this configuration");
             }
         }
-        // Box radius now becomes larger
-        box_x_radius += second_length / 2 - second_discrepancy;
+    } else {
+        bridge_length = circle_distance + discrepancy;
+        box_x_radius = circle_distance / 2 + 2 * circle_radius;
+        if (second_height > 0) {
+            box_x_radius += second_length;
+        }
     }
 }
+
 
 bool Simulation::is_in_domain(const double &x, const double &y) {
     if (is_in_bridge(x, y) or is_in_second_bridge(x, y)) {
@@ -497,7 +495,7 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     double to_second_bridge = time_to_hit_second_bridge(particle, angle);
     if (to_second_bridge < next_time) {
         next_time = to_second_bridge;
-        next_angle = angle;
+        next_angle = get_reflection_angle(directions[particle], angle);
     }
     double to_left = time_to_hit_circle(particle, left_center_x, angle);
     if (to_left < next_time) {
@@ -520,6 +518,11 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     double to_middle = time_to_hit_middle(particle);
     if (to_middle < next_time) {
         next_time = to_middle + EPS;
+        next_angle = directions[particle];
+    }
+    double to_bounds = time_to_hit_bounds(particle);
+    if (to_bounds < next_time) {
+        next_time = to_bounds + EPS;
         next_angle = directions[particle];
     }
     if (next_time == max_path) {
@@ -588,18 +591,23 @@ double Simulation::time_to_hit_second_bridge(const unsigned long &particle, doub
      * Check if we hit the bottom line, and check if we hit the top line, and return a float.
      */
     //Recall: px=positions(particle,0), py=positions(particle,1)
+    if (second_height == 0) {
+        return max_path;
+    }
+    // Check the bridge on the side where it matters
+    const int sign = sgn(px);
     double rx = max_path * cos(directions[particle]);
     double ry = max_path * sin(directions[particle]);
-    double sx = second_length;
+    double sx = -sign * second_length / 2;
     double sy = 0;
     // q_bottom = (left_x, bottom_y) and q_top = (left_x, top_y)
     // u = (q − p) × r / (r × s)
     const double denom = rx * sy - ry * sx;
-    double u1 = ((-box_x_radius - px) * ry - (-second_height / 2 - py) * rx) / denom;
-    double u2 = ((-box_x_radius - px) * ry - (second_height / 2 - py) * rx) / denom;
+    double u1 = ((sign * box_x_radius - px) * ry - (-second_height / 2 - py) * rx) / denom;
+    double u2 = ((sign * box_x_radius - px) * ry - (second_height / 2 - py) * rx) / denom;
     // t = (q − p) × s / (r × s)
-    double t1 = ((-box_x_radius - px) * sy - (-second_height / 2 - py) * sx) / denom;
-    double t2 = ((-box_x_radius - px) * sy - (second_height / 2 - py) * sx) / denom;
+    double t1 = ((sign * box_x_radius - px) * sy - (-second_height / 2 - py) * sx) / denom;
+    double t2 = ((sign * box_x_radius - px) * sy - (second_height / 2 - py) * sx) / denom;
     double min_t = 1;
     if (EPS < t1 and t1 < min_t and 0 <= u1 and u1 <= 1) {
         min_t = t1 - EPS;
@@ -647,7 +655,7 @@ double Simulation::time_to_hit_circle(const unsigned long &particle, const doubl
         impact_x = px + t1 * add_x;
         impact_y = py + t1 * add_y;
         // Only hitting the circle if not in the bridge
-        if (not is_in_bridge(impact_x, impact_y) and not is_in_second_bridge(impact_x,impact_y) ) {
+        if (not is_in_bridge(impact_x, impact_y) and not is_in_second_bridge(impact_x, impact_y)) {
             normal_angle = atan2(0 - impact_y, center_x - impact_x);
             min_t = t1 - EPS;
         }
@@ -656,7 +664,7 @@ double Simulation::time_to_hit_circle(const unsigned long &particle, const doubl
         impact_x = px + t2 * add_x;
         impact_y = py + t2 * add_y;
         // Only hitting the circle if not in the bridge
-        if (not is_in_bridge(impact_x, impact_y)) {
+        if (not is_in_bridge(impact_x, impact_y) and not is_in_second_bridge(impact_x, impact_y)) {
             normal_angle = atan2(0 - impact_y, center_x - impact_x);
             min_t = t2 - EPS;
         }
@@ -754,4 +762,19 @@ double Simulation::time_to_hit_middle(const unsigned long &particle) {
         min_t = t + EPS;
     }
     return min_t * max_path;
+}
+
+double Simulation::time_to_hit_bounds(const unsigned long &particle) {
+    double min_path = max_path;
+    if (second_height > 0) {
+        const double to_left_bound = (-box_x_radius - px) / cos(directions[particle]);
+        const double to_right_bound = (box_x_radius - px) / cos(directions[particle]);
+        if (to_left_bound > 0 and to_left_bound < min_path) {
+            min_path = to_left_bound;
+        }
+        if (to_right_bound > 0 and to_right_bound < min_path) {
+            min_path = to_right_bound;
+        }
+    }
+    return min_path;
 }
