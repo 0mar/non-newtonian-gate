@@ -33,11 +33,16 @@ public:
     double circle_radius;
     double circle_distance;
     double bridge_height;
+    double second_height;
     // Computed quantities
     double left_center_x;
     double right_center_x;
     double max_path;
     double bridge_length; // measured from the height
+    double box_x_radius;
+    double box_y_radius;
+    // Choose second_length 0 to revert to old case
+    double second_length; // also measured from the height;
     const unsigned long LEFT = 0;
     const unsigned long RIGHT = 1;
     bool explosion_direction_is_random;
@@ -102,6 +107,8 @@ public:
      */
     bool is_in_bridge(const double &x, const double &y);
 
+    bool is_in_second_bridge(const double &x, const double &y);
+
     /**
      * Compute the intersections of a particle with an urn (on the x-axis)
      * @param particle Particle index
@@ -120,6 +127,8 @@ public:
      * @return time to next collision with bridge
      */
     double time_to_hit_bridge(const unsigned long &particle, double &normal_angle);
+
+    double time_to_hit_second_bridge(const unsigned long &particle, double &normal_angle);
 
     /**
      * Computes the time it takes for a particle to reach the boundary of a reservoir
@@ -190,8 +199,7 @@ public:
      * @param box_y_radius Vertical radius of the box
      * @param direction LEFT or RIGHT
      */
-    void reset_particle(const unsigned long &particle, const double &box_x_radius, const double &box_y_radius,
-                        const unsigned long &direction);
+    void reset_particle(const unsigned long &particle, const unsigned long &direction);
 
     /**
      * Check if particle can enter gate. If gate is below threshold, enters the particle in the gate
@@ -215,6 +223,9 @@ public:
      * @param direction Direction, LEFT or RIGHT
      * @return True if position in gate, false otherwise
      */
+
+    void check_boundary_condition(const unsigned long &particle);
+
     bool is_in_gate(const double &x, const double &y, const unsigned long &direction);
 
     bool is_going_in(const unsigned long &particle);
@@ -273,7 +284,7 @@ public:
      * @param normal_angle normal angle of the surface
      * @return outgoing angle of the particle
      */
-    double get_reflection_angle(const double &angle_in, const double &normal_angle);
+    static double get_reflection_angle(const double &angle_in, const double &normal_angle);
 
     /**
      * Compute the angle a particle should have after a gate explosion (reverse/random)
