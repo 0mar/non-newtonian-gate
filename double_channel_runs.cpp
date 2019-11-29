@@ -98,12 +98,12 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
         }
         std::cout << std::endl;
         throw std::invalid_argument(
-                "Please provide (in order) (1) channel length, (2) channel width, (3) threshold, (4) urn radius,"
+                "Please provide (in order) (1) channel width, (2) channel length, (3) threshold, (4) urn radius,"
                 " (5) second channel width, (6) second channel length, (7) number of particles, (8) initial ratio,"
                 " (9) transient time, (10) final time, (11) identifier");
     }
-    const double channel_length = std::stod(argv[1]);
-    const double channel_width = std::stod(argv[2]);
+    const double channel_width = std::stod(argv[1]);
+    const double channel_length = std::stod(argv[2]);
     const int threshold = std::stoi(argv[3]);
     const double radius = std::stod(argv[4]);
     const double second_width = std::stod(argv[5]);
