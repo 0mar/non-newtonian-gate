@@ -1,0 +1,39 @@
+{
+  "ranges": {
+    "second_width": [
+      0.001,
+      0.05
+    ],
+    "second_length": [
+      0.001,
+      1
+    ],
+    "threshold": [
+      0,
+      24
+    ]
+  },
+  "options": {
+    "num_particles": [
+      1000,
+      10000
+    ],
+    "initial_ratio": [
+      0.25,
+      0.5,
+      0.75
+    ]
+  },
+  "defaults": {
+    "first_width": 0.3,
+    "first_length": 1,
+    "threshold": 5,
+    "radius": 1,
+    "second_width": 0.02,
+    "second_length": 1,
+    "num_particles": 1000,
+    "initial_ratio": 0.25,
+    "M_t": 5E6,
+    "M_f": 10E6
+  }
+}
