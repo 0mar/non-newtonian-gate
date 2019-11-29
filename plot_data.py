@@ -45,9 +45,9 @@ def plot(filename, num_particles):
                                 'num_particles': int(float(num_particles))})
 
         plt.subplot(2, 3, i + 1)
-        plt.scatter(x, y, c=chi, s=150, marker='s', cmap='seismic')
+        plt.scatter(x, y, c=chi, s=150, alpha =0.7, cmap='PiYG')
         plt.colorbar()
-        plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='beige')
+        plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
 
         plt.xlabel(x_label)
         plt.ylabel(y_label)
