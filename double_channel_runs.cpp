@@ -86,36 +86,10 @@ void get_chi(const double channel_width, const double channel_length, const int 
 //    result_file.close();
 //    return chi;
 //}
-
-void test_currents() {
-    const double channel_length = 1;
-    const double channel_width = 0.3;
-    const double second_width = 0.02; // todo: Try a double loop
-    const double second_length = 1;
-    const int num_runs = 26;
-    const double urn_radius = 1;
-    const int num_particles = 1000;
-    const int M_t = 5E6;
-    const int M_f = 10E6;
-    const std::string id = "test_currents";
-    std::ostringstream s;
-    const int min_val = 0;
-    const int max_val = 25;
-    for (int run = 0; run < num_runs; run++) {
-        const int threshold = run;
-        double chi, current;
-        std::cout << threshold << std::endl;
-        get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, second_length, second_width,
-                num_particles, id, chi, current);
-        s << threshold << "," << chi << "," << current << std::endl;
-    }
-    std::ofstream result_file(id + ".chi", std::ios::app);
-    result_file << s.str();
-    result_file.close();
-}
+// todo: Try a double loop
 
 void mass_spread_and_current_for(int argc, char *argv[]) {
-    const int num_arguments = 8;
+    const int num_arguments = 11;
     const int num_runs = 1;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
@@ -124,26 +98,30 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
         }
         std::cout << std::endl;
         throw std::invalid_argument(
-                "Please provide (in order) (1) channel length, (2) width, (3) urn radius, (4) threshold, "
-                "(5) number of particles, (6) start point, (7) end point, (8) ID");
+                "Please provide (in order) (1) channel length, (2) channel width, (3) threshold, (4) urn radius,"
+                " (5) second channel width, (6) second channel length, (7) number of particles, (8) initial ratio,"
+                " (9) transient time, (10) final time, (11) identifier");
     }
     const double channel_length = std::stod(argv[1]);
     const double channel_width = std::stod(argv[2]);
-    const double urn_radius = std::stod(argv[3]);
-    const int threshold = std::stoi(argv[4]);
-    const int num_particles = std::stoi(argv[5]);
-    const int M_t = std::stoi(argv[6]);
-    const int M_f = std::stoi(argv[7]);
-    const std::string id = argv[8];
+    const int threshold = std::stoi(argv[3]);
+    const double radius = std::stod(argv[4]);
+    const double second_width = std::stod(argv[5]);
+    const double second_length = std::stod(argv[6]);
+    const int num_particles = std::stoi(argv[7]);
+    const double initial_ratio = std::stod(argv[8]);
+    const int M_t = std::stoi(argv[9]);
+    const int M_f = std::stoi(argv[10]);
+    const std::string id = argv[11];
     double av_chi = 0;
-    double current;
+    double current = 0;
     for (unsigned int i = 0; i < num_runs; i++) {
-        get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, 1, 0.02, num_particles, id, av_chi,
-                current);
+        get_chi(channel_length, channel_width, threshold, radius, second_length, second_width, num_particles,
+                initial_ratio, M_t, M_f, id, av_chi, current);
     }
     std::ostringstream s;
-    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi
-      << std::endl;
+    s << threshold << "," << second_width << "," << second_length << "," << initial_ratio << "," << av_chi
+      << "," << current << std::endl;
     std::ofstream result_file(id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
