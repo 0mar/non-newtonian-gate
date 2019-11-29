@@ -17,93 +17,111 @@ void write_results(std::string &id, std::vector<T> &data) {
     results_file.close();
 }
 
-double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
-               const double channel_width, const double urn_radius, const int threshold, const int num_particles,
-               const std::string &id) {
-    double chi = 0;
+void get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
+             const double channel_width, const double urn_radius, const int threshold, const double second_length,
+             const double second_width, const int num_particles,
+             const std::string &id, double &av_chi, double &current) {
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
     sim.expected_collisions = M_f;
+    sim.second_length = second_length;
+    sim.second_height = second_width;
     sim.setup();
     std::ostringstream s;
+    av_chi = 0;
+    current = 0;
     const double left_ratio = 0.75; // Not random atm
     try {
         sim.start(left_ratio);
     } catch (const std::invalid_argument &ex) {
         printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
-        return 0;
     }
 
     while (sim.measuring_times.size() < M_t) {
         sim.update(0.0);
     }
     const double weight = 1. / (double) (M_f - M_t);
+    const int count_offset = sim.first_channel_surplus;
+    const double time_offset = sim.time;
     while (sim.measuring_times.size() < M_f) {
         sim.update(0.0);
-        chi += weight * sim.get_mass_spread();
+        av_chi += weight * sim.get_mass_spread();
     }
-    chi = std::fabs(chi);
-    return chi;
+    current = (sim.first_channel_surplus - count_offset) / (sim.time - time_offset);
 }
 
-double get_chi_development(const unsigned long M_t, const unsigned long M_f, const double channel_length,
-                           const double channel_width, const double urn_radius, const int threshold,
-                           const int num_particles, const std::string &id) {
-
-    double chi = 0;
-    const int num_points = 500;
-    const unsigned long step_size = M_f / num_points;
-    Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
-    sim.gate_is_flat = true;
-    sim.distance_as_channel_length = true;
-    sim.second_height = 0.04;
-    sim.second_length = 1;
-    sim.setup();
-    std::random_device rd;
-    std::mt19937 re(rd());
-    std::uniform_real_distribution<double> unif(0.5, 1);
-    std::ostringstream s;
-    const double left_ratio = 0.25; // Not random atm
-    try {
-        sim.start(left_ratio);
-        sim.write_positions_to_file(0);
-    } catch (const std::invalid_argument &ex) {
-        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
-        return 0;
-    }
-    double dt = 0;
-    while (sim.measuring_times.size() < M_f) {
-//        if (sim.measuring_times.size() ==M_t) {
-//            dt = 0.025;
-//            sim.last_written_time = sim.time;
+//double get_chi_development(const unsigned long M_t, const unsigned long M_f, const double channel_length,
+//                           const double channel_width, const double urn_radius, const int threshold,
+//                           const double second_length, const double second_width, const int num_particles,
+//                           const std::string &id) {
+//
+//    double chi = 0;
+//    const int num_points = 500;
+//    const unsigned long step_size = M_f / num_points;
+//    Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
+//    sim.gate_is_flat = true;
+//    sim.distance_as_channel_length = true;
+//    sim.second_height = second_width; // todo: Choose height or width name
+//    sim.second_length = second_length;
+//    sim.setup();
+//    std::random_device rd;
+//    std::mt19937 re(rd());
+//    std::uniform_real_distribution<double> unif(0.5, 1);
+//    std::ostringstream s;
+//    const double left_ratio = 0.25; // Not random atm
+//    try {
+//        sim.start(left_ratio);
+//        sim.write_positions_to_file(0);
+//    } catch (const std::invalid_argument &ex) {
+//        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
+//        return 0;
+//    }
+//    double dt = 0;
+//    while (sim.measuring_times.size() < M_f) {
+////        if (sim.measuring_times.size() ==M_t) {
+////            dt = 0.025;
+////            sim.last_written_time = sim.time;
+////        }
+////        if (sim.measuring_times.size() == M_t + 10000){
+////            dt = 0;
+////        }
+//        sim.update(dt);
+//        if (sim.measuring_times.size() % step_size == 0) {
+//            s << sim.measuring_times.size() << "," << sim.time << "," << sim.first_channel_surplus << ","
+//              << sim.second_channel_surplus << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
+//              << std::endl;
 //        }
-//        if (sim.measuring_times.size() == M_t + 10000){
-//            dt = 0;
-//        }
-        sim.update(dt);
-        if (sim.measuring_times.size() % step_size == 0) {
-            s << sim.measuring_times.size() << "," << sim.time << "," << sim.first_channel_surplus << ","
-              << sim.second_channel_surplus << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
-              << std::endl;
-        }
-    }
-    std::ofstream result_file(id + ".chi", std::ios::app);
-    result_file << s.str();
-    result_file.close();
-    return chi;
-}
+//    }
+//    std::ofstream result_file(id + ".chi", std::ios::app);
+//    result_file << s.str();
+//    result_file.close();
+//    return chi;
+//}
 
 void test_currents() {
     const double channel_length = 1;
     const double channel_width = 0.3;
+    const double second_length = 1;
+    const int num_runs = 20;
     const double urn_radius = 1;
     const int threshold = 5;
     const int num_particles = 1000;
-    const int M_t = 4E6;
-    const int M_f = 8E6;
+    const int M_t = 5E6;
+    const int M_f = 10E6;
     const std::string id = "test_currents";
-    get_chi_development(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id);
+    std::ostringstream s;
+    for (int run = 0; run < num_runs; run++) {
+        const double second_height = 0.001 + run * (0.05 - 0.001) / (num_runs - 1);
+        double chi, current;
+        std::cout << second_height << std::endl;
+        get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, second_length, second_height,
+                num_particles, id, chi, current);
+        s << second_height << "," << chi << "," << current << std::endl;
+    }
+    std::ofstream result_file(id + ".chi", std::ios::app);
+    result_file << s.str();
+    result_file.close();
 }
 
 unsigned long find_sandwich_time(const double channel_length,
@@ -198,9 +216,10 @@ void matteo_relation_finder(int argc, char *argv[]) {
     const int M_f = std::stoi(argv[7]);
     const std::string id = argv[8];
     double av_chi = 0;
+    double current;
     for (unsigned int i = 0; i < num_runs; i++) {
-        av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id) /
-                  num_runs;
+        get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, 1, 0.02, num_particles, id, av_chi,
+                current);
     }
     std::ostringstream s;
     s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi
