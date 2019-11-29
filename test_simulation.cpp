@@ -472,7 +472,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         if (sim.explosion_direction_is_random) {
             BOOST_CHECK(angle > pi / 2 and angle < pi * 3 / 2);
         } else {
-            BOOST_CHECK_CLOSE(angle, sim.directions.at(0) + pi, eps);
+            BOOST_CHECK_CLOSE(angle, 0.1 + pi, eps);
         }
 
         // in right
@@ -482,7 +482,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         if (sim.explosion_direction_is_random) {
             BOOST_CHECK(std::abs(angle) < pi);
         } else {
-            BOOST_CHECK_CLOSE(angle - pi, sim.directions.at(0), eps);
+            BOOST_CHECK_CLOSE(angle - pi, sim.directions.at(0) + 2 * pi, eps);
         }
         // in bridge
         sim.x_pos.at(0) = -0.22;
