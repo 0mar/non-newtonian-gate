@@ -14,12 +14,12 @@ int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-Simulation::Simulation(const int &num_particles, const double &bridge_height, const double &circle_radius,
+Simulation::Simulation(const int &num_particles, const double &bridge_width, const double &circle_radius,
                        const double &circle_distance, const int &left_gate_capacity,
                        const int &right_gate_capacity, const bool &random_dir, const bool &flat_gate)
         : num_particles(num_particles), circle_radius(circle_radius),
-          circle_distance(circle_distance), bridge_height(bridge_height),
-          second_height(0), second_length(0),
+          circle_distance(circle_distance), bridge_width(bridge_width),
+          second_width(0), second_length(0),
           left_gate_capacity(left_gate_capacity), right_gate_capacity(right_gate_capacity),
           explosion_direction_is_random(random_dir), gate_is_flat(flat_gate) {
     rd = std::make_shared<std::random_device>();
@@ -47,14 +47,14 @@ void Simulation::setup() {
     couple_bridge();
     left_center_x = -circle_distance / 2 - circle_radius;
     right_center_x = circle_distance / 2 + circle_radius;
-    max_path = circle_distance + bridge_height + circle_radius * 4 + second_length; // Upper bound for the longest path
+    max_path = circle_distance + bridge_width + circle_radius * 4 + second_length; // Upper bound for the longest path
     if (debug) {
         std::string debug_file_name = "debug_logging/" + get_random_string(7) + ".debug";
         std::cout << "Storing debugging information in " + debug_file_name << std::endl;
         debug_file.open(debug_file_name, std::ofstream::out);
-        debug_file << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_length\tthreshold\n";
+        debug_file << "num_particles\tcircle_radius\tcircle_distance\tbridge_width\tbridge_length\tthreshold\n";
         debug_file << num_particles << "\t" << circle_radius << "\t" << circle_distance << "\t"
-                   << bridge_height << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
+                   << bridge_width << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
         debug_file << "Process: " << getpid() << std::endl;
     }
     if (expected_collisions > 0) {
@@ -276,7 +276,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
             debug_write("Particle " + std::to_string(particle) + " not found in domain");
         } else if (not is_in_gate(x, y, direction)) {
             printf("Error (non-fatal): Particle %lu not found in gate, position: (%.4f,%.4f)\n", particle, x, y);
-            printf("Gates have bounds (+/-%.2f, +/-%.2f)\n", bridge_length / 2, bridge_height / 2);
+            printf("Gates have bounds (+/-%.2f, +/-%.2f)\n", bridge_length / 2, bridge_width / 2);
         }
         px = x;
         py = y;
@@ -293,7 +293,7 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
 }
 
 void Simulation::check_boundary_condition(const unsigned long &particle) {
-    if (second_height > 0) {
+    if (second_width > 0) {
         if (next_x_pos[particle] < -box_x_radius) {
             next_x_pos[particle] += 2 * box_x_radius;
             second_channel_surplus--;
@@ -337,9 +337,9 @@ void Simulation::write_positions_to_file(const double &time) {
     if (time == 0) {
         file.open(filename, std::ofstream::out | std::ofstream::trunc);
         file
-                << "num_particles\tcircle_radius\tcircle_distance\tbridge_height\tbridge_length\tsecond_height\tsecond_length\n";
+                << "num_particles\tcircle_radius\tcircle_distance\tbridge_width\tbridge_length\tsecond_width\tsecond_length\n";
         file << num_particles << " " << circle_radius << " " << circle_distance << " "
-             << bridge_height << " " << bridge_length << " " << second_height << " " << second_length << std::endl;
+             << bridge_width << " " << bridge_length << " " << second_width << " " << second_length << std::endl;
         file.close();
     }
     file.open(filename, std::ios_base::app);
@@ -409,7 +409,7 @@ void Simulation::couple_bridge() {
     // This is always a positive number
     box_y_radius = circle_radius;
     const double discrepancy =
-            2 * circle_radius - 2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(bridge_height, 2) / 4);
+            2 * circle_radius - 2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(bridge_width, 2) / 4);
     if (distance_as_channel_length) {
         bridge_length = circle_distance;
         circle_distance = bridge_length - discrepancy;
@@ -417,9 +417,9 @@ void Simulation::couple_bridge() {
             throw std::invalid_argument("Bridge length smaller than zero for this configuration");
         }
         box_x_radius = circle_distance / 2 + 2 * circle_radius;
-        if (second_height > 0) {
+        if (second_width > 0) {
             const double second_discrepancy =
-                    2 * circle_radius - 2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(second_height, 2) / 4);
+                    2 * circle_radius - 2 * std::sqrt(std::pow(circle_radius, 2) - std::pow(second_width, 2) / 4);
             box_x_radius += (second_length - second_discrepancy) / 2;
             if (second_length - second_discrepancy <= 0) {
                 throw std::invalid_argument("Second bridge length smaller than zero for this configuration");
@@ -428,15 +428,15 @@ void Simulation::couple_bridge() {
     } else {
         bridge_length = circle_distance + discrepancy;
         box_x_radius = circle_distance / 2 + 2 * circle_radius;
-        if (second_height > 0) {
+        if (second_width > 0) {
             box_x_radius += second_length;
         }
     }
-    if (bridge_height / 2 >= box_y_radius) {
-        throw std::invalid_argument("Bridge height too large; no initialization possible");
+    if (bridge_width / 2 >= box_y_radius) {
+        throw std::invalid_argument("Bridge width too large; no initialization possible");
     }
-    if (second_height / 2 >= box_y_radius) {
-        throw std::invalid_argument("Second bridge height too large; no initialization possible");
+    if (second_width / 2 >= box_y_radius) {
+        throw std::invalid_argument("Second bridge width too large; no initialization possible");
     }
     if (distance_as_channel_length and not gate_is_flat) {
         throw std::domain_error("If the gate is not flat, the bridge correction should not be applied");
@@ -469,7 +469,7 @@ bool Simulation::is_in_bridge(const double &x, const double &y) {
     /**
      * Note that these function is not mutually exclusive with left and right circle, and is not to be confused by `is_in_gate`.
      */
-    return std::abs(x) <= bridge_length / 2 and std::abs(y) <= bridge_height / 2;
+    return std::abs(x) <= bridge_length / 2 and std::abs(y) <= bridge_width / 2;
 }
 
 bool Simulation::is_in_second_bridge(const double &x, const double &y) {
@@ -477,7 +477,7 @@ bool Simulation::is_in_second_bridge(const double &x, const double &y) {
      * The same holds for this function, not mutually exclusive with left and right circle.
      */
     return std::abs(x) <= box_x_radius and std::abs(x) >= box_x_radius - second_length / 2 and
-           std::abs(y) <= second_height / 2;
+           std::abs(y) <= second_width / 2;
 }
 
 void Simulation::compute_next_impact(const unsigned long &particle) {
@@ -583,11 +583,11 @@ double Simulation::time_to_hit_bridge(const unsigned long &particle, double &nor
     // q_bottom = (left_x, bottom_y) and q_top = (left_x, top_y)
     // u = (q − p) × r / (r × s)
     const double denom = rx * sy - ry * sx;
-    double u1 = ((-bridge_length / 2 - px) * ry - (-bridge_height / 2 - py) * rx) / denom;
-    double u2 = ((-bridge_length / 2 - px) * ry - (bridge_height / 2 - py) * rx) / denom;
+    double u1 = ((-bridge_length / 2 - px) * ry - (-bridge_width / 2 - py) * rx) / denom;
+    double u2 = ((-bridge_length / 2 - px) * ry - (bridge_width / 2 - py) * rx) / denom;
     // t = (q − p) × s / (r × s)
-    double t1 = ((-bridge_length / 2 - px) * sy - (-bridge_height / 2 - py) * sx) / denom;
-    double t2 = ((-bridge_length / 2 - px) * sy - (bridge_height / 2 - py) * sx) / denom;
+    double t1 = ((-bridge_length / 2 - px) * sy - (-bridge_width / 2 - py) * sx) / denom;
+    double t2 = ((-bridge_length / 2 - px) * sy - (bridge_width / 2 - py) * sx) / denom;
     double min_t = 1;
     if (EPS < t1 and t1 < min_t and 0 <= u1 and u1 <= 1) {
         min_t = t1 - EPS;
@@ -605,7 +605,7 @@ double Simulation::time_to_hit_second_bridge(const unsigned long &particle, doub
      * Check if we hit the bottom line, and check if we hit the top line, and return a float.
      */
     //Recall: px=positions(particle,0), py=positions(particle,1)
-    if (second_height == 0) {
+    if (second_width == 0) {
         return max_path;
     }
     // Check the bridge on the side where it matters
@@ -621,11 +621,11 @@ double Simulation::time_to_hit_second_bridge(const unsigned long &particle, doub
     // q_bottom = (left_x, bottom_y) and q_top = (left_x, top_y)
     // u = (q − p) × r / (r × s)
     const double denom = rx * sy - ry * sx;
-    double u1 = ((sign * box_x_radius + addition - px) * ry - (-second_height / 2 - py) * rx) / denom;
-    double u2 = ((sign * box_x_radius + addition - px) * ry - (second_height / 2 - py) * rx) / denom;
+    double u1 = ((sign * box_x_radius + addition - px) * ry - (-second_width / 2 - py) * rx) / denom;
+    double u2 = ((sign * box_x_radius + addition - px) * ry - (second_width / 2 - py) * rx) / denom;
     // t = (q − p) × s / (r × s)
-    double t1 = ((sign * box_x_radius + addition - px) * sy - (-second_height / 2 - py) * sx) / denom;
-    double t2 = ((sign * box_x_radius + addition - px) * sy - (second_height / 2 - py) * sx) / denom;
+    double t1 = ((sign * box_x_radius + addition - px) * sy - (-second_width / 2 - py) * sx) / denom;
+    double t2 = ((sign * box_x_radius + addition - px) * sy - (second_width / 2 - py) * sx) / denom;
     double min_t = 1;
     if (EPS < t1 and t1 < min_t and 0 <= u1 and u1 <= 1) {
         min_t = t1 - EPS;
@@ -770,12 +770,12 @@ double Simulation::time_to_hit_middle(const unsigned long &particle) {
     double rx = max_path * cos(directions[particle]);
     double ry = max_path * sin(directions[particle]);
     double sx = 0;
-    double sy = bridge_height;
+    double sy = bridge_width;
     // u = (q − p) × r / (r × s)
     double denum = 1. / (rx * sy - ry * sx);
-    double u = ((0 - px) * ry - (-bridge_height / 2 - py) * rx) * denum;
+    double u = ((0 - px) * ry - (-bridge_width / 2 - py) * rx) * denum;
     // t = (q − p) × s / (r × s)
-    double t = ((0 - px) * sy - (-bridge_height / 2 - py) * sx) * denum;
+    double t = ((0 - px) * sy - (-bridge_width / 2 - py) * sx) * denum;
     if (EPS < t and t < min_t and 0 <= u and u <= 1) {
         min_t = t + EPS;
     }
@@ -784,7 +784,7 @@ double Simulation::time_to_hit_middle(const unsigned long &particle) {
 
 double Simulation::time_to_hit_bounds(const unsigned long &particle) {
     double min_path = max_path;
-    if (second_height > 0) {
+    if (second_width > 0) {
         const double to_left_bound = (-box_x_radius - px) / cos(directions[particle]);
         const double to_right_bound = (box_x_radius - px) / cos(directions[particle]);
         if (to_left_bound > 0 and to_left_bound < min_path) {

@@ -19,7 +19,7 @@
 
 class Simulation {
 public:
-    Simulation(const int &num_particles, const double &bridge_height, const double &circle_radius = 1.,
+    Simulation(const int &num_particles, const double &bridge_width, const double &circle_radius = 1.,
                const double &circle_distance = 0.5, const int &left_gate_capacity = 3,
                const int &right_gate_capacity = 3,
                const bool &random_dir = false, const bool &flat_gate = false);
@@ -34,17 +34,17 @@ public:
     // Other parameters
     double circle_radius;
     double circle_distance;
-    double bridge_height;
-    double second_height;
+    double bridge_width;
+    double second_width;
     // Computed quantities
     double left_center_x;
     double right_center_x;
     double max_path;
-    double bridge_length; // measured from the height
+    double bridge_length; // measured from the width
     double box_x_radius;
     double box_y_radius;
     // Choose second_length 0 to revert to old case
-    double second_length; // also measured from the height;
+    double second_length; // also measured from the width;
     const unsigned long LEFT = 0;
     const unsigned long RIGHT = 1;
     bool explosion_direction_is_random;
