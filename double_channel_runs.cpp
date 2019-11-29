@@ -116,7 +116,7 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
     double av_chi = 0;
     double current = 0;
     for (unsigned int i = 0; i < num_runs; i++) {
-        get_chi(channel_length, channel_width, threshold, radius, second_length, second_width, num_particles,
+        get_chi(channel_width, channel_length, threshold, radius, second_width, second_length, num_particles,
                 initial_ratio, M_t, M_f, id, av_chi, current);
     }
     std::ostringstream s;
