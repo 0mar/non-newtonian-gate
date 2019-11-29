@@ -5,7 +5,7 @@ import sys
 
 
 def double_channel_param_set(param_coupling):
-    resolution = 5
+    resolution = 25
     for option, option_values in param_coupling['options'].items():
         print(option_values)
         num_particles = option_values['num_particles']
@@ -25,7 +25,7 @@ def double_channel_param_set(param_coupling):
                             # Bit of a dirty hack because I don't want to
                             # make the structure of the parameter dependent on the number of particles
                             values[name] *= option_values['threshold_multiplier']
-                        cmd = ["%.3f" % values[p_name] for p_name in values.keys()] + [identifier]
+                        cmd = ["%.4f" % values[p_name] for p_name in values.keys()] + [identifier]
                         f.write(" ".join(cmd) + "\n")
 
 if __name__ == '__main__':

@@ -18,7 +18,7 @@ def single_channel_param_set(param_coupling, default, identifier):
             values[x] = x_val
             for y_val in y_values:
                 values[y] = y_val
-                cmd = ["%.2f" % values[name] for name in default.keys()] + [identifier]
+                cmd = ["%.4f" % values[name] for name in default.keys()] + [identifier]
                 cmd_string = " ".join(cmd)
                 f.write(cmd_string + "\n")
 
