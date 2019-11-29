@@ -17,7 +17,7 @@ def double_channel_param_set(param_coupling):
                     sampled_range = np.linspace(interval[0], interval[1], resolution)
                     for i in range(resolution):
                         values[name] = sampled_range[i]
-                        cmd = ["%.3f" % values[pname] for pname in values.keys()] + [identifier]
+                        cmd = ["%.3f" % values[p_name] for p_name in values.keys()] + [identifier]
                         f.write(" ".join(cmd) + "\n")
 
 
