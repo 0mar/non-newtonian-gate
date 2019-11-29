@@ -6,7 +6,7 @@
 void single_particle_animation() {
     printf("Running the animation for a single particle\n");
     Simulation simulation = Simulation(1, 0);
-    simulation.bridge_height = 0.5;
+    simulation.bridge_width = 0.5;
     simulation.setup();
     simulation.start(1);
     simulation.x_pos.at(0) = -1.1;
@@ -29,7 +29,7 @@ void many_particle_animation() {
     simulation.circle_distance = 0.5;
     simulation.circle_radius = 1;
     simulation.second_length = 1;
-    simulation.second_height = 0.3;
+    simulation.second_width = 0.3;
     simulation.distance_as_channel_length = true;
     simulation.setup();
     simulation.start(0);

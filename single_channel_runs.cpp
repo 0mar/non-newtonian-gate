@@ -31,7 +31,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     try {
         sim.setup();
     } catch (const std::invalid_argument &ex) {
-        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
+        printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
         return 0;
     }
     sim.start(left_ratio);
@@ -68,7 +68,7 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
         sim.start(left_ratio);
         sim.write_positions_to_file(0);
     } catch (const std::invalid_argument &ex) {
-        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
+        printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
         return 0;
     }
     double dt = 0;
@@ -106,7 +106,7 @@ unsigned long find_sandwich_time(const double channel_length,
         sim_top.start(0.5);
         sim_bottom.start(1);
     } catch (const std::invalid_argument &ex) {
-        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
+        printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
         return 0;
     }
     chi_diff = 1;

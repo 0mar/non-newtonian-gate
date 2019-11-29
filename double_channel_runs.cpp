@@ -15,7 +15,7 @@ void get_chi(const double channel_width, const double channel_length, const int 
     sim.distance_as_channel_length = true;
     sim.expected_collisions = M_f;
     sim.second_length = second_length;
-    sim.second_height = second_width;
+    sim.second_width = second_width;
     sim.setup();
     std::ostringstream s;
     av_chi = 0;
@@ -23,7 +23,7 @@ void get_chi(const double channel_width, const double channel_length, const int 
     try {
         sim.start(left_ratio);
     } catch (const std::invalid_argument &ex) {
-        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, radius);
+        printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, radius);
     }
 
     while (sim.measuring_times.size() < M_t) {
@@ -50,7 +50,7 @@ void get_chi(const double channel_width, const double channel_length, const int 
 //    Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
 //    sim.gate_is_flat = true;
 //    sim.distance_as_channel_length = true;
-//    sim.second_height = second_width; // todo: Choose height or width name
+//    sim.second_width = second_width; // todo: Choose width or width name
 //    sim.second_length = second_length;
 //    sim.setup();
 //    std::random_device rd;
@@ -62,7 +62,7 @@ void get_chi(const double channel_width, const double channel_length, const int 
 //        sim.start(left_ratio);
 //        sim.write_positions_to_file(0);
 //    } catch (const std::invalid_argument &ex) {
-//        printf("Not running for bridge height %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
+//        printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
 //        return 0;
 //    }
 //    double dt = 0;
