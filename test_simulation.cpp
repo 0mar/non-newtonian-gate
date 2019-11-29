@@ -680,5 +680,22 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         BOOST_CHECK(sim.is_in_bridge(sim.x_pos.at(0), sim.y_pos.at(0)));
     }
 
+    BOOST_AUTO_TEST_CASE(test_second_bridge) {
+        // Test if the upper and lower bound of the bridge function works correctly
+        // Todo: Try to identify the error that comes without the extension
+    }
+
+    BOOST_AUTO_TEST_CASE(test_periodic_boundary) {
+        // Test from left to right, and from right to left, and see if angle and y are maintained as well
+    }
+
+    BOOST_AUTO_TEST_CASE(test_second_height_zero) {
+        //Test if we correctly reduce to the first bridge
+    }
+
+    BOOST_AUTO_TEST_CASE(test_no_collision_for_urn_at_second_bridge) {
+        // Test if in case of the second bridge no particles stick
+    }
+
 
 BOOST_AUTO_TEST_SUITE_END();
