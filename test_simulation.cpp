@@ -43,9 +43,9 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         auto sim = get_sim(1);
         sim.circle_radius = 1;
         sim.circle_distance = 0.5;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.setup();
-        const double cutoff_radius = std::sqrt(std::pow(sim.circle_radius, 2) - std::pow(sim.bridge_height, 2) / 4);
+        const double cutoff_radius = std::sqrt(std::pow(sim.circle_radius, 2) - std::pow(sim.bridge_width, 2) / 4);
         BOOST_CHECK_CLOSE(sim.circle_distance, sim.bridge_length + 2 * cutoff_radius - 2 * sim.circle_radius, eps);
     }
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.distance_as_channel_length = false;
         sim.setup();
         double lx = 0;
-        double ly = sim.bridge_height / 2 + eps * 0.01;
+        double ly = sim.bridge_width / 2 + eps * 0.01;
         double angle;
         sim.x_pos.at(0) = lx;
         sim.y_pos.at(0) = ly;
@@ -73,19 +73,19 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
 
     BOOST_AUTO_TEST_CASE(test_bridge_coupling) {
         auto sim = get_sim(1);
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         BOOST_CHECK(sim.bridge_length > sim.circle_distance);
-        BOOST_CHECK(sim.is_in_domain(sim.bridge_length / 2 - 0.001, sim.bridge_height / 2 - 0.001));
-        BOOST_CHECK(not sim.is_in_circle(sim.bridge_length / 2 - 0.001, sim.bridge_height / 2 - 0.001, sim.RIGHT));
+        BOOST_CHECK(sim.is_in_domain(sim.bridge_length / 2 - 0.001, sim.bridge_width / 2 - 0.001));
+        BOOST_CHECK(not sim.is_in_circle(sim.bridge_length / 2 - 0.001, sim.bridge_width / 2 - 0.001, sim.RIGHT));
     }
 
     BOOST_AUTO_TEST_CASE(test_inside_methods) {
         auto sim = get_sim(100);
         sim.circle_radius = 1;
         sim.circle_distance = 0.5;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.left_gate_capacity = 1;
         sim.setup();
         double x = 0;
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         auto sim = get_sim(1);
         double sqrt_2 = std::sqrt(2);
         double pi = 3.141592653589793;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start(1);
@@ -174,15 +174,15 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.directions.at(0) = pi / 2; // straight up
         double angle = 2;
         double time = sim.time_to_hit_bridge(0, angle);
-        BOOST_CHECK_CLOSE(time, sim.bridge_height / 2, eps);
+        BOOST_CHECK_CLOSE(time, sim.bridge_width / 2, eps);
         BOOST_CHECK_CLOSE(angle, -pi / 2, eps);
         sim.directions.at(0) = pi / 4; // right up
         time = sim.time_to_hit_bridge(0, angle);
-        BOOST_CHECK_CLOSE(time, sim.bridge_height * sqrt_2 / 2, eps);
+        BOOST_CHECK_CLOSE(time, sim.bridge_width * sqrt_2 / 2, eps);
         sim.y_pos.at(0) = -.1;
         sim.directions.at(0) = pi * 3 / 4; // left up
         time = sim.time_to_hit_bridge(0, angle);
-        BOOST_CHECK_CLOSE(time, sim.bridge_height / 2 * sqrt_2, eps);
+        BOOST_CHECK_CLOSE(time, sim.bridge_width / 2 * sqrt_2, eps);
         BOOST_CHECK_CLOSE(angle, pi / 2, eps);
 
         // When no intersection, we want no hit
@@ -202,13 +202,13 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
 
         // Touching is also intersecting
         sim.x_pos.at(0) = -sim.bridge_length / 2 - 0.1;
-        sim.y_pos.at(0) = sim.bridge_height / 2 + 0.1;
+        sim.y_pos.at(0) = sim.bridge_width / 2 + 0.1;
         sim.directions.at(0) = -pi * 1 / 4; // from top left to touch top left bridge point
         time = sim.time_to_hit_bridge(0, angle);
         BOOST_CHECK_CLOSE(time, 0.1 * sqrt_2, eps);
         BOOST_CHECK_CLOSE(angle, -pi / 2, eps);
         sim.x_pos.at(0) = -sim.bridge_length / 2 - 0.1;
-        sim.y_pos.at(0) = sim.bridge_height / 2 + 0.1;
+        sim.y_pos.at(0) = sim.bridge_width / 2 + 0.1;
         sim.directions.at(0) = 2 * pi; // Straight right
         time = sim.time_to_hit_bridge(0, angle);
         BOOST_CHECK_CLOSE(time, sim.max_path, eps);
@@ -220,24 +220,24 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
 
         // Not even if the line segments overlap
         sim.x_pos.at(0) = -sim.bridge_length;
-        sim.y_pos.at(0) = sim.bridge_height / 2;
+        sim.y_pos.at(0) = sim.bridge_width / 2;
         sim.directions.at(0) = 2 * pi; // Straight right
         time = sim.time_to_hit_bridge(0, angle);
         BOOST_CHECK_CLOSE(time, sim.max_path, eps);
 
         // What if we leave from the bridge? Then we don't want a hit
         sim.x_pos.at(0) = sim.bridge_length / 3;
-        sim.y_pos.at(0) = sim.bridge_height / 2;
+        sim.y_pos.at(0) = sim.bridge_width / 2;
         sim.directions.at(0) = -pi / 2; // Straight down
         time = sim.time_to_hit_bridge(0, angle);
-        BOOST_CHECK_CLOSE(time, sim.bridge_height, eps);
+        BOOST_CHECK_CLOSE(time, sim.bridge_width, eps);
         BOOST_CHECK_CLOSE(angle, pi / 2, eps);
     }
 
     BOOST_AUTO_TEST_CASE(test_circle_collision) {
         auto sim = get_sim(1);
         double pi = 3.141592653589793;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start(1);
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
     BOOST_AUTO_TEST_CASE(test_circle_consistency) {
         auto sim = get_sim(1);
         double pi = 3.141592653589793;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start(1);
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
     BOOST_AUTO_TEST_CASE(test_collision) {
         auto sim = get_sim(1);
         double pi = 3.141592653589793;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start(1);
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         // One of the most important tests, I reckon
         auto sim = get_sim(1);
         double pi = 3.141592653589793;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start(1);
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         // One of the most important tests, I reckon
         auto sim = get_sim(1);
         double pi = 3.141592653589793;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start(1);
@@ -442,7 +442,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         // Takes a long time
         auto sim = get_sim(1000);
         double pi = 3.141592653589793;
-        sim.bridge_height = 0.1;
+        sim.bridge_width = 0.1;
         sim.circle_distance = 0.5;
         sim.setup();
         sim.start(1);
@@ -525,7 +525,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         double pi = 3.141592653589793;
         sim.circle_radius = 1;
         sim.circle_distance = 0.5;
-        sim.bridge_height = 0.3;
+        sim.bridge_width = 0.3;
         sim.gate_is_flat = true;
         // Hitting from a position radially to the gate.
         // Pick some angle small enough
@@ -571,7 +571,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         double pi = 3.141592653589793;
         sim.circle_radius = 1;
         sim.circle_distance = 0.5;
-        sim.bridge_height = 0.3;
+        sim.bridge_width = 0.3;
         sim.gate_is_flat = false;
         // Hitting from a position radially to the gate.
         // Pick some angle small enough
@@ -666,7 +666,7 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         double delta = 0.001;
         const double pi = 3.141592653589793;
         sim.x_pos.at(0) = -sim.bridge_length / 2 - delta * delta;
-        sim.y_pos.at(0) = sim.bridge_height / 2 - delta;
+        sim.y_pos.at(0) = sim.bridge_width / 2 - delta;
         sim.directions.at(0) = pi / 4;
         BOOST_CHECK(sim.is_going_in(0));
         BOOST_CHECK(not sim.is_in_gate(sim.x_pos.at(0), sim.y_pos.at(0), sim.LEFT));
