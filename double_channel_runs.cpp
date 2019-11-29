@@ -102,7 +102,7 @@ void get_chi(const unsigned long M_t, const unsigned long M_f, const double chan
 void test_currents() {
     const double channel_length = 1;
     const double channel_width = 0.3;
-    const double second_length = 1;
+    const double second_width = 0.02;
     const int num_runs = 20;
     const double urn_radius = 1;
     const int threshold = 5;
@@ -111,13 +111,15 @@ void test_currents() {
     const int M_f = 10E6;
     const std::string id = "test_currents";
     std::ostringstream s;
+    const double min_val = 0.1;
+    const double max_val = 1.5;
     for (int run = 0; run < num_runs; run++) {
-        const double second_height = 0.001 + run * (0.05 - 0.001) / (num_runs - 1);
+        const double second_length = min_val + run * (max_val - min_val) / (num_runs - 1);
         double chi, current;
-        std::cout << second_height << std::endl;
-        get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, second_length, second_height,
+        std::cout << second_length << std::endl;
+        get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, second_length, second_width,
                 num_particles, id, chi, current);
-        s << second_height << "," << chi << "," << current << std::endl;
+        s << second_length << "," << chi << "," << current << std::endl;
     }
     std::ofstream result_file(id + ".chi", std::ios::app);
     result_file << s.str();
