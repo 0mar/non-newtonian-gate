@@ -4,6 +4,7 @@
 if [[ "$#" -ne 2 ]]
 then
     echo "Illegal number of parameters"
+    echo "Provide (1) source directory and (2) build directory"
     exit 1
 fi
 SOURCE="$1"
