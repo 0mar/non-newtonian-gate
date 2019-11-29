@@ -6,7 +6,7 @@ import sys
 
 def single_channel_param_set(param_coupling, default, identifier):
     values = default.copy()
-    res = 20
+    res = 50
     it = iter(param_coupling)
     x = next(it)
     x_values = np.linspace(*param_coupling[x], res)
