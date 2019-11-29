@@ -45,20 +45,21 @@ def plot(filename, num_particles):
                                 'num_particles': int(float(num_particles))})
 
         plt.subplot(2, 3, i + 1)
-        plt.scatter(x, y, c=chi, s=300, marker='s', cmap='autumn')
+        plt.scatter(x, y, c=chi, s=150, marker='s', cmap='seismic')
         plt.colorbar()
-        plt.contour(X, Y, Z, [1])
+        plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='beige')
 
         plt.xlabel(x_label)
         plt.ylabel(y_label)
     plt.savefig("%s/%s/omar-recreation-%s.pdf" % (single_channel_dir, plot_dir, num_particles))
+    plt.close()
 
 
 def plot_single_channel_data():
     for size in ["small", "large"]:
         filename = '%s/param_file_%s_%s.out' % (single_channel_dir, size, "%d")
-    num_particles = {"small": "1E3", "large": "1E4"}[size]
-    plot(filename, num_particles)
+        num_particles = {"small": "1E3", "large": "1E4"}[size]
+        plot(filename, num_particles)
 
 
 def plot_double_channel_data():
@@ -91,6 +92,7 @@ def plot_double_channel_data():
                 plt.legend(df.initial_ratio.unique())
                 plt.savefig(
                     "%s/%s/%s_to_%s_(%d).png" % (double_channel_dir, plot_dir, variable, measurement, num_particles))
+                plt.close()
 
 
 plot_double_channel_data()
