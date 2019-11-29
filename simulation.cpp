@@ -139,7 +139,7 @@ void Simulation::update(const double &write_dt) {
     // Update the data of the particle with the collision
 //    std::cout << "1: " << first_channel_surplus << "\t2: " << second_channel_surplus << std::endl;
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
-        printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py);
+//        printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py); // Fixme: Check later
         next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
         next_y_pos[particle] = 0;
     }
@@ -305,9 +305,9 @@ void Simulation::check_boundary_condition(const unsigned long &particle) {
 }
 
 void Simulation::count_first_gate_crossing(const unsigned long &particle) {
-    if (px < 0 and next_x_pos[particle] > 0) {
+    if (px <= 0 and next_x_pos[particle] > 0) {
         first_channel_surplus++;
-    } else if (px > 0 and next_x_pos[particle] < 0) {
+    } else if (px > 0 and next_x_pos[particle] <= 0) {
         first_channel_surplus--;
     }
 }
@@ -389,7 +389,7 @@ void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
 }
 
 double Simulation::get_mass_spread() {
-    return (2. * total_left.back() - num_particles) / num_particles;
+    return (num_particles - 2. * total_left.back()) / num_particles;
 }
 
 void Simulation::finish() {
