@@ -90,7 +90,6 @@ void get_chi(const double channel_width, const double channel_length, const int 
 
 void mass_spread_and_current_for(int argc, char *argv[]) {
     const int num_arguments = 11;
-    const int num_runs = 1;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
         for (unsigned int i = 0; i < argc; i++) {
@@ -115,10 +114,8 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
     const std::string id = argv[11];
     double av_chi = 0;
     double current = 0;
-    for (unsigned int i = 0; i < num_runs; i++) {
-        get_chi(channel_width, channel_length, threshold, radius, second_width, second_length, num_particles,
-                initial_ratio, M_t, M_f, id, av_chi, current);
-    }
+    get_chi(channel_width, channel_length, threshold, radius, second_width, second_length, num_particles,
+            initial_ratio, M_t, M_f, id, av_chi, current);
     std::ostringstream s;
     s << threshold << "," << second_width << "," << second_length << "," << initial_ratio << "," << av_chi
       << "," << current << std::endl;
