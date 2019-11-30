@@ -7,7 +7,6 @@ import sys
 def double_channel_param_set(param_coupling):
     resolution = 25
     for option, option_values in param_coupling['options'].items():
-        print(option_values)
         num_particles = option_values['num_particles']
         identifier = "double_channel_data/params_%s" % num_particles
         param_coupling['defaults']['num_particles'] = num_particles
@@ -20,7 +19,6 @@ def double_channel_param_set(param_coupling):
                     sampled_range = np.linspace(interval[0], interval[1], resolution)
                     for i in range(resolution):
                         values[name] = sampled_range[i]
-                        print(name)
                         if name == 'threshold':
                             # Bit of a dirty hack because I don't want to
                             # make the structure of the parameter dependent on the number of particles
