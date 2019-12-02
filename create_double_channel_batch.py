@@ -26,6 +26,7 @@ def double_channel_param_set(param_coupling):
                         cmd = ["%.4f" % values[p_name] for p_name in values.keys()] + [identifier]
                         f.write(" ".join(cmd) + "\n")
 
+
 if __name__ == '__main__':
     filename = 'params_double_channel.json'
     if len(sys.argv) > 1:
