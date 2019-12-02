@@ -27,6 +27,29 @@ def double_channel_param_set(param_coupling):
                         f.write(" ".join(cmd) + "\n")
 
 
+def double_channel_heat_map(param_coupling):
+    resolution = 25
+    for option, option_values in param_coupling['options'].items():
+        num_particles = option_values['num_particles']
+        identifier = "double_channel_data/heatmap_%s" % num_particles
+        param_coupling['defaults']['num_particles'] = num_particles
+        with open(identifier + '.in', 'w') as f:
+            t_bounds = param_coupling['ranges']['threshold']
+            threshold_interval = np.linspace(t_bounds[0], t_bounds[1], resolution) * option_values[
+                'threshold_multiplier']
+            w_bounds = param_coupling['ranges']['second_width']
+            width_interval = np.linspace(w_bounds[0], w_bounds[1], resolution)
+            for initial_ratio in [0.25, 0.75]:
+                param_coupling['defaults']['initial_ratio'] = initial_ratio
+                values = param_coupling['defaults'].copy()
+                for i in range(resolution):
+                    for j in range(resolution):
+                        values['threshold'] = threshold_interval[i]
+                        values['second_width'] = width_interval[j]
+                        cmd = ["%.4f" % values[p_name] for p_name in values.keys()] + [identifier]
+                        f.write(" ".join(cmd) + "\n")
+
+
 if __name__ == '__main__':
     filename = 'params_double_channel.json'
     if len(sys.argv) > 1:
@@ -34,3 +57,4 @@ if __name__ == '__main__':
     with open(filename, 'r') as param_file:
         parameter_sets = json.load(param_file)
         double_channel_param_set(parameter_sets)
+        double_channel_heat_map(parameter_sets)
