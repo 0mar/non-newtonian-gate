@@ -45,7 +45,7 @@ def plot(filename, num_particles):
                                 'num_particles': int(float(num_particles))})
 
         plt.subplot(2, 3, i + 1)
-        plt.scatter(x, y, c=chi, s=150, alpha =0.7, cmap='PiYG')
+        plt.scatter(x, y, c=chi, s=150, alpha=0.7, cmap='PiYG')
         plt.colorbar()
         plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
 
@@ -95,5 +95,50 @@ def plot_double_channel_data():
                 plt.close()
 
 
-plot_double_channel_data()
-plot_single_channel_data()
+def plot_double_channel_data_manuscript():
+    df = pd.DataFrame()
+    for num_particles in [1000, 10000]:
+        file_id = '%s/params_%d' % (double_channel_dir, num_particles)
+        try:
+            part_df = pd.read_csv(file_id + '.out', header=None, sep=',',
+                                  names=['Threshold', 'Width of second channel', 'Length of second channel',
+                                         'initial_ratio', 'Mass spread', 'Current'])
+            df = df.append(part_df.assign(num_particles=num_particles))
+        except FileNotFoundError:
+            print("%s not found, continuing" % file_id)
+            continue
+
+    measurements = ['Mass spread', 'Current']
+    variables = {'Threshold', 'Width of second channel', 'Length of second channel'}
+    markers = {0.25: 'v', 0.5: 's', 0.75: 'o'}
+    marker_styles = {1000: 'none', 10000: 'full'}
+    np_format = {1000: '10^3', 10000: '10^4'}
+    df.loc[:, 'Threshold'] /= df.num_particles
+    df.loc[:, 'Current'] /= df.num_particles
+    for measurement in measurements:
+        for variable in variables:
+            legend = []
+            plt.figure(figsize=(7, 7))
+            other_variables = variables.copy()
+            other_variables.remove(variable)
+            for num_particles in [1000, 10000]:
+                for initial_ratio in [0.25, 0.75]:
+                    sdf = df[(df.initial_ratio == initial_ratio) & (df.num_particles == num_particles)].copy()
+                    for other_variable in other_variables:
+                        sdf = sdf[sdf[other_variable] == sdf[other_variable].value_counts().index[0]].sort_values(
+                            variable)
+                    plt.plot(sdf[variable].values, sdf[measurement].values, marker=markers[initial_ratio],
+                             fillstyle=marker_styles[num_particles], color='black', linestyle='-.')
+                    legend.append('$N=%s$ , $\\chi_0 = %.1f$' % (np_format[num_particles], initial_ratio * 2 - 1))
+            plt.xlabel(variable)
+            plt.ylabel(measurement)
+            plt.legend(legend)
+            plt.savefig("%s/%s/%s_vs_%s.pdf" % (
+                double_channel_dir, plot_dir, variable.lower().replace(' ', '_'),
+                measurement.lower().replace(' ', '_')))
+            plt.close()
+
+
+# plot_double_channel_data()
+plot_double_channel_data_manuscript()
+# plot_single_channel_data()
