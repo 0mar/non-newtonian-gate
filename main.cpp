@@ -3,16 +3,38 @@
 #include <string>
 #include <chrono>
 
-void single_particle_animation() {
-    printf("Running the animation for a single particle\n");
-    Simulation simulation = Simulation(1, 0);
-    simulation.bridge_width = 0.5;
+void polarisation_demo() {
+    printf("Creating the animation for a polarising system\n");
+    Simulation simulation = Simulation(300, 0.2);
+    simulation.left_gate_capacity = 2;
+    simulation.gate_is_flat = true;
+    simulation.right_gate_capacity = 2;
+    simulation.circle_distance = 0.5;
+    simulation.circle_radius = 0.5;
+    simulation.distance_as_channel_length = true;
     simulation.setup();
-    simulation.start(1);
-    simulation.x_pos.at(0) = -1.1;
-    simulation.y_pos.at(0) = 0.34;
-    simulation.directions.at(0) = -2.3;
-    simulation.compute_next_impact(0);
+    simulation.start(0.5);
+    simulation.write_positions_to_file(0);
+    double dt = 0.025;
+    while (std::fabs(simulation.get_mass_spread()) < 0.9 and simulation.time < 1000) {
+        simulation.update(dt);
+    }
+    printf("Polarised in %.2f seconds, mass spread of %.2f\n", simulation.time, simulation.get_mass_spread());
+}
+
+void double_channel_demo() {
+    printf("Creating the animation for 1000 particles\n");
+    Simulation simulation = Simulation(1000, 0.5);
+    simulation.left_gate_capacity = 7;
+    simulation.gate_is_flat = true;
+    simulation.right_gate_capacity = 7;
+    simulation.circle_distance = 0.5;
+    simulation.circle_radius = 1;
+    simulation.second_length = 1;
+    simulation.second_width = 0.3;
+    simulation.distance_as_channel_length = true;
+    simulation.setup();
+    simulation.start(0.75);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
     while (simulation.time < 100) {
@@ -21,11 +43,11 @@ void single_particle_animation() {
 }
 
 void many_particle_animation() {
-    printf("Running the animation for 1000 particles, writing animation\n");
-    Simulation simulation = Simulation(2, 0.5);
-    simulation.left_gate_capacity = 0;
+    printf("Creating the animation for 1000 particles\n");
+    Simulation simulation = Simulation(100, 0.5);
+    simulation.left_gate_capacity = 3;
     simulation.gate_is_flat = true;
-    simulation.right_gate_capacity = 0;
+    simulation.right_gate_capacity = 3;
     simulation.circle_distance = 0.5;
     simulation.circle_radius = 1;
     simulation.second_length = 1;
@@ -33,20 +55,11 @@ void many_particle_animation() {
     simulation.distance_as_channel_length = true;
     simulation.setup();
     simulation.start(0);
-    simulation.x_pos[0] = simulation.left_center_x;
-    simulation.y_pos[0] = 0;
-    simulation.directions[0] = 0;
-    simulation.compute_next_impact(0);
-    simulation.x_pos[1] = simulation.right_center_x;
-    simulation.y_pos[1] = 0;
-    simulation.directions[1] = M_PI;
-    simulation.compute_next_impact(1);
     simulation.write_positions_to_file(0);
     double dt = 0.025;
     while (simulation.time < 100) {
         simulation.update(dt);
     }
-    simulation.finish();
 }
 
 void time_test(const int num_times = 5) { // Starting point: 7 seconds, after keeping track of particle pos: 2.3
@@ -55,9 +68,9 @@ void time_test(const int num_times = 5) { // Starting point: 7 seconds, after ke
     for (unsigned long i = 0; i < num_times; i++) {
         std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
         Simulation simulation = Simulation(10000, 0.5);
-        simulation.left_gate_capacity = 5;
+        simulation.left_gate_capacity = 3;
         simulation.gate_is_flat = true;
-        simulation.right_gate_capacity = 5;
+        simulation.right_gate_capacity = 3;
         simulation.circle_distance = 0.5;
         simulation.circle_radius = 1;
         simulation.distance_as_channel_length = true;
@@ -110,15 +123,15 @@ int main(int argc, char *argv[]) {
     }
     switch (mode) {
         case 1: {
-            mass_spread_demo(20);
+            double_channel_demo();
             break;
         }
         case 2: {
-            time_test();
+            many_particle_animation();
             break;
         }
         default: {
-            many_particle_animation();
+            polarisation_demo();
             break;
         }
     }
