@@ -187,21 +187,25 @@ class VisualScene:
         :return: None
         """
         x_0 = self.convert_relative_coordinate(
-            np.array((-self.data_reader.bridge_length / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((-self.data_reader.bridge_length / 2, -self.data_reader.bridge_width / 2)) / self.data_reader.size)
         x_1 = self.convert_relative_coordinate(
-            np.array((self.data_reader.bridge_length / 2, -self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((self.data_reader.bridge_length / 2, -self.data_reader.bridge_width / 2)) / self.data_reader.size)
         x_2 = self.convert_relative_coordinate(
-            np.array((-self.data_reader.bridge_length / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((-self.data_reader.bridge_length / 2, self.data_reader.bridge_width / 2)) / self.data_reader.size)
         x_3 = self.convert_relative_coordinate(
-            np.array((self.data_reader.bridge_length / 2, self.data_reader.bridge_height / 2)) / self.data_reader.size)
+            np.array((self.data_reader.bridge_length / 2, self.data_reader.bridge_width / 2)) / self.data_reader.size)
         self.canvas.create_rectangle(tuple(x_0) + tuple(x_3), fill='white', outline='white', width=3)
         self.canvas.create_line(tuple(x_0) + tuple(x_1), fill='black', width=2)
         self.canvas.create_line(tuple(x_2) + tuple(x_3), fill='black', width=2)
-        bridge_start_x,bridge_y = self.convert_relative_coordinate(np.array((self.data_reader.box_radius[0], self.data_reader.second_height / 2)) / self.data_reader.size)
-        if self.data_reader.second_height > 0:
-            box_size = np.array([self.data_reader.second_length/2,-self.data_reader.second_height])/self.data_reader.size
-            box1_start = np.array([-self.data_reader.box_radius[0],self.data_reader.second_height/2])/self.data_reader.size
-            box2_start = np.array([self.data_reader.box_radius[0]-self.data_reader.second_length/2,self.data_reader.second_height/2])/self.data_reader.size
+        bridge_start_x, bridge_y = self.convert_relative_coordinate(
+            np.array((self.data_reader.box_radius[0], self.data_reader.second_width / 2)) / self.data_reader.size)
+        if self.data_reader.second_width > 0:
+            box_size = np.array(
+                [self.data_reader.second_length / 2, -self.data_reader.second_width]) / self.data_reader.size
+            box1_start = np.array(
+                [-self.data_reader.box_radius[0], self.data_reader.second_width / 2]) / self.data_reader.size
+            box2_start = np.array([self.data_reader.box_radius[0] - self.data_reader.second_length / 2,
+                                   self.data_reader.second_width / 2]) / self.data_reader.size
             for box_start in [box1_start,box2_start]:
                 top_left = self.convert_relative_coordinate(box_start)
                 bottom_right = self.convert_relative_coordinate(box_start+box_size)
@@ -231,8 +235,8 @@ class DataReader:
             self.filename = filename
         self.file = open(self.filename, 'r')
         self.num_particles = self.gate_radius = self.circle_radius = 0
-        self.circle_distance = self.bridge_height = self.bridge_length = 0
-        self.second_height = self.second_length = 0
+        self.circle_distance = self.bridge_width = self.bridge_length = 0
+        self.second_width = self.second_length = 0
         self.read_parameters()
         self.box_radius = np.array([self.circle_radius * 4 + self.circle_distance + self.second_length*0.97, self.circle_radius * 2])/2
         self.size = self.box_radius * 1.1
