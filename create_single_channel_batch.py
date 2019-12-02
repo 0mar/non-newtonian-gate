@@ -23,12 +23,39 @@ def single_channel_param_set(param_coupling, default, identifier):
                 f.write(cmd_string + "\n")
 
 
+def single_channel_exploration_set(parameter_sets):
+    resolution = 10
+    relation_set = {}
+    for size, value in parameter_sets.items():
+        identifier = "single_channel_data/explorer_%s" % size
+        for relation in value['relations']:
+            relation_set.update(relation)
+        relation_set.pop('threshold')
+        intervals = []
+        for relation in relation_set:
+            intervals.append(np.linspace(relation_set[relation][0], relation_set[relation][1], resolution))
+        if len(intervals) > 3:
+            raise ValueError("Don't think this will work in higher than 3 dimensions atm")
+        meshes = np.meshgrid(*intervals)
+        flat_mesh = np.array([mesh.flatten() for mesh in meshes]).T
+        default_params = " %d %d %d %d %s" % (
+            value['defaults']['threshold'], value['defaults']['num_particles'], value['defaults']['M_t'],
+            value['defaults']['M_f'], identifier)
+        cmd_fmt = " ".join(["%.4f"] * flat_mesh.shape[1])
+        with open(identifier + ".in", 'w') as f:
+            for i in range(resolution ** 3):
+                cmd_string = cmd_fmt % tuple(flat_mesh[i, :]) + default_params
+                f.write(cmd_string + "\n")
+
+
 if __name__ == '__main__':
     filename = 'params_single_channel.json'
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     with open(filename, 'r') as param_file:
         parameter_sets = json.load(param_file)
+    single_channel_exploration_set(parameter_sets)
+    exit(0)
     for size in parameter_sets.keys():
         default_values = parameter_sets[size]['defaults']
         for i, param in enumerate(parameter_sets[size]['relations']):
