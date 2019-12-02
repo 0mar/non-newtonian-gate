@@ -206,13 +206,14 @@ class VisualScene:
                 [-self.data_reader.box_radius[0], self.data_reader.second_width / 2]) / self.data_reader.size
             box2_start = np.array([self.data_reader.box_radius[0] - self.data_reader.second_length / 2,
                                    self.data_reader.second_width / 2]) / self.data_reader.size
-            for box_start in [box1_start,box2_start]:
+            for box_start in [box1_start, box2_start]:
                 top_left = self.convert_relative_coordinate(box_start)
-                bottom_right = self.convert_relative_coordinate(box_start+box_size)
-                self.canvas.create_rectangle(top_left[0],top_left[1],bottom_right[0],bottom_right[1],fill='white',outline='white',width=3)
-                self.canvas.create_line(top_left[0],top_left[1],bottom_right[0],top_left[1],fill='black',width=2)
-                self.canvas.create_line(top_left[0],bottom_right[1],bottom_right[0],bottom_right[1],fill='black',width=2)
-
+                bottom_right = self.convert_relative_coordinate(box_start + box_size)
+                self.canvas.create_rectangle(top_left[0], top_left[1], bottom_right[0], bottom_right[1], fill='white',
+                                             outline='white', width=3)
+                self.canvas.create_line(top_left[0], top_left[1], bottom_right[0], top_left[1], fill='black', width=2)
+                self.canvas.create_line(top_left[0], bottom_right[1], bottom_right[0], bottom_right[1], fill='black',
+                                        width=2)
 
     def convert_relative_coordinate(self, coord):
         """
@@ -238,7 +239,8 @@ class DataReader:
         self.circle_distance = self.bridge_width = self.bridge_length = 0
         self.second_width = self.second_length = 0
         self.read_parameters()
-        self.box_radius = np.array([self.circle_radius * 4 + self.circle_distance + self.second_length*0.97, self.circle_radius * 2])/2
+        self.box_radius = np.array(
+            [self.circle_radius * 4 + self.circle_distance + self.second_length * 0.97, self.circle_radius * 2]) / 2
         self.size = self.box_radius * 1.1
         self.times = []
         self.positions = np.zeros((self.num_particles, 2))
@@ -252,7 +254,8 @@ class DataReader:
         parameters = self.file.readline().split()
         for name, parameter in zip(names, parameters):
             if not hasattr(self, name):
-                print("Jammer, %s zit er niet in"%name)
+                print("Cannot find %s. Probably reading a wrong file" % name)
+                exit(1)
             else:
                 setattr(self, name, float(parameter))
         self.num_particles = int(self.num_particles)
