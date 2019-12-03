@@ -101,20 +101,20 @@ def plot_double_channel_data_manuscript():
         file_id = '%s/params_%d' % (double_channel_dir, num_particles)
         try:
             part_df = pd.read_csv(file_id + '.out', header=None, sep=',',
-                                  names=['Threshold', 'Width of second channel', 'Length of second channel',
-                                         'initial_ratio', 'Mass spread', 'Current'])
+                                  names=['Relative threshold', 'Width of second channel', 'Length of second channel',
+                                         'initial_ratio', 'Mass spread', 'Relative current'])
             df = df.append(part_df.assign(num_particles=num_particles))
         except FileNotFoundError:
             print("%s not found, continuing" % file_id)
             continue
 
-    measurements = ['Mass spread', 'Current']
-    variables = {'Threshold', 'Width of second channel', 'Length of second channel'}
+    measurements = ['Mass spread', 'Relative current']
+    variables = {'Relative threshold', 'Width of second channel', 'Length of second channel'}
     markers = {0.25: 'v', 0.5: 's', 0.75: 'o'}
     marker_styles = {1000: 'none', 10000: 'full'}
     np_format = {1000: '10^3', 10000: '10^4'}
-    df.loc[:, 'Threshold'] /= df.num_particles
-    df.loc[:, 'Current'] /= df.num_particles
+    df.loc[:, 'Relative threshold'] /= df.num_particles
+    df.loc[:, 'Relative current'] /= df.num_particles
     for measurement in measurements:
         for variable in variables:
             legend = []
@@ -157,7 +157,7 @@ def plot_double_channel_heatmap():
                 plt.scatter(sdf.threshold.values / num_particles, sdf.second_width.values, c=sdf[output].values, s=100,
                             marker='o')
                 plt.axis([0, 24 / 1000, 0, 0.05])
-                plt.xlabel("Threshold percentage")
+                plt.xlabel("Relative threshold")
                 plt.ylabel("Second channel width")
                 plt.title("%s, initial ratio = %.2f" % (output.title(), init_ratio))
                 plt.colorbar()
