@@ -16,7 +16,7 @@ def threshold_function(params):
     return num_particles * width * length / (8 * threshold * area * 0.75)
 
 
-def plot(filename, num_particles):
+def plot_single_channel_heat_map(filename, num_particles):
     param_names = ["length", "width", "radius", "threshold"]
     plt.figure(figsize=(22, 15))
     for i in range(6):
@@ -55,11 +55,11 @@ def plot(filename, num_particles):
     plt.close()
 
 
-def plot_single_channel_data():
+def plot_single_channel_heat_maps():
     for size in ["small", "large"]:
         filename = '%s/param_file_%s_%s.out' % (single_channel_dir, size, "%d")
         num_particles = {"small": "1E3", "large": "1E4"}[size]
-        plot(filename, num_particles)
+        plot_single_channel_heat_map(filename, num_particles)
 
 
 def plot_double_channel_data():
@@ -139,6 +139,33 @@ def plot_double_channel_data_manuscript():
             plt.close()
 
 
+def plot_double_channel_heatmap():
+    for num_particles in [1000, 10000]:
+        filename = '%s/heatmap_%d.out' % ('double_channel_data', num_particles)
+        outputs = ['chi', 'current']
+        df = pd.read_csv(filename, header=None,
+                         names=["threshold", "second_width", "second_length", "initial_ratio", "chi", "current"])
+        df.loc[:, 'current'] = df.current / num_particles
+        #     df.loc[:,'chi'] = np.abs(df.chi)
+        plt.figure(figsize=(14, 14))
+        counter = 0
+        for output in outputs:
+            for init_ratio in df.initial_ratio.unique():
+                sdf = df[df.initial_ratio == init_ratio]
+                counter += 1
+                plt.subplot(2, 2, counter)
+                plt.scatter(sdf.threshold.values / num_particles, sdf.second_width.values, c=sdf[output].values, s=100,
+                            marker='o')
+                plt.axis([0, 24 / 1000, 0, 0.05])
+                plt.xlabel("Threshold percentage")
+                plt.ylabel("Second channel width")
+                plt.title("%s, initial ratio = %.2f" % (output.title(), init_ratio))
+                plt.colorbar()
+        plt.savefig("double_channel_data/plots/double_channel_heatmap_%d.pdf" % num_particles)
+        plt.show()
+
+
 # plot_double_channel_data()
 plot_double_channel_data_manuscript()
 # plot_single_channel_data()
+plot_double_channel_heatmap()
