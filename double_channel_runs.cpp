@@ -39,54 +39,54 @@ void get_chi(const double channel_width, const double channel_length, const int 
     current = (sim.first_channel_surplus - count_offset) / (sim.time - time_offset);
 }
 
-//double get_chi_development(const unsigned long M_t, const unsigned long M_f, const double channel_length,
-//                           const double channel_width, const double urn_radius, const int threshold,
-//                           const double second_length, const double second_width, const int num_particles,
-//                           const std::string &id) {
-//
-//    double chi = 0;
-//    const int num_points = 500;
-//    const unsigned long step_size = M_f / num_points;
-//    Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
-//    sim.gate_is_flat = true;
-//    sim.distance_as_channel_length = true;
-//    sim.second_width = second_width; // todo: Choose width or width name
-//    sim.second_length = second_length;
-//    sim.setup();
-//    std::random_device rd;
-//    std::mt19937 re(rd());
-//    std::uniform_real_distribution<double> unif(0.5, 1);
-//    std::ostringstream s;
-//    const double left_ratio = 0.25; // Not random atm
-//    try {
-//        sim.start(left_ratio);
-//        sim.write_positions_to_file(0);
-//    } catch (const std::invalid_argument &ex) {
-//        printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, urn_radius);
-//        return 0;
-//    }
-//    double dt = 0;
-//    while (sim.measuring_times.size() < M_f) {
-////        if (sim.measuring_times.size() ==M_t) {
-////            dt = 0.025;
-////            sim.last_written_time = sim.time;
-////        }
-////        if (sim.measuring_times.size() == M_t + 10000){
-////            dt = 0;
-////        }
-//        sim.update(dt);
-//        if (sim.measuring_times.size() % step_size == 0) {
-//            s << sim.measuring_times.size() << "," << sim.time << "," << sim.first_channel_surplus << ","
-//              << sim.second_channel_surplus << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
-//              << std::endl;
+double
+get_chi_development(const double channel_width, const double channel_length, const int threshold, const double radius,
+                    const double second_width, const double second_length, const int num_particles,
+                    const double left_ratio,
+                    const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi,
+                    double &current) {
+
+    double chi = 0;
+    const int num_points = 500;
+    const unsigned long step_size = M_f / num_points;
+    Simulation sim = Simulation(num_particles, channel_width, radius, channel_length, threshold, threshold);
+    sim.gate_is_flat = true;
+    sim.distance_as_channel_length = true;
+    sim.second_width = second_width;
+    sim.second_length = second_length;
+    sim.setup();
+    std::random_device rd;
+    std::mt19937 re(rd());
+    std::uniform_real_distribution<double> unif(0.5, 1);
+    std::ostringstream s;
+    try {
+        sim.start(left_ratio);
+        sim.write_positions_to_file(0);
+    } catch (const std::invalid_argument &ex) {
+        printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, radius);
+        return 0;
+    }
+    double dt = 0;
+    while (sim.measuring_times.size() < M_f) {
+//        if (sim.measuring_times.size() ==M_t) {
+//            dt = 0.025;
+//            sim.last_written_time = sim.time;
 //        }
-//    }
-//    std::ofstream result_file(id + ".chi", std::ios::app);
-//    result_file << s.str();
-//    result_file.close();
-//    return chi;
-//}
-// todo: Try a double loop
+//        if (sim.measuring_times.size() == M_t + 10000){
+//            dt = 0;
+//        }
+        sim.update(dt);
+        if (sim.measuring_times.size() % step_size == 0) {
+            s << sim.measuring_times.size() << "," << sim.time << "," << sim.first_channel_surplus << ","
+              << sim.second_channel_surplus << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
+              << std::endl;
+        }
+    }
+    std::ofstream result_file(id + ".chi", std::ios::app);
+    result_file << s.str();
+    result_file.close();
+    return chi;
+}
 
 void mass_spread_and_current_for(int argc, char *argv[]) {
     const int num_arguments = 11;
