@@ -39,7 +39,7 @@ def double_channel_heat_map(param_coupling):
                 'threshold_multiplier']
             w_bounds = param_coupling['ranges']['second_width']
             width_interval = np.linspace(w_bounds[0], w_bounds[1], resolution)
-            for initial_ratio in [0.25, 0.75]:
+            for initial_ratio in [0.25, 0.5]:
                 param_coupling['defaults']['initial_ratio'] = initial_ratio
                 values = param_coupling['defaults'].copy()
                 for i in range(resolution):
