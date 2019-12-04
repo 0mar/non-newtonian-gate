@@ -162,7 +162,7 @@ def plot_double_channel_heatmap():
                 plt.subplot(2, 2, counter)
                 plt.scatter(sdf.threshold.values / num_particles, sdf.second_width.values, c=sdf[output].values, s=100,
                             marker='o')
-                plt.axis([0, 24 / 1000, 0, 0.1])
+                plt.axis([0, 20 / 1000, 0, 0.1])
                 plt.xlabel("Relative threshold")
                 plt.ylabel("Second channel width")
                 plt.title("%s, initial ratio = %.2f" % (output.title(), init_ratio))
