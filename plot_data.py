@@ -152,8 +152,7 @@ def plot_double_channel_heatmap():
                          names=["threshold", "second_width", "second_length", "initial_ratio", "chi", "current"])
         df.loc[:, 'current'] = np.abs(df.current / num_particles)
         df.loc[:, 'chi'] = np.abs(df.chi)
-        #     df.loc[:,'chi'] = np.abs(df.chi)
-        plt.figure(figsize=(14, 14))
+        plt.figure(figsize=(11, 10))
         counter = 0
         for output in outputs:
             for init_ratio in df.initial_ratio.unique():
