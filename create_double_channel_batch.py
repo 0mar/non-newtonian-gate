@@ -43,9 +43,14 @@ def double_channel_heat_map(param_coupling):
                 param_coupling['defaults']['initial_ratio'] = initial_ratio
                 values = param_coupling['defaults'].copy()
                 for i in range(resolution):
+                    old_threshold = -1
                     for j in range(resolution):
-                        values['threshold'] = threshold_interval[i]
-                        values['second_width'] = width_interval[j]
+                        values['second_width'] = width_interval[i]
+                        values['threshold'] = int(threshold_interval[j])
+                        if values['threshold'] == old_threshold:
+                            # Skip the same integer values
+                            continue
+                        old_threshold = values['threshold']
                         cmd = ["%.4f" % values[p_name] for p_name in values.keys()] + [identifier]
                         f.write(" ".join(cmd) + "\n")
 
