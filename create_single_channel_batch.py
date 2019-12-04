@@ -30,7 +30,7 @@ def single_channel_exploration_set(parameter_sets):
         identifier = "single_channel_data/explorer_%s" % size
         for relation in value['relations']:
             relation_set.update(relation)
-        relation_set['length'] = ['0.2', '2']  # Seems to fit better with the parametrisation
+        relation_set['channel_length'] = [0.2, 2]  # Seems to fit better with the parametrisation
         relation_set.pop('threshold')
         intervals = []
         for relation in relation_set:
