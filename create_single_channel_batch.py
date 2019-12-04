@@ -24,12 +24,13 @@ def single_channel_param_set(param_coupling, default, identifier):
 
 
 def single_channel_exploration_set(parameter_sets):
-    resolution = 10
+    resolution = 20
     relation_set = {}
     for size, value in parameter_sets.items():
         identifier = "single_channel_data/explorer_%s" % size
         for relation in value['relations']:
             relation_set.update(relation)
+        relation_set['length'] = ['0.2', '2']  # Seems to fit better with the parametrisation
         relation_set.pop('threshold')
         intervals = []
         for relation in relation_set:
