@@ -28,7 +28,7 @@ def double_channel_param_set(param_coupling):
 
 
 def double_channel_heat_map(param_coupling):
-    resolution = 25
+    resolution = 50
     for option, option_values in param_coupling['options'].items():
         num_particles = option_values['num_particles']
         identifier = "double_channel_data/heatmap_%s" % num_particles
