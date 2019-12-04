@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 plot_dir = 'plots'
 single_channel_dir = 'single_channel_data'
@@ -49,8 +50,12 @@ def plot_single_channel_heat_map(filename, num_particles):
         plt.colorbar()
         plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
 
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
+        plt.xlabel(x_label.title())
+        plt.ylabel(y_label.title())
+        if y_label == 'threshold':
+            ax = plt.figure().gca()
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
     plt.savefig("%s/%s/omar-recreation-%s.pdf" % (single_channel_dir, plot_dir, num_particles))
     plt.close()
 
