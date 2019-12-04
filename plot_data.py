@@ -145,7 +145,8 @@ def plot_double_channel_heatmap():
         outputs = ['chi', 'current']
         df = pd.read_csv(filename, header=None,
                          names=["threshold", "second_width", "second_length", "initial_ratio", "chi", "current"])
-        df.loc[:, 'current'] = df.current / num_particles
+        df.loc[:, 'current'] = np.abs(df.current / num_particles)
+        df.loc[:, 'chi'] = np.abs(df.chi)
         #     df.loc[:,'chi'] = np.abs(df.chi)
         plt.figure(figsize=(14, 14))
         counter = 0
@@ -156,7 +157,7 @@ def plot_double_channel_heatmap():
                 plt.subplot(2, 2, counter)
                 plt.scatter(sdf.threshold.values / num_particles, sdf.second_width.values, c=sdf[output].values, s=100,
                             marker='o')
-                plt.axis([0, 24 / 1000, 0, 0.05])
+                plt.axis([0, 24 / 1000, 0, 0.1])
                 plt.xlabel("Relative threshold")
                 plt.ylabel("Second channel width")
                 plt.title("%s, initial ratio = %.2f" % (output.title(), init_ratio))
