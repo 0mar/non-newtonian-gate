@@ -135,7 +135,7 @@ void Simulation::update(const double &write_dt) {
     // Update the data of the particle with the collision
 //    std::cout << "1: " << first_channel_surplus << "\t2: " << second_channel_surplus << std::endl;
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
-//        printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py); // Fixme: Check later
+//        printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py); // Fixme: errors 1 in 1E6 and I am not sure why
         next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
         next_y_pos[particle] = 0;
     }
@@ -669,7 +669,7 @@ double Simulation::get_retraction_angle(const unsigned long &particle) {
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
     } else {
         if (cos(directions[particle]) * x_pos[particle] < 0) {
-            return -directions[particle] + PI; // Fixme should also work for specular
+            return -directions[particle] + PI; // Fixme Sometimes exceeds bounds
         } else {
             return directions[particle];
         }

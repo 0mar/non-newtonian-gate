@@ -54,8 +54,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     chi = std::fabs(chi);
     return chi;
 }
-//Todo: Make this in the same order as double_channel_runs.cpp
-//Todo: Also fix the double_channel documentation than
+
 /**
  * Obtain the mass spread as a function of the parameters below, and write its value 500 times during the proces .
  * For a definition of the mass spread, see simulation.h.

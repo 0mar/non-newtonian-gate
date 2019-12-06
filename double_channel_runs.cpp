@@ -11,17 +11,22 @@
  */
 
 /**
+ * Obtain the average mass spread and current as a function of the parameters below.
+ * For a definition of the mass spread and the current, see simulation.h
  *
- *
+ * @param channel_length channel_length Length of the center channel
+ * @param channel_width channel_width Width of the center channel
+ * @param threshold Number of particles that can at the same time in the channel
+ * @param radius Radius of the chamber
+ * @param second_length Length of the back channel
+ * @param second_width Width of the back channel
+ * @param num_particles Number of particles in the system
+ * @param left_ratio Initial ratio of number of particles in the left chamber
  * @param M_t Transient time, measured in number of collisions
  * @param M_f Final time, measured in number of collisions
- * @param channel_length Length of the channel
- * @param channel_width Width of the channel
- * @param urn_radius Radius of the chamber
- * @param threshold Number of particles that can at the same time in the channel
- * @param num_particles Number of particles in the system
  * @param id File identifier to write auxiliary results to.
- * @return Average mass spread
+ * @param av_chi Average mass spread, return value
+ * @param current Average current, return value
  */
 void get_chi(const double channel_length, const double channel_width, const int threshold, const double radius,
              const double second_length, const double second_width, const int num_particles, const double left_ratio,
@@ -56,18 +61,23 @@ void get_chi(const double channel_length, const double channel_width, const int 
 }
 
 /**
- * Obtain the mass spread as a function of the parameters below, and write its value 500 times during the proces .
- * For a definition of the mass spread, see simulation.h.
+ * Obtain the average mass spread and current as a function of the parameters below,
+ * and write its value 500 times during the simulation.
+ * For a definition of the mass spread and the current, see simulation.h
  *
+ * @param channel_length channel_length Length of the center channel
+ * @param channel_width channel_width Width of the center channel
+ * @param threshold Number of particles that can at the same time in the channel
+ * @param radius Radius of the chamber
+ * @param second_length Length of the back channel
+ * @param second_width Width of the back channel
+ * @param num_particles Number of particles in the system
+ * @param left_ratio Initial ratio of number of particles in the left chamber
  * @param M_t Transient time, measured in number of collisions
  * @param M_f Final time, measured in number of collisions
- * @param channel_length Length of the channel
- * @param channel_width Width of the channel
- * @param urn_radius Radius of the chamber
- * @param threshold Number of particles that can at the same time in the channel
- * @param num_particles Number of particles in the system
  * @param id File identifier to write auxiliary results to.
- * @return Average mass spread
+ * @param av_chi Average mass spread, return value
+ * @param current Average current, return value
  */
 double
 get_chi_development(const double channel_length, const double channel_width, const int threshold, const double radius,

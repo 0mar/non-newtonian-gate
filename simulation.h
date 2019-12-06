@@ -45,6 +45,11 @@ public:
     const int num_particles;
     int left_gate_capacity;
     int right_gate_capacity;
+    /**
+     * These values are used to compute the current.
+     * The current is defined as the number of particles that move from left to right
+     * (both through the center and the back channel) in a certain time interval, divided by that time.
+     */
     int first_channel_surplus; // Defined from left to right
     int second_channel_surplus; // Defined from right to left
     unsigned long in_left;
@@ -325,8 +330,12 @@ public:
     void write_bounce_map_to_file(const unsigned long &particle);
 
     /**
-     * Compute the mass spread in the urns. Equal distribution of mass yields 0, one urn full and the other returns 0.
-     * @return mass spread between 0 and 1.
+     * Compute the mass spread in the chamber.
+     * The mass spread is defined as the number of particles in the right urn minus the number of particles in the left urn
+     * divided by the total number of particles. This means that an qqual distribution of mass yields 0, while
+     * the right urn full and the left empty yields a mass spread of one.
+     *
+     * @return mass spread as a double between -1 and 1.
      */
     double get_mass_spread();
 
