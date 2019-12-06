@@ -26,9 +26,10 @@ def plot_single_channel_heat_map(filename, num_particles):
         sub_df = df.loc[:, (df != df.iloc[0]).any()]
         x_label = sub_df.columns[0]
         y_label = sub_df.columns[1]
-        x = df[x_label].values
-        y = df[y_label].values
-        chi = df[sub_df.columns[2]].values
+        sub_df = sub_df.drop_duplicates([x_label, y_label])
+        x = sub_df[x_label].values
+        y = sub_df[y_label].values
+        chi = sub_df[sub_df.columns[2]].values
         unused_cols = set(param_names) - set(sub_df.columns)
 
         param1_name = unused_cols.pop()
@@ -44,7 +45,7 @@ def plot_single_channel_heat_map(filename, num_particles):
                                 'num_particles': int(float(num_particles))})
 
         ax = plt.subplot(2, 3, i + 1)
-        plt.scatter(x, y, c=chi, s=150, alpha=0.7, cmap='PiYG')
+        plt.scatter(x, y, c=chi, s=150, alpha=0.9, cmap='PiYG')
         plt.colorbar()
         plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
 
@@ -167,7 +168,7 @@ def plot_double_channel_heatmap():
         plt.show()
 
 
-# plot_double_channel_data()
-# plot_double_channel_data_manuscript()
+plot_double_channel_data()
+plot_double_channel_data_manuscript()
 plot_single_channel_heat_maps()
 # plot_double_channel_heatmap()
