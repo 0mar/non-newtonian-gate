@@ -70,14 +70,14 @@ def plot_double_channel_data():
         file_id = '%s/params_%d' % (double_channel_dir, num_particles)
         try:
             df = pd.read_csv(file_id + '.out', header=None, sep=',',
-                             names=['threshold', 'second_width', 'second_length', 'initial_ratio', 'mass_spread',
+                             names=['threshold', 'second_length', 'second_width', 'initial_ratio', 'mass_spread',
                                     'current'])
         except FileNotFoundError:
             print("%s not found, continuing" % file_id)
             continue
         plt.figure(figsize=(5, 5))
         measurements = ['mass_spread', 'current']
-        variables = {'threshold', 'second_width', 'second_length'}
+        variables = {'threshold', 'second_length', 'second_width'}
         for measurement in measurements:
             for variable in variables:
                 plt.figure()
@@ -103,7 +103,7 @@ def plot_double_channel_data_manuscript():
         file_id = '%s/params_%d' % (double_channel_dir, num_particles)
         try:
             part_df = pd.read_csv(file_id + '.out', header=None, sep=',',
-                                  names=['Relative threshold', 'Width of second channel', 'Length of second channel',
+                                  names=['Relative threshold', 'Length of second channel', 'Width of second channel',
                                          'initial_ratio', 'Mass spread', 'Relative current'])
             df = df.append(part_df.assign(num_particles=num_particles))
         except FileNotFoundError:
@@ -111,7 +111,7 @@ def plot_double_channel_data_manuscript():
             continue
 
     measurements = ['Mass spread', 'Relative current']
-    variables = {'Relative threshold', 'Width of second channel', 'Length of second channel'}
+    variables = {'Relative threshold', 'Length of second channel', 'Width of second channel'}
     markers = {0.25: 'v', 0.5: 's', 0.75: 'o'}
     marker_styles = {1000: 'none', 10000: 'full'}
     np_format = {1000: '10^3', 10000: '10^4'}
@@ -147,7 +147,7 @@ def plot_double_channel_heatmap():
         filename = '%s/heatmap_%d.out' % ('double_channel_data', num_particles)
         outputs = ['chi', 'current']
         df = pd.read_csv(filename, header=None,
-                         names=["threshold", "second_width", "second_length", "initial_ratio", "chi", "current"])
+                         names=["threshold", "second_length", "second_width", "initial_ratio", "chi", "current"])
         df.loc[:, 'current'] = np.abs(df.current / num_particles)
         df.loc[:, 'chi'] = np.abs(df.chi)
         plt.figure(figsize=(11, 10))

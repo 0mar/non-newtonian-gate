@@ -24,12 +24,12 @@
     0.75
   ],
   "defaults": {
-    "first_width": 0.3,
     "first_length": 1,
+    "first_width": 0.3,
     "threshold": 10,
     "radius": 1,
-    "second_width": 0.02,
     "second_length": 1,
+    "second_width": 0.02,
     "num_particles": 1000,
     "initial_ratio": 0.25,
     "M_t": 9.5E8,

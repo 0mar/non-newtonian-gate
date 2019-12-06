@@ -23,8 +23,8 @@
  * @param id File identifier to write auxiliary results to.
  * @return Average mass spread
  */
-void get_chi(const double channel_width, const double channel_length, const int threshold, const double radius,
-             const double second_width, const double second_length, const int num_particles, const double left_ratio,
+void get_chi(const double channel_length, const double channel_width, const int threshold, const double radius,
+             const double second_length, const double second_width, const int num_particles, const double left_ratio,
              const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi, double &current) {
     Simulation sim = Simulation(num_particles, channel_width, radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
@@ -70,8 +70,8 @@ void get_chi(const double channel_width, const double channel_length, const int 
  * @return Average mass spread
  */
 double
-get_chi_development(const double channel_width, const double channel_length, const int threshold, const double radius,
-                    const double second_width, const double second_length, const int num_particles,
+get_chi_development(const double channel_length, const double channel_width, const int threshold, const double radius,
+                    const double second_length, const double second_width, const int num_particles,
                     const double left_ratio,
                     const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi,
                     double &current) {
@@ -82,8 +82,8 @@ get_chi_development(const double channel_width, const double channel_length, con
     Simulation sim = Simulation(num_particles, channel_width, radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
-    sim.second_width = second_width;
     sim.second_length = second_length;
+    sim.second_width = second_width;
     sim.setup();
     std::random_device rd;
     std::mt19937 re(rd());
@@ -138,12 +138,12 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
                 " (5) second channel width, (6) second channel length, (7) number of particles, (8) initial ratio,"
                 " (9) transient time, (10) final time, (11) identifier");
     }
-    const double channel_width = std::stod(argv[1]);
-    const double channel_length = std::stod(argv[2]);
+    const double channel_length = std::stod(argv[1]);
+    const double channel_width = std::stod(argv[2]);
     const int threshold = std::stoi(argv[3]);
     const double radius = std::stod(argv[4]);
-    const double second_width = std::stod(argv[5]);
-    const double second_length = std::stod(argv[6]);
+    const double second_length = std::stod(argv[5]);
+    const double second_width = std::stod(argv[6]);
     const int num_particles = std::stoi(argv[7]);
     const double initial_ratio = std::stod(argv[8]);
     const int M_t = std::stoi(argv[9]);
@@ -151,11 +151,11 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
     const std::string id = argv[11];
     double av_chi = 0;
     double current = 0;
-    get_chi(channel_width, channel_length, threshold, radius, second_width, second_length, num_particles,
+    get_chi(channel_length, channel_width, threshold, radius, second_length, second_width, num_particles,
             initial_ratio, M_t, M_f, id, av_chi, current);
     std::ostringstream s;
-    s << threshold << "," << second_width << "," << second_length << "," << initial_ratio << "," << av_chi
-            << "," << current << std::endl;
+    s << threshold << "," << second_length << "," << second_width << "," << initial_ratio << "," << av_chi
+      << "," << current << std::endl;
     std::ofstream result_file(id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
