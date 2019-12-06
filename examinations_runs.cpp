@@ -36,7 +36,7 @@ double get_cool_down_time(int number_of_particles, int gate_capacity) {
     simulation.setup();
     simulation.start(0);
     // simulation.write_positions_to_file(0);
-    while (simulation.total_left.back() < 10 and simulation.time < 1E5) {
+    while (simulation.num_collisions < 10 and simulation.time < 1E5) {
         simulation.update(0.0);
     }
     return simulation.time;

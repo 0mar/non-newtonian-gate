@@ -76,7 +76,7 @@ void time_test(const int num_times = 5) { // Starting point: 7 seconds, after ke
         simulation.distance_as_channel_length = true;
         simulation.setup();
         simulation.start(0.25);
-        while (simulation.measuring_times.size() < 1E6) {
+        while (simulation.num_collisions < (unsigned long) 1E6) {
             simulation.update(0);
         }
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
@@ -102,8 +102,8 @@ void mass_spread_demo(const int &num_res) {
         simulation.setup();
         simulation.start(0.7);
         simulation.write_positions_to_file(0);
-        while (simulation.measuring_times.size() < 1E6) {
-            if (simulation.measuring_times.size() % 100 == 0) {
+        while (simulation.num_collisions < (unsigned long) 1E6) {
+            if (simulation.num_collisions % 100 == 0) {
                 s << simulation.get_mass_spread() << ",";
             }
             simulation.update(0);

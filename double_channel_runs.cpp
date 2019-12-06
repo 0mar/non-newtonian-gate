@@ -26,13 +26,13 @@ void get_chi(const double channel_width, const double channel_length, const int 
         printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, radius);
     }
 
-    while (sim.measuring_times.size() < M_t) {
+    while (sim.num_collisions < M_t) {
         sim.update(0.0);
     }
     const double weight = 1. / (double) (M_f - M_t);
     const int count_offset = sim.first_channel_surplus;
     const double time_offset = sim.time;
-    while (sim.measuring_times.size() < M_f) {
+    while (sim.num_collisions < M_f) {
         sim.update(0.0);
         av_chi += weight * sim.get_mass_spread();
     }
@@ -67,7 +67,7 @@ get_chi_development(const double channel_width, const double channel_length, con
         return 0;
     }
     double dt = 0;
-    while (sim.measuring_times.size() < M_f) {
+    while (sim.num_collisions < M_f) {
 //        if (sim.measuring_times.size() ==M_t) {
 //            dt = 0.025;
 //            sim.last_written_time = sim.time;
@@ -76,8 +76,8 @@ get_chi_development(const double channel_width, const double channel_length, con
 //            dt = 0;
 //        }
         sim.update(dt);
-        if (sim.measuring_times.size() % step_size == 0) {
-            s << sim.measuring_times.size() << "," << sim.time << "," << sim.first_channel_surplus << ","
+        if (sim.num_collisions % step_size == 0) {
+            s << sim.num_collisions << "," << sim.time << "," << sim.first_channel_surplus << ","
               << sim.second_channel_surplus << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
               << std::endl;
         }

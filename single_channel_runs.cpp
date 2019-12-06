@@ -35,11 +35,11 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
         return 0;
     }
     sim.start(left_ratio);
-    while (sim.measuring_times.size() < M_t) {
+    while (sim.num_collisions < M_t) {
         sim.update(0.0);
     }
     const double weight = 1. / (double) (M_f - M_t);
-    while (sim.measuring_times.size() < M_f) {
+    while (sim.num_collisions < M_f) {
         sim.update(0.0);
         chi += weight * sim.get_mass_spread();
     }
@@ -72,10 +72,10 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
         return 0;
     }
     double dt = 0;
-    while (sim.measuring_times.size() < M_f) {
+    while (sim.num_collisions < M_f) {
         sim.update(dt);
-        if (sim.measuring_times.size() % step_size == 0) {
-            s << sim.measuring_times.size() << "," << sim.time << "," << std::fabs(sim.get_mass_spread())
+        if (sim.num_collisions % step_size == 0) {
+            s << sim.num_collisions << "," << sim.time << "," << std::fabs(sim.get_mass_spread())
               << std::endl;
         }
     }
@@ -111,11 +111,11 @@ unsigned long find_sandwich_time(const double channel_length,
     }
     chi_diff = 1;
     const double eps = 1E-3;
-    while (sim_top.measuring_times.size() < M_t or (chi_diff > eps and sim_top.measuring_times.size() < M_f)) {
+    while (sim_top.num_collisions < M_t or (chi_diff > eps and sim_top.num_collisions < M_f)) {
         sim_top.update(0.0);
         sim_bottom.update(0.0);
-        if (sim_top.measuring_times.size() % step_size == 0) {
-            s << sim_top.measuring_times.size() << "," << std::fabs(sim_top.get_mass_spread()) << ", "
+        if (sim_top.num_collisions % step_size == 0) {
+            s << sim_top.num_collisions << "," << std::fabs(sim_top.get_mass_spread()) << ", "
               << std::fabs(sim_bottom.get_mass_spread()) << std::endl;
         }
         chi_diff = std::fabs(std::fabs(sim_top.get_mass_spread()) - std::fabs(sim_bottom.get_mass_spread()));
@@ -123,7 +123,7 @@ unsigned long find_sandwich_time(const double channel_length,
     std::ofstream result_file(id + ".chi", std::ios::app);
     result_file << s.str();
     result_file.close();
-    return sim_top.measuring_times.size();
+    return sim_top.num_collisions;
 }
 
 void find_relation_time(int argc, char *argv[]) {

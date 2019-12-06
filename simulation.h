@@ -31,7 +31,7 @@ public:
     int first_channel_surplus; // Defined from left to right
     int second_channel_surplus; // Defined from right to left
     unsigned long in_left;
-    unsigned long collision_counter = 0;
+    unsigned long num_collisions = 0;
     // Other parameters
     double circle_radius;
     double circle_distance;
@@ -267,11 +267,6 @@ public:
      * Write bounce_map
      */
     void write_bounce_map_to_file(const unsigned long &particle);
-
-    /**
-     * Write all timestamps and number of positions to file.
-     */
-    void write_totals_to_file();
 
     /**
      * Compute the mass spread in the urns. Equal distribution of mass yields 0, one urn full and the other returns 0.

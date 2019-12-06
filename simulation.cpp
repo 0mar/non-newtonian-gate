@@ -120,7 +120,7 @@ void Simulation::update(const double &write_dt) {
     // If we really need more optimization, this is where to get it.
     unsigned long particle = sorted_indices[0];
     double next_impact = next_impact_times[particle];
-    collision_counter++;
+    num_collisions++;
     // Write a time slice, if desired
     if (write_dt > 0) {
         while (next_impact > last_written_time + write_dt) {
@@ -363,8 +363,7 @@ double Simulation::get_mass_spread() {
 }
 
 void Simulation::finish() {
-    write_totals_to_file();
-    debug_write("Finished at t=" + std::to_string(time) + " with " + std::to_string(collision_counter) + " bounces");
+    debug_write("Finished at t=" + std::to_string(time) + " with " + std::to_string(num_collisions) + " bounces");
     if (debug) {
         debug_file.close();
     }
@@ -511,7 +510,7 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
         reset_counter++;
         printf("Next time = maxpath =%.2f\nParticle has to be reset (%dth time)\n", next_time, reset_counter);
         printf("Position (%.4f, %.4f) at t=%.2f (%lu collisions), angle %.2f pi\n", px, py, impact_times[particle],
-               collision_counter,
+               num_collisions,
                directions[particle] / PI);
         printf("Bounding box: (%.2f,%.2f)\n", box_x_radius, box_y_radius);
         const int direction = px > 0 ? RIGHT : LEFT;
