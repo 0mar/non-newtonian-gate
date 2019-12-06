@@ -21,8 +21,6 @@ def plot_single_channel_heat_map(filename, num_particles):
     param_names = ["length", "width", "radius", "threshold"]
     plt.figure(figsize=(22, 15))
     for i in range(6):
-        row = i // 3
-        col = i % 3
         df = pd.read_csv(filename % i, header=None, names=["length", "width", "radius", "threshold", "chi"])
         df['num_particles'] = int(float(num_particles))
         sub_df = df.loc[:, (df != df.iloc[0]).any()]
@@ -45,7 +43,7 @@ def plot_single_channel_heat_map(filename, num_particles):
         Z = threshold_function({param1_name: param1_val, param2_name: param2_val, x_label: X, y_label: Y,
                                 'num_particles': int(float(num_particles))})
 
-        plt.subplot(2, 3, i + 1)
+        ax = plt.subplot(2, 3, i + 1)
         plt.scatter(x, y, c=chi, s=150, alpha=0.7, cmap='PiYG')
         plt.colorbar()
         plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
@@ -53,8 +51,7 @@ def plot_single_channel_heat_map(filename, num_particles):
         plt.xlabel(x_label.title())
         plt.ylabel(y_label.title())
         if y_label == 'threshold':
-            ax = plt.figure().gca()
-            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.savefig("%s/%s/omar-recreation-%s.pdf" % (single_channel_dir, plot_dir, num_particles))
     plt.close()
@@ -171,6 +168,6 @@ def plot_double_channel_heatmap():
 
 
 # plot_double_channel_data()
-plot_double_channel_data_manuscript()
-# plot_single_channel_data()
-plot_double_channel_heatmap()
+# plot_double_channel_data_manuscript()
+plot_single_channel_heat_maps()
+# plot_double_channel_heatmap()
