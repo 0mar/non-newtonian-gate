@@ -31,6 +31,7 @@ public:
     int first_channel_surplus; // Defined from left to right
     int second_channel_surplus; // Defined from right to left
     unsigned long in_left;
+    unsigned long collision_counter = 0;
     // Other parameters
     double circle_radius;
     double circle_distance;
@@ -176,14 +177,12 @@ public:
     std::vector<double> y_pos;
     std::vector<double> directions;
     std::vector<double> next_directions;
+    std::vector<int> gate_capacities;
 
-    std::vector<double> measuring_times;
-    std::vector<unsigned long> total_left;
     std::vector<unsigned long> currently_in_left_gate;
     std::vector<unsigned long> currently_in_right_gate;
     std::vector<std::vector<unsigned long>> gate_contents;
     std::vector<std::vector<bool>> gate_arrays;
-    std::vector<int> gate_capacities;
 
     /**
      * Compute the current position of a particle, based on the `time` variable
@@ -251,11 +250,6 @@ public:
      * If zero, don't write at all.
      */
     void update(const double &write_dt);
-
-    /**
-     * Store a time stamp and the number of particles left and right.
-     */
-    void measure();
 
     /**
      * Print the current status of the simulation to stdout

@@ -57,10 +57,6 @@ void Simulation::setup() {
                    << bridge_width << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
         debug_file << "Process: " << getpid() << std::endl;
     }
-    if (expected_collisions > 0) {
-        measuring_times.reserve(expected_collisions);
-        total_left.reserve(expected_collisions);
-    }
 }
 
 std::string Simulation::get_random_string(const std::size_t &length) {
@@ -117,7 +113,6 @@ void Simulation::start(const double &left_ratio) {
     first_channel_surplus = 0;
     second_channel_surplus = 0;
     sort_indices();
-    measure();
 }
 
 void Simulation::update(const double &write_dt) {
@@ -125,6 +120,7 @@ void Simulation::update(const double &write_dt) {
     // If we really need more optimization, this is where to get it.
     unsigned long particle = sorted_indices[0];
     double next_impact = next_impact_times[particle];
+    collision_counter++;
     // Write a time slice, if desired
     if (write_dt > 0) {
         while (next_impact > last_written_time + write_dt) {
@@ -167,8 +163,6 @@ void Simulation::update(const double &write_dt) {
     // Find out when this particle collides next
     compute_next_impact(particle);
     reindex_particle(particle, true);
-    // Do something useful with this information
-    measure();
 }
 
 void Simulation::sort_indices() {
@@ -312,11 +306,6 @@ void Simulation::count_first_gate_crossing(const unsigned long &particle) {
     }
 }
 
-void Simulation::measure() {
-    measuring_times.push_back(time);
-    total_left.push_back(in_left);
-}
-
 void Simulation::print_status() {
     printf("Time passed: %.2f\n", time);
     for (unsigned long particle = 0; particle < num_particles; particle++) {
@@ -361,25 +350,6 @@ void Simulation::write_positions_to_file(const double &time) {
     file.close();
 }
 
-void Simulation::write_totals_to_file() {
-    std::string filename = "totals.dat";
-    std::ofstream file;
-    file.open(filename, std::ofstream::out | std::ofstream::trunc);
-    for (double m_time: measuring_times) {
-        file << m_time << "\t";
-    }
-    file << std::endl;
-    for (unsigned long left: total_left) {
-        file << left << "\t";
-    }
-    file << std::endl;
-    for (unsigned long left: total_left) {
-        file << num_particles - left << "\t";
-    }
-    file << std::endl;
-    file.close();
-}
-
 void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
     std::string filename = "bounces.dat";
     std::ofstream file;
@@ -389,12 +359,12 @@ void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
 }
 
 double Simulation::get_mass_spread() {
-    return (num_particles - 2. * total_left.back()) / num_particles;
+    return (num_particles - 2. * in_left) / num_particles;
 }
 
 void Simulation::finish() {
     write_totals_to_file();
-    debug_write("Finished at t=" + std::to_string(time) + " with " + std::to_string(total_left.size()) + " bounces");
+    debug_write("Finished at t=" + std::to_string(time) + " with " + std::to_string(collision_counter) + " bounces");
     if (debug) {
         debug_file.close();
     }
@@ -541,7 +511,7 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
         reset_counter++;
         printf("Next time = maxpath =%.2f\nParticle has to be reset (%dth time)\n", next_time, reset_counter);
         printf("Position (%.4f, %.4f) at t=%.2f (%lu collisions), angle %.2f pi\n", px, py, impact_times[particle],
-               measuring_times.size(),
+               collision_counter,
                directions[particle] / PI);
         printf("Bounding box: (%.2f,%.2f)\n", box_x_radius, box_y_radius);
         const int direction = px > 0 ? RIGHT : LEFT;
