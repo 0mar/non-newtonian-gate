@@ -3,6 +3,11 @@
 #include <string>
 #include <chrono>
 
+/**
+ * This file contains recipes for the most common executables for the two-chamber system.
+ * The recipes themselves are pretty self-explanatory.
+ */
+
 void polarisation_demo() {
     printf("Creating the animation for a polarising system\n");
     Simulation simulation = Simulation(300, 0.2);

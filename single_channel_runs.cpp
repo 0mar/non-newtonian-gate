@@ -2,20 +2,28 @@
 #include <memory>
 #include "simulation.h"
 #include <string>
-#include <fstream>
-#include <ctime>
-#include <sstream>
 
-template<class T>
-void write_results(std::string &id, std::vector<T> &data) {
-    std::ofstream results_file;
-    results_file.open(id + ".txt");
-    for (T datum: data) {
-        results_file << datum << "\t";
-    }
-    results_file << std::endl;
-    results_file.close();
-}
+/**
+ * This file contains an executable that can be used for efficient parameter regime explorations
+ * of the two-chamber dynamics
+ * It takes command line parameters that define the simulation, allowing for simple batch running
+ * which allows for efficient parallel execution
+ */
+
+/**
+ * Obtain the mass spread as a function of the parameters below, averaged from the transient time to the final time.
+ * For a definition of the mass spread, see simulation.h.
+ *
+ * @param M_t Transient time, measured in number of collisions
+ * @param M_f Final time, measured in number of collisions
+ * @param channel_length Length of the channel
+ * @param channel_width Width of the channel
+ * @param urn_radius Radius of the chamber
+ * @param threshold Number of particles that can at the same time in the channel
+ * @param num_particles Number of particles in the system
+ * @param id File identifier to write auxiliary results to.
+ * @return Average mass spread
+ */
 
 double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
                const double channel_width, const double urn_radius, const int threshold, const int num_particles,
@@ -46,7 +54,22 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
     chi = std::fabs(chi);
     return chi;
 }
-
+//Todo: Make this in the same order as double_channel_runs.cpp
+//Todo: Also fix the double_channel documentation than
+/**
+ * Obtain the mass spread as a function of the parameters below, and write its value 500 times during the proces .
+ * For a definition of the mass spread, see simulation.h.
+ *
+ * @param M_t Transient time, measured in number of collisions
+ * @param M_f Final time, measured in number of collisions
+ * @param channel_length Length of the channel
+ * @param channel_width Width of the channel
+ * @param urn_radius Radius of the chamber
+ * @param threshold Number of particles that can at the same time in the channel
+ * @param num_particles Number of particles in the system
+ * @param id File identifier to write auxiliary results to.
+ * @return Average mass spread
+ */
 double get_chi_development(const unsigned long M_t, const unsigned long M_f, const double channel_length,
                            const double channel_width, const double urn_radius, const int threshold,
                            const int num_particles, const std::string &id) {
@@ -85,6 +108,19 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
     return chi;
 }
 
+/**
+ * Compute the time it takes for a fully polarized and fully equilibriated system to reach the same state.
+ * This time can then be used as an indication for the thermilisation time of the system.
+ *
+ * @param channel_length
+ * @param channel_width
+ * @param urn_radius
+ * @param threshold
+ * @param num_particles
+ * @param id
+ * @param chi_diff Tolerance for difference in mass spreads
+ * @return Time for the two systems to reach the same mass spread
+ */
 unsigned long find_sandwich_time(const double channel_length,
                                  const double channel_width, const double urn_radius, const int threshold,
                                  const int num_particles, const std::string &id, double &chi_diff) {
@@ -126,6 +162,12 @@ unsigned long find_sandwich_time(const double channel_length,
     return sim_top.num_collisions;
 }
 
+/**
+ * Find the thermalisation times for a specific set of parameters. Executable, takes command line values.
+ *
+ * @param argc number of command line arguments
+ * @param argv list of command line arguments
+ */
 void find_relation_time(int argc, char *argv[]) {
     const int num_arguments = 6;
     if (argc != num_arguments + 1) {
@@ -155,7 +197,14 @@ void find_relation_time(int argc, char *argv[]) {
     result_file.close();
 }
 
-void matteo_relation_finder(int argc, char *argv[]) {
+/**
+ * Find the average mass spread in the thermalised state for a specific set of parameters.
+ * Executable, takes command line values
+ *
+ * @param argc number of command line arguments. Must be 8
+ * @param argv List of command line arguments. Must be in specific order.
+ */
+void average_mass_spread_for(int argc, char *argv[]) {
     const int num_arguments = 8;
     const int num_runs = 1;
     if (argc != num_arguments + 1) {
@@ -190,7 +239,7 @@ void matteo_relation_finder(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    matteo_relation_finder(argc, argv);
+    average_mass_spread_for(argc, argv);
     return 0;
 }
 

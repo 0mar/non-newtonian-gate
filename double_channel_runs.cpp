@@ -2,11 +2,27 @@
 #include <memory>
 #include "simulation.h"
 #include <string>
-#include <fstream>
-#include <ctime>
-#include <sstream>
 
+/**
+ * This file contains an executable that can be used for efficient parameter regime explorations
+ * of the two-chamber dynamics with two channels
+ * It takes command line parameters that define the simulation, allowing for simple batch running
+ * which allows for efficient parallel execution
+ */
 
+/**
+ *
+ *
+ * @param M_t Transient time, measured in number of collisions
+ * @param M_f Final time, measured in number of collisions
+ * @param channel_length Length of the channel
+ * @param channel_width Width of the channel
+ * @param urn_radius Radius of the chamber
+ * @param threshold Number of particles that can at the same time in the channel
+ * @param num_particles Number of particles in the system
+ * @param id File identifier to write auxiliary results to.
+ * @return Average mass spread
+ */
 void get_chi(const double channel_width, const double channel_length, const int threshold, const double radius,
              const double second_width, const double second_length, const int num_particles, const double left_ratio,
              const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi, double &current) {
@@ -39,6 +55,20 @@ void get_chi(const double channel_width, const double channel_length, const int 
     current = (sim.first_channel_surplus - count_offset) / (sim.time - time_offset);
 }
 
+/**
+ * Obtain the mass spread as a function of the parameters below, and write its value 500 times during the proces .
+ * For a definition of the mass spread, see simulation.h.
+ *
+ * @param M_t Transient time, measured in number of collisions
+ * @param M_f Final time, measured in number of collisions
+ * @param channel_length Length of the channel
+ * @param channel_width Width of the channel
+ * @param urn_radius Radius of the chamber
+ * @param threshold Number of particles that can at the same time in the channel
+ * @param num_particles Number of particles in the system
+ * @param id File identifier to write auxiliary results to.
+ * @return Average mass spread
+ */
 double
 get_chi_development(const double channel_width, const double channel_length, const int threshold, const double radius,
                     const double second_width, const double second_length, const int num_particles,
@@ -88,6 +118,13 @@ get_chi_development(const double channel_width, const double channel_length, con
     return chi;
 }
 
+
+/**
+ * Find the thermalisation times for a specific set of parameters. Executable, takes command line values.
+ *
+ * @param argc number of command line arguments
+ * @param argv list of command line arguments
+ */
 void mass_spread_and_current_for(int argc, char *argv[]) {
     const int num_arguments = 11;
     if (argc != num_arguments + 1) {
@@ -118,7 +155,7 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
             initial_ratio, M_t, M_f, id, av_chi, current);
     std::ostringstream s;
     s << threshold << "," << second_width << "," << second_length << "," << initial_ratio << "," << av_chi
-      << "," << current << std::endl;
+            << "," << current << std::endl;
     std::ofstream result_file(id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
