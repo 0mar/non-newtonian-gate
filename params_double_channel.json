@@ -32,7 +32,7 @@
     "second_length": 1,
     "num_particles": 1000,
     "initial_ratio": 0.25,
-    "M_t": 9E8,
+    "M_t": 9.5E8,
     "M_f": 1E9
   }
 }
