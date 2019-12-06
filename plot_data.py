@@ -77,7 +77,7 @@ def plot_double_channel_data():
         plt.figure(figsize=(5, 5))
         measurements = ['mass_spread', 'current']
         variables = {'threshold', 'second_width', 'second_length'}
-
+        # Todo: unique the data
         for measurement in measurements:
             for variable in variables:
                 plt.figure()
