@@ -77,7 +77,6 @@ def plot_double_channel_data():
         plt.figure(figsize=(5, 5))
         measurements = ['mass_spread', 'current']
         variables = {'threshold', 'second_width', 'second_length'}
-        # Todo: unique the data
         for measurement in measurements:
             for variable in variables:
                 plt.figure()
@@ -129,6 +128,7 @@ def plot_double_channel_data_manuscript():
                     for other_variable in other_variables:
                         sdf = sdf[sdf[other_variable] == sdf[other_variable].value_counts().index[0]].sort_values(
                             variable)
+                        sdf = sdf.drop_duplicates([variable])  # Filter all variables with the same value. Untested
                     plt.plot(sdf[variable].values, sdf[measurement].values, marker=markers[initial_ratio],
                              fillstyle=marker_styles[num_particles], color='black', linestyle='-.')
                     legend.append('$N=%s$ , $\\chi_0 = %.1f$' % (np_format[num_particles], initial_ratio * 2 - 1))
