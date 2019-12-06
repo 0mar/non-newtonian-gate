@@ -17,10 +17,6 @@
     "small": {
       "num_particles": 1000,
       "threshold_multiplier": 1
-    },
-    "large": {
-      "num_particles": 10000,
-      "threshold_multiplier": 10
     }
   },
   "initial_ratio": [
@@ -36,7 +32,7 @@
     "second_length": 1,
     "num_particles": 1000,
     "initial_ratio": 0.25,
-    "M_t": 15E6,
-    "M_f": 20E6
+    "M_t": 9E8,
+    "M_f": 1E9
   }
 }
