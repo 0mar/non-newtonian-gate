@@ -31,7 +31,7 @@
   "defaults": {
     "first_width": 0.3,
     "first_length": 1,
-    "threshold": 5,
+    "threshold": 10,
     "radius": 1,
     "second_width": 0.02,
     "second_length": 1,
