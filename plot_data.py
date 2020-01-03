@@ -26,9 +26,10 @@ def plot_single_channel_heat_map(filename, num_particles):
         sub_df = df.loc[:, (df != df.iloc[0]).any()]
         x_label = sub_df.columns[0]
         y_label = sub_df.columns[1]
-        x = df[x_label].values
-        y = df[y_label].values
-        chi = df[sub_df.columns[2]].values
+        sub_df = sub_df.drop_duplicates([x_label, y_label])
+        x = sub_df[x_label].values
+        y = sub_df[y_label].values
+        chi = sub_df[sub_df.columns[2]].values
         unused_cols = set(param_names) - set(sub_df.columns)
 
         param1_name = unused_cols.pop()
@@ -44,7 +45,7 @@ def plot_single_channel_heat_map(filename, num_particles):
                                 'num_particles': int(float(num_particles))})
 
         ax = plt.subplot(2, 3, i + 1)
-        plt.scatter(x, y, c=chi, s=150, alpha=0.7, cmap='PiYG')
+        plt.scatter(x, y, c=chi, s=150, alpha=0.9, cmap='PiYG')
         plt.colorbar()
         plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
 
@@ -69,15 +70,14 @@ def plot_double_channel_data():
         file_id = '%s/params_%d' % (double_channel_dir, num_particles)
         try:
             df = pd.read_csv(file_id + '.out', header=None, sep=',',
-                             names=['threshold', 'second_width', 'second_length', 'initial_ratio', 'mass_spread',
+                             names=['threshold', 'second_length', 'second_width', 'initial_ratio', 'mass_spread',
                                     'current'])
         except FileNotFoundError:
             print("%s not found, continuing" % file_id)
             continue
         plt.figure(figsize=(5, 5))
         measurements = ['mass_spread', 'current']
-        variables = {'threshold', 'second_width', 'second_length'}
-        # Todo: unique the data
+        variables = {'threshold', 'second_length', 'second_width'}
         for measurement in measurements:
             for variable in variables:
                 plt.figure()
@@ -103,7 +103,7 @@ def plot_double_channel_data_manuscript():
         file_id = '%s/params_%d' % (double_channel_dir, num_particles)
         try:
             part_df = pd.read_csv(file_id + '.out', header=None, sep=',',
-                                  names=['Relative threshold', 'Width of second channel', 'Length of second channel',
+                                  names=['Relative threshold', 'Length of second channel', 'Width of second channel',
                                          'initial_ratio', 'Mass spread', 'Relative current'])
             df = df.append(part_df.assign(num_particles=num_particles))
         except FileNotFoundError:
@@ -111,7 +111,7 @@ def plot_double_channel_data_manuscript():
             continue
 
     measurements = ['Mass spread', 'Relative current']
-    variables = {'Relative threshold', 'Width of second channel', 'Length of second channel'}
+    variables = {'Relative threshold', 'Length of second channel', 'Width of second channel'}
     markers = {0.25: 'v', 0.5: 's', 0.75: 'o'}
     marker_styles = {1000: 'none', 10000: 'full'}
     np_format = {1000: '10^3', 10000: '10^4'}
@@ -129,6 +129,7 @@ def plot_double_channel_data_manuscript():
                     for other_variable in other_variables:
                         sdf = sdf[sdf[other_variable] == sdf[other_variable].value_counts().index[0]].sort_values(
                             variable)
+                        sdf = sdf.drop_duplicates([variable])  # Filter all variables with the same value. Untested
                     plt.plot(sdf[variable].values, sdf[measurement].values, marker=markers[initial_ratio],
                              fillstyle=marker_styles[num_particles], color='black', linestyle='-.')
                     legend.append('$N=%s$ , $\\chi_0 = %.1f$' % (np_format[num_particles], initial_ratio * 2 - 1))
@@ -146,7 +147,7 @@ def plot_double_channel_heatmap():
         filename = '%s/heatmap_%d.out' % ('double_channel_data', num_particles)
         outputs = ['chi', 'current']
         df = pd.read_csv(filename, header=None,
-                         names=["threshold", "second_width", "second_length", "initial_ratio", "chi", "current"])
+                         names=["threshold", "second_length", "second_width", "initial_ratio", "chi", "current"])
         df.loc[:, 'current'] = np.abs(df.current / num_particles)
         df.loc[:, 'chi'] = np.abs(df.chi)
         plt.figure(figsize=(11, 10))
@@ -167,7 +168,7 @@ def plot_double_channel_heatmap():
         plt.show()
 
 
-# plot_double_channel_data()
-# plot_double_channel_data_manuscript()
+plot_double_channel_data()
+plot_double_channel_data_manuscript()
 plot_single_channel_heat_maps()
 # plot_double_channel_heatmap()

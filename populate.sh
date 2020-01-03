@@ -9,5 +9,8 @@ then
 fi
 SOURCE="$1"
 BUILD="$2"
-cp "$SOURCE"/create_*.py "$SOURCE"/params_*.json "$SOURCE"/*_batch.sh "$SOURCE"/plot_data.py "$SOURCE"/visualise.py "$SOURCE"/*_full.sh "$BUILD"
+for script in "$SOURCE"/*.{json,py,sh}
+do
+    ln -s $(readlink -f "$script") "$BUILD/$(basename $script)"
+done
 mkdir -p single_channel_data/plots double_channel_data/plots

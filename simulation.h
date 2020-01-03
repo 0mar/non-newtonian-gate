@@ -19,6 +19,23 @@
 
 class Simulation {
 public:
+    /**
+     * Create a new Simulation with given parameters.
+     * Note that before `setup` has been called, the parameters can freely be changed,
+     * allowing for some flexibility.
+     * A lot of default parameters are present, the only ones of real relevance are `second_width`, which defaults to
+     * 0 and then ignores the second channel and`flat_gate` which reinterprets the parameters to change the geometry.
+
+     * @param num_particles Number of particles
+     * @param bridge_width Width of the central channel
+     * @param circle_radius Radius of the chamber (circle)
+     * @param circle_distance Distance between the chambers
+     * OR length of the bridge, based on `distance_as_channel_length`
+     * @param left_gate_capacity Maximum number of particles allowed to enter the left channel
+     * @param right_gate_capacity Maximum number of particles allowed to enter the right channel
+     * @param random_dir Whether bouncing back should happen randomly
+     * @param flat_gate Whether the gate is fully rectangular or the chambers are fully circular.
+     */
     Simulation(const int &num_particles, const double &bridge_width, const double &circle_radius = 1.,
                const double &circle_distance = 0.5, const int &left_gate_capacity = 3,
                const int &right_gate_capacity = 3,
@@ -28,6 +45,11 @@ public:
     const int num_particles;
     int left_gate_capacity;
     int right_gate_capacity;
+    /**
+     * These values are used to compute the current.
+     * The current is defined as the number of particles that move from left to right
+     * (both through the center and the back channel) in a certain time interval, divided by that time.
+     */
     int first_channel_surplus; // Defined from left to right
     int second_channel_surplus; // Defined from right to left
     unsigned long in_left;
@@ -68,14 +90,14 @@ public:
     void setup();
 
     /**
-     * Need a way to generate random strings for debugging file names
+     * A way to generate random strings for debugging file names
      * @param length length of the string
      * @return random string
      */
     std::string get_random_string(const std::size_t &length);
 
     /**
-     * Write a message to std::cout
+     * Write a message to std::cout if in debug mode
      * @param message Debug message
      */
     void debug_write(const std::string &message);
@@ -111,6 +133,12 @@ public:
      */
     bool is_in_bridge(const double &x, const double &y);
 
+    /**
+     * Check if point is in the back channel
+     * @param x x-coordinate of the point
+     * @param y y-coordinate of the point
+     * @return `true` if point in bridge, `false` otherwise
+     */
     bool is_in_second_bridge(const double &x, const double &y);
 
     /**
@@ -132,6 +160,14 @@ public:
      */
     double time_to_hit_bridge(const unsigned long &particle, double &normal_angle);
 
+    /**
+     * Compute the time it takes for a particle to reach the horizontal lines of the back channel.
+     * If collision with bridge will not happen, return a time exceeding maximum collision time.
+     * @param particle Particle index
+     * @param normal_angle normal angle of the collision surface (output variable).
+     * Only well-defined for not-exceeding-maximum-time collision time
+     * @return time to next collision with bridge
+     */
     double time_to_hit_second_bridge(const unsigned long &particle, double &normal_angle);
 
     /**
@@ -159,6 +195,11 @@ public:
      */
     double time_to_hit_middle(const unsigned long &particle);
 
+    /**
+     * Time for a particle to hit the outer vertical bounds
+     * @param particle Particle index
+     * @return time to passing middle
+     */
     double time_to_hit_bounds(const unsigned long &particle);
 
     /**
@@ -228,12 +269,32 @@ public:
      * @return True if position in gate, false otherwise
      */
 
+    /**
+     * Check if a particle crossed the back channel and needs to have periodic boundary conditions applied.
+     * @param particle particle index
+     */
     void check_boundary_condition(const unsigned long &particle);
 
+    /**
+     * Check if a particle crossed the center vertical axis and needs to be counted as a switch.
+     * @param particle Particle index
+     */
     void count_first_gate_crossing(const unsigned long &particle);
 
+    /**
+     * Check if the particle is in the gate on side `direction`
+     * @param x x-coordinate of particle position
+     * @param y y-coordinate of particle position
+     * @param direction Side of gate
+     * @return True if particle in that side of the gate, false otherwise
+     */
     bool is_in_gate(const double &x, const double &y, const unsigned long &direction);
 
+    /**
+     * Check if particle is moving towards the center or away from the center.
+     * @param particle Particle index
+     * @return True if particle moves towards the center, false otherwise
+     */
     bool is_going_in(const unsigned long &particle);
 
     /**
@@ -269,8 +330,12 @@ public:
     void write_bounce_map_to_file(const unsigned long &particle);
 
     /**
-     * Compute the mass spread in the urns. Equal distribution of mass yields 0, one urn full and the other returns 0.
-     * @return mass spread between 0 and 1.
+     * Compute the mass spread in the chamber.
+     * The mass spread is defined as the number of particles in the right urn minus the number of particles in the left urn
+     * divided by the total number of particles. This means that an qqual distribution of mass yields 0, while
+     * the right urn full and the left empty yields a mass spread of one.
+     *
+     * @return mass spread as a double between -1 and 1.
      */
     double get_mass_spread();
 
@@ -301,12 +366,31 @@ private:
      */
     void couple_bridge();
 
+    /**
+     * Sort the indices of the particles with respect to the next collision.
+     * By using sorted indices, we speed op the simulation 4-5x.
+     */
     void sort_indices();
 
+    /**
+     * Find the index of a particle in a sorted array.
+     * This method uses binary search.
+     * @param particle Particle index
+     * @return Index of the particle where it fits.
+     */
     unsigned long find_index(const unsigned long &particle);
 
+    /**
+     * Updates the position of a particle in the sorted index list, based on its new collision time.
+     * @param particle Particle index
+     * @param was_minimum If the particle was at the base of the list, no need to search its old position.
+     */
     void reindex_particle(const unsigned long &particle, const bool &was_minimum);
 
+    /**
+     * Insert a particle in the list where it belongs, submethod.
+     * @param particle
+     */
     void insert_index(const unsigned long &particle);
 
     std::shared_ptr<std::random_device> rd;

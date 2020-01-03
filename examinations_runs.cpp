@@ -1,9 +1,12 @@
 #include <iostream>
-#include <memory>
 #include "simulation.h"
 #include <string>
-#include <fstream>
-#include <cmath>
+
+/*
+ * This collection of executables serves to get more insight in the process in different parameter regimes
+ * by looking at different quantities.
+ * Of note is mostly the unicorn() target, which clearly displays the polarisation effect of the gate.
+ */
 
 void write_results(std::string &id, std::vector<double> &data) {
     std::ofstream results_file;
