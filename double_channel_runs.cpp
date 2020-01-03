@@ -120,8 +120,33 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
     result_file.close();
 }
 
+void reconfirm_current_behaviour() {
+    const double channel_width = 0.3;
+    const double channel_length = 1;
+    const double radius = 1;
+    const double second_width = 0.02;
+    const double second_length = 1.;
+    const int M_t = 1E7;
+    const int M_f = 5E7;
+    const double initial_ratio = 0.25;
+    const std::vector<int> nums_particles{1000,10000};
+    const std::vector<double> rel_thresholds{0.001,0.01,0.02};
+    double av_chi = 0;
+    double current = 0;
+    for (int num_particles : nums_particles) {
+        for (double rel_threshold : rel_thresholds) {
+            const int threshold = int(rel_threshold*num_particles);
+            const std::string id = "double_channel_data/confirmation_"+std::to_string(num_particles)+"_"+std::to_string(threshold);
+            std::cout << "Running " << id << std::endl;
+            get_chi_evo(channel_width, channel_length, threshold, radius, second_width, second_length, num_particles,
+                    initial_ratio, M_t, M_f, id, av_chi, current);
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
-    mass_spread_and_current_for(argc, argv);
+//    mass_spread_and_current_for(argc, argv);
+    reconfirm_current_behaviour();
     return 0;
 }
 
