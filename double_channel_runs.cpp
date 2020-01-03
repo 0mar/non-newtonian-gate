@@ -79,14 +79,13 @@ void get_chi(const double channel_length, const double channel_width, const int 
  * @param av_chi Average mass spread, return value
  * @param current Average current, return value
  */
-double
-get_chi_development(const double channel_length, const double channel_width, const int threshold, const double radius,
-                    const double second_length, const double second_width, const int num_particles,
-                    const double left_ratio,
-                    const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi,
-                    double &current) {
+void get_chi_evo(const double channel_length, const double channel_width, const int threshold, const double radius,
+                 const double second_length, const double second_width, const int num_particles,
+                 const double left_ratio, const unsigned long M_t, const unsigned long M_f, const std::string &id,
+                 double &av_chi, double &current) {
 
-    double chi = 0;
+    av_chi = 0;
+    current = 0;
     const int num_points = 500;
     const unsigned long step_size = M_f / num_points;
     Simulation sim = Simulation(num_particles, channel_width, radius, channel_length, threshold, threshold);
@@ -104,7 +103,6 @@ get_chi_development(const double channel_length, const double channel_width, con
         sim.write_positions_to_file(0);
     } catch (const std::invalid_argument &ex) {
         printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, radius);
-        return 0;
     }
     double dt = 0;
     while (sim.num_collisions < M_f) {
@@ -125,7 +123,6 @@ get_chi_development(const double channel_length, const double channel_width, con
     std::ofstream result_file(id + ".chi", std::ios::app);
     result_file << s.str();
     result_file.close();
-    return chi;
 }
 
 
@@ -180,17 +177,18 @@ void reconfirm_current_behaviour() {
     const int M_t = 1E7;
     const int M_f = 5E7;
     const double initial_ratio = 0.25;
-    const std::vector<int> nums_particles{1000,10000};
-    const std::vector<double> rel_thresholds{0.001,0.01,0.02};
+    const std::vector<int> nums_particles{1000, 10000};
+    const std::vector<double> rel_thresholds{0.001, 0.01, 0.02};
     double av_chi = 0;
     double current = 0;
     for (int num_particles : nums_particles) {
         for (double rel_threshold : rel_thresholds) {
-            const int threshold = int(rel_threshold*num_particles);
-            const std::string id = "double_channel_data/confirmation_"+std::to_string(num_particles)+"_"+std::to_string(threshold);
+            const int threshold = int(rel_threshold * num_particles);
+            const std::string id = "double_channel_data/confirmation_" + std::to_string(num_particles) + "_" +
+                                   std::to_string(threshold);
             std::cout << "Running " << id << std::endl;
             get_chi_evo(channel_width, channel_length, threshold, radius, second_width, second_length, num_particles,
-                    initial_ratio, M_t, M_f, id, av_chi, current);
+                        initial_ratio, M_t, M_f, id, av_chi, current);
         }
     }
 }
