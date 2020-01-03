@@ -39,14 +39,12 @@ void get_chi(const double channel_width, const double channel_length, const int 
     current = (sim.first_channel_surplus - count_offset) / (sim.time - time_offset);
 }
 
-double
-get_chi_development(const double channel_width, const double channel_length, const int threshold, const double radius,
-                    const double second_width, const double second_length, const int num_particles,
-                    const double left_ratio,
-                    const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi,
-                    double &current) {
-
-    double chi = 0;
+void get_chi_evo(const double channel_width, const double channel_length, const int threshold, const double radius,
+                 const double second_width, const double second_length, const int num_particles,
+                 const double left_ratio, const unsigned long M_t, const unsigned long M_f, const std::string &id,
+                 double &av_chi, double &current) {
+    av_chi = 0;
+    current = 0;
     const int num_points = 500;
     const unsigned long step_size = M_f / num_points;
     Simulation sim = Simulation(num_particles, channel_width, radius, channel_length, threshold, threshold);
@@ -64,7 +62,6 @@ get_chi_development(const double channel_width, const double channel_length, con
         sim.write_positions_to_file(0);
     } catch (const std::invalid_argument &ex) {
         printf("Not running for bridge width %.2f and radius %.2f, returning 0\n", channel_width, radius);
-        return 0;
     }
     double dt = 0;
     while (sim.num_collisions < M_f) {
@@ -85,7 +82,6 @@ get_chi_development(const double channel_width, const double channel_length, con
     std::ofstream result_file(id + ".chi", std::ios::app);
     result_file << s.str();
     result_file.close();
-    return chi;
 }
 
 void mass_spread_and_current_for(int argc, char *argv[]) {
