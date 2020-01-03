@@ -11,6 +11,6 @@ SOURCE="$1"
 BUILD="$2"
 for script in "$SOURCE"/*.{json,py,sh}
 do
-    ln -s $(readlink -f "$script") "$BUILD/$(basename $script)"
+    ln -fs $(readlink -f "$script") "$BUILD/$(basename $script)"
 done
 mkdir -p single_channel_data/plots double_channel_data/plots
