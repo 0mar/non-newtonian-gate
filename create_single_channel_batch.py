@@ -55,8 +55,6 @@ if __name__ == '__main__':
         filename = sys.argv[1]
     with open(filename, 'r') as param_file:
         parameter_sets = json.load(param_file)
-    single_channel_exploration_set(parameter_sets)
-    exit(0)
     for size in parameter_sets.keys():
         default_values = parameter_sets[size]['defaults']
         for i, param in enumerate(parameter_sets[size]['relations']):
