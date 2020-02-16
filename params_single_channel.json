@@ -1,77 +1,4 @@
 {
-  "small": {
-    "relations": [
-      {
-        "channel_length": [
-          0.2,
-          0.8
-        ],
-        "channel_width": [
-          0.2,
-          0.8
-        ]
-      },
-      {
-        "channel_width": [
-          0.2,
-          0.8
-        ],
-        "urn_radius": [
-          0.8,
-          1.5
-        ]
-      },
-      {
-        "channel_length": [
-          0.2,
-          0.8
-        ],
-        "urn_radius": [
-          0.8,
-          1.5
-        ]
-      },
-      {
-        "channel_width": [
-          0.2,
-          0.8
-        ],
-        "threshold": [
-          4,
-          22
-        ]
-      },
-      {
-        "channel_length": [
-          0.2,
-          0.8
-        ],
-        "threshold": [
-          4,
-          22
-        ]
-      },
-      {
-        "urn_radius": [
-          0.8,
-          1.5
-        ],
-        "threshold": [
-          4,
-          22
-        ]
-      }
-    ],
-    "defaults": {
-      "channel_length": 0.5,
-      "channel_width": 0.5,
-      "urn_radius": 1,
-      "threshold": 10,
-      "num_particles": 1000,
-      "M_t": 5E6,
-      "M_f": 6E6
-    }
-  },
   "large": {
     "relations": [
       {
@@ -89,46 +16,6 @@
           0.2,
           0.8
         ],
-        "urn_radius": [
-          0.8,
-          1.5
-        ]
-      },
-      {
-        "channel_length": [
-          0.2,
-          0.8
-        ],
-        "urn_radius": [
-          0.8,
-          1.5
-        ]
-      },
-      {
-        "channel_width": [
-          0.2,
-          0.8
-        ],
-        "threshold": [
-          40,
-          220
-        ]
-      },
-      {
-        "channel_length": [
-          0.2,
-          0.8
-        ],
-        "threshold": [
-          40,
-          220
-        ]
-      },
-      {
-        "urn_radius": [
-          0.8,
-          1.5
-        ],
         "threshold": [
           40,
           220
@@ -141,8 +28,8 @@
       "urn_radius": 1,
       "threshold": 100,
       "num_particles": 10000,
-      "M_t": 5E6,
-      "M_f": 6E6
+      "M_t": 9E6,
+      "M_f": 1E7
     }
   }
 }

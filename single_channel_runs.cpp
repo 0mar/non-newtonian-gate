@@ -27,15 +27,15 @@
 
 double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
                const double channel_width, const double urn_radius, const int threshold, const int num_particles,
-               const std::string &id) {
+               const std::string &id, const double &init_chi) {
     double chi = 0;
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
     sim.expected_collisions = M_f;
+    const double left_ratio = (init_chi+1)/2;
 
     std::ostringstream s;
-    const double left_ratio = 0.75; // Not random atm
     try {
         sim.setup();
     } catch (const std::invalid_argument &ex) {
@@ -71,7 +71,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
  */
 double get_chi_development(const unsigned long M_t, const unsigned long M_f, const double channel_length,
                            const double channel_width, const double urn_radius, const int threshold,
-                           const int num_particles, const std::string &id) {
+                           const int num_particles, const std::string &id, const double &init_chi) {
 
     double chi = 0;
     const int num_points = 500;
@@ -85,7 +85,7 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
     std::mt19937 re(rd());
     std::uniform_real_distribution<double> unif(0.5, 1);
     std::ostringstream s;
-    const double left_ratio = 0.25; // Not random atm
+    const double left_ratio = (init_chi+1)/2;
     try {
         sim.start(left_ratio);
         sim.write_positions_to_file(0);
@@ -206,6 +206,7 @@ void find_relation_time(int argc, char *argv[]) {
 void average_mass_spread_for(int argc, char *argv[]) {
     const int num_arguments = 8;
     const int num_runs = 1;
+    const int num_init_chis = 5;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
         for (unsigned int i = 0; i < argc; i++) {
@@ -225,16 +226,18 @@ void average_mass_spread_for(int argc, char *argv[]) {
     const int M_f = std::stoi(argv[7]);
     const std::string id = argv[8];
     double av_chi = 0;
-    for (unsigned int i = 0; i < num_runs; i++) {
-        av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id) /
-                  num_runs;
-    }
+    for (unsigned int j=0; j < num_init_chis; j++) {
+        const double init_chi = j*0.25;
+        for (unsigned int i = 0; i < num_runs; i++) {
+            av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id, init_chi)/num_runs;
+        }
     std::ostringstream s;
-    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi
+    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << init_chi << "," << av_chi
       << std::endl;
     std::ofstream result_file(id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
+    }
 }
 
 int main(int argc, char *argv[]) {
