@@ -21,41 +21,44 @@ def plot_single_channel_heat_map(filename, num_particles):
     param_names = ["length", "width", "radius", "threshold"]
     plt.figure(figsize=(22, 15))
     for i in range(6):
-        df = pd.read_csv(filename % i, header=None, names=["length", "width", "radius", "threshold", "chi"])
+        df = pd.read_csv(filename % i, header=None, names=["length", "width", "radius", "threshold","init_chi", "chi"])
         df['num_particles'] = int(float(num_particles))
-        sub_df = df.loc[:, (df != df.iloc[0]).any()]
-        x_label = sub_df.columns[0]
-        y_label = sub_df.columns[1]
-        sub_df = sub_df.drop_duplicates([x_label, y_label])
-        x = sub_df[x_label].values
-        y = sub_df[y_label].values
-        chi = sub_df[sub_df.columns[2]].values
-        unused_cols = set(param_names) - set(sub_df.columns)
+        for init_chi in df['init_chi'].unique():
+            sub_df = df.loc[:, (df != df.iloc[0]).any()]
+            sub_df = sub_df[sub_df.init_chi==init_chi]
+            x_label = sub_df.columns[0]
+            y_label = sub_df.columns[1]
+            sub_df = sub_df.drop_duplicates([x_label, y_label])
+            x = sub_df[x_label].values
+            y = sub_df[y_label].values
+            chi = sub_df[sub_df.columns[2]].values
+            unused_cols = set(param_names) - set(sub_df.columns)
 
-        param1_name = unused_cols.pop()
-        param2_name = unused_cols.pop()
-        param1_val = df[param1_name][0]
-        param2_val = df[param2_name][0]
-        params = ",".join(param_names + ["num_particles"]).replace(x_label, 'x').replace(y_label, 'y')
+            param1_name = unused_cols.pop()
+            param2_name = unused_cols.pop()
+            param1_val = df[param1_name][0]
+            param2_val = df[param2_name][0]
+            params = ",".join(param_names + ["num_particles"]).replace(x_label, 'x').replace(y_label, 'y')
 
-        x_ = np.linspace(np.min(x), np.max(x))
-        y_ = np.linspace(np.min(y), np.max(y))
-        X, Y = np.meshgrid(x_, y_)
-        Z = threshold_function({param1_name: param1_val, param2_name: param2_val, x_label: X, y_label: Y,
-                                'num_particles': int(float(num_particles))})
+            x_ = np.linspace(np.min(x), np.max(x))
+            y_ = np.linspace(np.min(y), np.max(y))
+            X, Y = np.meshgrid(x_, y_)
+            Z = threshold_function({param1_name: param1_val, param2_name: param2_val, x_label: X, y_label: Y,
+                                    'num_particles': int(float(num_particles))})
 
-        ax = plt.subplot(2, 3, i + 1)
-        plt.scatter(x, y, c=chi, s=150, alpha=0.9, cmap='PiYG')
-        plt.colorbar()
-        plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
+            ax = plt.subplot(2, 3, i + 1)
+            plt.scatter(x, y, c=chi, s=150, alpha=0.9, cmap='PiYG')
+            plt.colorbar()
+            plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
 
-        plt.xlabel(x_label.title())
-        plt.ylabel(y_label.title())
-        if y_label == 'threshold':
-            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+            plt.xlabel(x_label.title())
+            plt.ylabel(y_label.title())
+            plt.title("$\chi_0 = %.2f$"%init_chi)
+            if y_label == 'threshold':
+                ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    plt.savefig("%s/%s/omar-recreation-%s.pdf" % (single_channel_dir, plot_dir, num_particles))
-    plt.close()
+        plt.savefig("%s/%s/omar-chi0_%.2f-%s.pdf" % (single_channel_dir, plot_dir, init_chi, num_particles))
+        plt.close()
 
 
 def plot_single_channel_heat_maps():
