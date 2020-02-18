@@ -206,7 +206,7 @@ void find_relation_time(int argc, char *argv[]) {
 void average_mass_spread_for(int argc, char *argv[]) {
     const int num_arguments = 8;
     const int num_runs = 1;
-    const int num_init_chis = 5;
+    const int num_init_chis = 2;
     if (argc != num_arguments + 1) {
         std::cout << "Printing arguments: " << argc << std::endl;
         for (unsigned int i = 0; i < argc; i++) {
@@ -225,18 +225,18 @@ void average_mass_spread_for(int argc, char *argv[]) {
     const int M_t = std::stoi(argv[6]);
     const int M_f = std::stoi(argv[7]);
     const std::string id = argv[8];
-    double av_chi = 0;
     for (unsigned int j=0; j < num_init_chis; j++) {
+	double av_chi = 0;
         const double init_chi = j*0.25;
         for (unsigned int i = 0; i < num_runs; i++) {
             av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id, init_chi)/num_runs;
         }
-    std::ostringstream s;
-    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << init_chi << "," << av_chi
-      << std::endl;
-    std::ofstream result_file(id + ".out", std::ios::app);
-    result_file << s.str();
-    result_file.close();
+        std::ostringstream s;
+        s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << init_chi << "," << av_chi
+          << std::endl;
+        std::ofstream result_file(id + ".out", std::ios::app);
+        result_file << s.str();
+        result_file.close();
     }
 }
 

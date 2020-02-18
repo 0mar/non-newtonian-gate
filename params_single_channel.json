@@ -28,8 +28,8 @@
       "urn_radius": 1,
       "threshold": 100,
       "num_particles": 10000,
-      "M_t": 9E6,
-      "M_f": 1E7
+      "M_t": 4E7,
+      "M_f": 5E7
     }
   }
 }
