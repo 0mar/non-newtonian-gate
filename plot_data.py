@@ -3,18 +3,44 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from scipy.special import gamma, factorial, gammainc
 
 plot_dir = 'plots'
 single_channel_dir = 'single_channel_data'
 double_channel_dir = 'double_channel_data'
 
 
-def threshold_function(params):
+def threshold_function(params, fitting_parameter=1.):
     length, width, radius, threshold, num_particles = params['length'], params['width'], params['radius'], params[
         'threshold'], params['num_particles']
     area = np.pi * radius ** 2 - radius ** 2 * np.arcsin(width / (2 * radius)) + width * np.sqrt(
         4 * radius ** 2 - width ** 2) / 4
-    return num_particles * width * length / (8 * threshold * area * 0.75)
+    return num_particles * width * length / (8 * threshold * area * fitting_parameter)
+
+
+def J_prime(params):
+    def factorial_term(lam, threshold):
+        if np.isscalar(threshold):
+            lam_2d = np.atleast_2d(lam)
+            return lam_2d * np.exp(-lam_2d) * np.prod(lam_2d[:, :, None] / np.arange(1, threshold).reshape((1, 1, -1)),
+                                                      axis=2)
+        else:
+            result = np.zeros_like(threshold)
+            for i, j in np.ndindex(threshold.shape):
+                result[i, j] = lam[i, j] * np.exp(-lam[i,j]) * np.prod(lam[i,j] / np.arange(1, threshold[i, j]))
+            return result
+
+    length, width, radius, threshold, num_particles = params['length'], params['width'], params['radius'], params[
+        'threshold'], params['num_particles'] / 2
+    area = np.pi * radius ** 2 - radius ** 2 * np.arcsin(width / (2 * radius)) + width * np.sqrt(
+        4 * radius ** 2 - width ** 2) / 4
+    wv_piA = width * 1 / (np.pi * area)
+    labda = num_particles * (width * length) / (4 * area)
+    gamma_TL = (gamma(threshold) * (1 - gammainc(threshold, labda)))
+    fac_term = factorial_term(labda, threshold)
+    val = wv_piA * gamma_TL / factorial(threshold - 1)
+    val -= wv_piA * fac_term
+    return val
 
 
 def plot_single_channel_heat_map(filename, num_particles):
@@ -41,20 +67,23 @@ def plot_single_channel_heat_map(filename, num_particles):
         x_ = np.linspace(np.min(x), np.max(x))
         y_ = np.linspace(np.min(y), np.max(y))
         X, Y = np.meshgrid(x_, y_)
-        Z = threshold_function({param1_name: param1_val, param2_name: param2_val, x_label: X, y_label: Y,
-                                'num_particles': int(float(num_particles))})
-
+        param_dict = {param1_name: param1_val, param2_name: param2_val, x_label: X, y_label: Y,
+                  'num_particles': int(float(num_particles))}
+        Z = threshold_function(param_dict, fitting_parameter=1.)
+        Z_corrected = threshold_function(param_dict, fitting_parameter=0.75)
+        Z_J = J_prime(param_dict)
         ax = plt.subplot(2, 3, i + 1)
         plt.scatter(x, y, c=chi, s=150, alpha=0.9, cmap='PiYG')
         plt.colorbar()
-        plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dashdot', colors='black')
+        plt.contour(X, Y, Z, [1], linewidths=3, linestyles='dotted', colors='black')
+        plt.contour(X, Y, Z_corrected, [1], linewidths=3, linestyles='dashdot', colors='black')
+        plt.contour(X, Y, Z_J, [0], linewidths=3, colors='black')
 
         plt.xlabel(x_label.title())
         plt.ylabel(y_label.title())
         if y_label == 'threshold':
             ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    plt.savefig("%s/%s/omar-recreation-%s.pdf" % (single_channel_dir, plot_dir, num_particles))
+    plt.savefig("%s/%s/param_exploration-%s.pdf" % (single_channel_dir, plot_dir, num_particles))
     plt.close()
 
 
