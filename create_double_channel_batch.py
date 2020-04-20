@@ -5,7 +5,7 @@ import sys
 
 
 def double_channel_param_set(param_coupling):
-    resolution = 25
+    resolution = 5
     for option, option_values in param_coupling['options'].items():
         num_particles = option_values['num_particles']
         identifier = "double_channel_data/params_%s" % num_particles
