@@ -79,7 +79,7 @@ void get_chi(const double channel_length, const double channel_width, const int 
  * @param av_chi Average mass spread, return value
  * @param current Average current, return value
  */
-void get_chi_evo(const double channel_length, const double channel_width, const int threshold, const double radius,
+void get_chi_evo(const double channel_length, const double channel_width, const double radius, const int threshold,
                  const double second_length, const double second_width, const int num_particles,
                  const double left_ratio, const unsigned long M_t, const unsigned long M_f, const std::string &id,
                  double &av_chi, double &current) {
@@ -169,16 +169,16 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
 }
 
 void reconfirm_current_behaviour() {
-    const double channel_width = 0.3;
     const double channel_length = 1;
+    const double channel_width = 0.3;
     const double radius = 1;
-    const double second_width = 0.02;
+    const std::vector<double> rel_thresholds{0.001, 0.01, 0.02};
     const double second_length = 1.;
+    const double second_width = 0.02;
     const int M_t = 1E7;
     const int M_f = 5E7;
     const double initial_ratio = 0.25;
     const std::vector<int> nums_particles{1000, 10000};
-    const std::vector<double> rel_thresholds{0.001, 0.01, 0.02};
     double av_chi = 0;
     double current = 0;
     for (int num_particles : nums_particles) {
@@ -187,7 +187,7 @@ void reconfirm_current_behaviour() {
             const std::string id = "double_channel_data/confirmation_" + std::to_string(num_particles) + "_" +
                                    std::to_string(threshold);
             std::cout << "Running " << id << std::endl;
-            get_chi_evo(channel_width, channel_length, threshold, radius, second_width, second_length, num_particles,
+            get_chi_evo(channel_length, channel_width, radius, threshold, second_length, second_width, num_particles,
                         initial_ratio, M_t, M_f, id, av_chi, current);
         }
     }
