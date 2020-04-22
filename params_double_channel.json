@@ -1,16 +1,8 @@
 {
   "ranges": {
-    "second_width": [
-      0.0,
-      0.1
-    ],
-    "second_length": [
-      0.0,
-      1
-    ],
     "threshold": [
-      0,
-      20
+      1,
+      25
     ]
   },
   "options": {
@@ -32,7 +24,7 @@
     "second_width": 0.02,
     "num_particles": 1000,
     "initial_ratio": 0.25,
-    "M_t": 9.5E8,
-    "M_f": 1E9
+    "M_t": 9.5E7,
+    "M_f": 1E8
   }
 }

@@ -5,7 +5,7 @@ import sys
 
 
 def double_channel_param_set(param_coupling):
-    resolution = 5
+    resolution = 25
     for option, option_values in param_coupling['options'].items():
         num_particles = option_values['num_particles']
         identifier = "double_channel_data/params_%s" % num_particles
@@ -62,4 +62,4 @@ if __name__ == '__main__':
     with open(filename, 'r') as param_file:
         parameter_sets = json.load(param_file)
         double_channel_param_set(parameter_sets)
-        double_channel_heat_map(parameter_sets)
+        # double_channel_heat_map(parameter_sets)
