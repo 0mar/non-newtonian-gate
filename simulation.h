@@ -50,8 +50,11 @@ public:
      * The current is defined as the number of particles that move from left to right
      * (both through the center and the back channel) in a certain time interval, divided by that time.
      */
-    int first_channel_surplus; // Defined from left to right
-    int second_channel_surplus; // Defined from right to left
+    std::vector<int> current_counters;
+    const int FROM_LEFT_TO_RIGHT_INNER = 0;
+    const int FROM_LEFT_TO_RIGHT_OUTER = 1;
+    const int FROM_RIGHT_TO_LEFT_INNER = 2;
+    const int FROM_RIGHT_TO_LEFT_OUTER = 3;
     unsigned long in_left;
     unsigned long num_collisions = 0;
     // Other parameters

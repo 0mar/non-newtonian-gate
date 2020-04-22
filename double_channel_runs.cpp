@@ -26,11 +26,12 @@
  * @param M_f Final time, measured in number of collisions
  * @param id File identifier to write auxiliary results to.
  * @param av_chi Average mass spread, return value
- * @param current Average current, return value
+ * @param currents Average currents counted per instance, return value
  */
 void get_chi(const double channel_length, const double channel_width, const int threshold, const double radius,
              const double second_length, const double second_width, const int num_particles, const double left_ratio,
-             const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi, double &current) {
+             const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi,
+             std::vector<double> &currents) {
     Simulation sim = Simulation(num_particles, channel_width, radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
@@ -40,7 +41,6 @@ void get_chi(const double channel_length, const double channel_width, const int 
     sim.setup();
     std::ostringstream s;
     av_chi = 0;
-    current = 0;
     try {
         sim.start(left_ratio);
     } catch (const std::invalid_argument &ex) {
@@ -51,13 +51,16 @@ void get_chi(const double channel_length, const double channel_width, const int 
         sim.update(0.0);
     }
     const double weight = 1. / (double) (M_f - M_t);
-    const int count_offset = sim.first_channel_surplus;
+    const std::vector<int> count_offset = sim.current_counters;
     const double time_offset = sim.time;
     while (sim.num_collisions < M_f) {
         sim.update(0.0);
         av_chi += weight * sim.get_mass_spread();
     }
-    current = (sim.first_channel_surplus - count_offset) / (sim.time - time_offset);
+    currents.resize(4);
+    for (unsigned int i = 0; i < 4; i++) {
+        currents.at(i) = (sim.current_counters.at(i) - count_offset.at(i)) / (sim.time - time_offset);
+    }
 }
 
 /**
@@ -115,8 +118,7 @@ void get_chi_evo(const double channel_length, const double channel_width, const 
 //        }
         sim.update(dt);
         if (sim.num_collisions % step_size == 0) {
-            s << sim.num_collisions << "," << sim.time << "," << sim.first_channel_surplus << ","
-              << sim.second_channel_surplus << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
+            s << sim.num_collisions << "," << sim.time << "," << sim.in_left << "," << std::fabs(sim.get_mass_spread())
               << std::endl;
         }
     }
@@ -141,8 +143,8 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
         }
         std::cout << std::endl;
         throw std::invalid_argument(
-                "Please provide (in order) (1) channel width, (2) channel length, (3) threshold, (4) urn radius,"
-                " (5) second channel width, (6) second channel length, (7) number of particles, (8) initial ratio,"
+                "Please provide (in order) (1) channel length, (2) channel width, (3) threshold, (4) urn radius,"
+                " (5) second channel length, (6) second channel width, (7) number of particles, (8) initial ratio,"
                 " (9) transient time, (10) final time, (11) identifier");
     }
     const double channel_length = std::stod(argv[1]);
@@ -157,12 +159,15 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
     const int M_f = std::stoi(argv[10]);
     const std::string id = argv[11];
     double av_chi = 0;
-    double current = 0;
+    std::vector<double> currents;
     get_chi(channel_length, channel_width, threshold, radius, second_length, second_width, num_particles,
-            initial_ratio, M_t, M_f, id, av_chi, current);
+            initial_ratio, M_t, M_f, id, av_chi, currents);
     std::ostringstream s;
-    s << threshold << "," << second_length << "," << second_width << "," << initial_ratio << "," << av_chi
-      << "," << current << std::endl;
+    s << threshold << "," << second_length << "," << second_width << "," << initial_ratio << "," << av_chi;
+    for (unsigned int i = 0; i < 4; i++) {
+        s << ", " << currents.at(i);
+    }
+    s << std::endl;
     std::ofstream result_file(id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
@@ -194,8 +199,7 @@ void reconfirm_current_behaviour() {
 }
 
 int main(int argc, char *argv[]) {
-//    mass_spread_and_current_for(argc, argv);
-    reconfirm_current_behaviour();
+    mass_spread_and_current_for(argc, argv);
     return 0;
 }
 

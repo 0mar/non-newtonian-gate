@@ -110,8 +110,8 @@ void Simulation::start(const double &left_ratio) {
         reset_particle(particle, RIGHT);
         compute_next_impact(particle);
     }
-    first_channel_surplus = 0;
-    second_channel_surplus = 0;
+    current_counters.resize(4);
+    std::fill(current_counters.begin(), current_counters.end(), 0);
     sort_indices();
 }
 
@@ -133,7 +133,6 @@ void Simulation::update(const double &write_dt) {
     // Check if the particle requires boundary conditions
     check_boundary_condition(particle);
     // Update the data of the particle with the collision
-//    std::cout << "1: " << first_channel_surplus << "\t2: " << second_channel_surplus << std::endl;
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
 //        printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py); // Fixme: errors 1 in 1E6 and I am not sure why
         next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
@@ -290,19 +289,19 @@ void Simulation::check_boundary_condition(const unsigned long &particle) {
     if (second_width > 0) {
         if (next_x_pos[particle] < -box_x_radius) {
             next_x_pos[particle] += 2 * box_x_radius;
-            second_channel_surplus--;
+            current_counters[FROM_LEFT_TO_RIGHT_OUTER]++;
         } else if (next_x_pos[particle] > box_x_radius) {
             next_x_pos[particle] -= 2 * box_x_radius;
-            second_channel_surplus++;
+            current_counters[FROM_RIGHT_TO_LEFT_OUTER]++;
         }
     }
 }
 
 void Simulation::count_first_gate_crossing(const unsigned long &particle) {
     if (px <= 0 and next_x_pos[particle] > 0) {
-        first_channel_surplus++;
+        current_counters[FROM_LEFT_TO_RIGHT_INNER]++;
     } else if (px > 0 and next_x_pos[particle] <= 0) {
-        first_channel_surplus--;
+        current_counters[FROM_RIGHT_TO_LEFT_INNER]++;
     }
 }
 
@@ -374,6 +373,9 @@ void Simulation::couple_bridge() {
      * A priori, the bridge does not connect to the circles.
      * We need to make the bridge a little bit longer so the ends connect too.
      * We do this by computing the intersections between the bridge lines and the circle
+     *
+     * Note that if the circle distance is taken to be the length of the bridge, then the location at which the circles
+     * are places needs to be computed first, and be slightly smaller than the length of the bridge.
      */
     // This is always a positive number
     box_y_radius = circle_radius;
