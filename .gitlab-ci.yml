@@ -1,6 +1,6 @@
 job:test:
-    image: ubuntu
-    tags: 
+    image: ubuntu:18.04
+    tags:
         - docker
     variables:
         DEBIAN_FRONTEND: "noninteractive"
