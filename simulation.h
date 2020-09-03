@@ -75,35 +75,18 @@ public:
     const unsigned long RIGHT = 1;
     bool explosion_direction_is_random;
     bool gate_is_flat;
-    bool debug = false;
     bool distance_as_channel_length = false;
-    bool write_bounces = false;
 
-    unsigned long expected_collisions = 0;
     // There is a (geometrical) difference between the distance between the urns and the length of the channel
     // if the gate is flat. While the former is nicer from a modelling point of view,
     // The latter provides an easier mathematical analysis.
     // To facilitate this, this boolean switch assumes circle distances as bridge lengths (and corrects for them)
-    std::ofstream debug_file;
 
     /**
      * Compute necessary parameters for the simulation, initialize data structures.
      * Run only once per simulation. Different runs require new setups and (therefore) new objects.
      */
     void setup();
-
-    /**
-     * A way to generate random strings for debugging file names
-     * @param length length of the string
-     * @return random string
-     */
-    std::string get_random_string(const std::size_t &length);
-
-    /**
-     * Write a message to std::cout if in debug mode
-     * @param message Debug message
-     */
-    void debug_write(const std::string &message);
 
     /**
      * Start the simulation. Initialize particles and times, and compute the next (first) impact.

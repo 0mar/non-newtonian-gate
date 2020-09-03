@@ -48,35 +48,6 @@ void Simulation::setup() {
     left_center_x = -circle_distance / 2 - circle_radius;
     right_center_x = circle_distance / 2 + circle_radius;
     max_path = circle_distance + bridge_width + circle_radius * 4 + second_length; // Upper bound for the longest path
-    if (debug) {
-        std::string debug_file_name = "debug_logging/" + get_random_string(7) + ".debug";
-        std::cout << "Storing debugging information in " + debug_file_name << std::endl;
-        debug_file.open(debug_file_name, std::ofstream::out);
-        debug_file << "num_particles\tcircle_radius\tcircle_distance\tbridge_width\tbridge_length\tthreshold\n";
-        debug_file << num_particles << "\t" << circle_radius << "\t" << circle_distance << "\t"
-                   << bridge_width << "\t" << bridge_length << "\t" << left_gate_capacity << std::endl;
-        debug_file << "Process: " << getpid() << std::endl;
-    }
-}
-
-std::string Simulation::get_random_string(const std::size_t &length) {
-    std::string random_string;
-    const std::string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    std::uniform_int_distribution<> distribution(0, chars.size() - 1);
-    for (std::size_t i = 0; i < length; i++) {
-        random_string += chars[distribution(*rng)];
-    }
-    return random_string;
-}
-
-void Simulation::debug_write(const std::string &message) {
-    if (debug) {
-        char s[10];
-        std::time_t now = std::time(nullptr);
-        struct tm *p = localtime(&now);
-        strftime(s, 10, "%H:%M:%S", p);
-        debug_file << s << ":\t" << message << std::endl;
-    }
 }
 
 void Simulation::reset_particle(const unsigned long &particle, const unsigned long &direction) {
@@ -134,7 +105,8 @@ void Simulation::update(const double &write_dt) {
     check_boundary_condition(particle);
     // Update the data of the particle with the collision
     if (not is_in_domain(next_x_pos[particle], next_y_pos[particle])) {
-//        printf("Stray particle %d about to leave domain at (%.5f,%.5f), re-entered\n", (int) particle, px, py); // Fixme: errors 1 in 1E6 and I am not sure why
+        // Caveat: this routine errors 1 in 1E6 and I am not sure why. Geometry + floating point arithmetic is tricky
+        // In case of failure, reset. Has 0 effect on macroscopic behaviours
         next_x_pos[particle] = sgn(next_x_pos) * (circle_distance / 2 + circle_radius);
         next_y_pos[particle] = 0;
     }
@@ -149,7 +121,6 @@ void Simulation::update(const double &write_dt) {
     directions[particle] = next_directions[particle];
     impact_times[particle] = next_impact;
     time = next_impact;
-//    write_bounce_map_to_file(particle);
     // Check if the particle activates the threshold
     for (unsigned long direction = 0; direction < 2; direction++) {
         if (is_in_gate(px, py, direction) and is_going_in(particle)) {
@@ -176,6 +147,7 @@ unsigned long Simulation::find_index(const unsigned long &particle) {
     if (it != sorted_indices.end()) {
         return std::distance(sorted_indices.begin(), it);
     } else {
+        // Throw error if sorting goes wrong. Sorting does not go wrong.
         printf("Lost particle %lu with position (%.7f,%.7f) running on time %.2f (%.5e), %lu sorts present\n", particle,
                px, py,
                next_impact_times[particle], next_impact_times[particle] - time, sorted_indices.size());
@@ -185,7 +157,7 @@ unsigned long Simulation::find_index(const unsigned long &particle) {
             file << index << std::endl;
         }
         file.close();
-        throw std::invalid_argument("Particle not found?! New DS broken");
+        throw std::invalid_argument("Particle not found. Sorting mechanism fails");
     }
 }
 
@@ -203,11 +175,6 @@ void Simulation::insert_index(const unsigned long &particle) {
         }
     }
     sorted_indices.insert(sorted_indices.begin() + l, particle);
-    if (l == num_particles - 2) {
-        if (next_impact_times[sorted_indices[l]] > next_impact_times[sorted_indices[l + 1]]) {
-            printf("Increase of %e\n", next_impact_times[sorted_indices[l + 1]] - next_impact_times[sorted_indices[l]]);
-        }
-    }
 }
 
 void Simulation::reindex_particle(const unsigned long &particle, const bool &was_minimum) {
@@ -233,7 +200,6 @@ bool Simulation::is_going_in(const unsigned long &particle) {
 }
 
 void Simulation::check_gate_admission(const unsigned long &particle, const unsigned long &direction) {
-//    printf("%4.5f: New particle in gate %ld, old number %lu\n",time, direction, gate_contents[direction].size());
     if (not gate_arrays[direction][particle]) {
         // Not yet in gate, check admission
         if (gate_contents[direction].size() >= gate_capacities[direction]) {
@@ -256,14 +222,12 @@ void Simulation::check_gate_departure(const unsigned long &particle, const unsig
 }
 
 void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned long &direction) {
-//    printf("%4.5f: Exploding gate %ld, %lu/%d particles already inside and new one entering\n",time,direction,gate_contents[direction].size(),gate_capacities[direction]);
     do {
         directions[exp_particle] = get_retraction_angle(exp_particle);
     } while (not is_in_domain(next_x_pos[exp_particle], next_y_pos[exp_particle]));
     for (unsigned long particle: gate_contents[direction]) {
         double x, y;
         get_current_position(particle, x, y);
-//            printf("Position updated to (%.3f, %.3f)\n", x, y);
         if (not is_in_domain(x, y)) {
             printf("Particle %d not in domain\n", (int) particle);
             debug_write("Particle " + std::to_string(particle) + " not found in domain");
@@ -278,10 +242,8 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
         compute_next_impact(particle);
         gate_arrays[direction][particle] = false; // Attention, only in the one-way blocking case.
         reindex_particle(particle, false);
-//            printf("After boom, we get new positions at time %.2f\n",next_impact_times(particle));
     }
     gate_contents[direction].clear(); // Attention, only in the one-way blocking case.
-//    printf("%4.5f: Now gate contains %ld particles\n",time,gate_contents[direction].size());
 
 }
 
@@ -362,10 +324,6 @@ double Simulation::get_mass_spread() {
 }
 
 void Simulation::finish() {
-    debug_write("Finished at t=" + std::to_string(time) + " with " + std::to_string(num_collisions) + " bounces");
-    if (debug) {
-        debug_file.close();
-    }
 }
 
 void Simulation::couple_bridge() {
@@ -708,8 +666,8 @@ double Simulation::time_to_hit_gate(const unsigned long &particle) {
             }
             circle_intersections(particle, center_x, t1, t2);
             // Find minimal root between 0 and 1 in bridge
-            double impact_x = 0;
-            double impact_y = 0;
+            double impact_x;
+            double impact_y;
             if (EPS < t1 and t1 < min_t) {
                 impact_x = px + t1 * add_x;
                 impact_y = py + t1 * add_y;
