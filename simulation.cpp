@@ -3,6 +3,10 @@
 //
 
 #include "simulation.h"
+/* Todo: Remove const & for primitives
+ * Add const for functions that don't move
+ * Add Enums
+ */
 
 const double PI = 3.14159265358979323;
 const double EPS = 1E-14;
@@ -230,7 +234,6 @@ void Simulation::explode_gate(const unsigned long &exp_particle, const unsigned 
         get_current_position(particle, x, y);
         if (not is_in_domain(x, y)) {
             printf("Particle %d not in domain\n", (int) particle);
-            debug_write("Particle " + std::to_string(particle) + " not found in domain");
         } else if (not is_in_gate(x, y, direction)) {
             printf("Error (non-fatal): Particle %lu not found in gate, position: (%.4f,%.4f)\n", particle, x, y);
             printf("Gates have bounds (+/-%.2f, +/-%.2f)\n", bridge_length / 2, bridge_width / 2);
@@ -319,7 +322,7 @@ void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
     file.close();
 }
 
-double Simulation::get_mass_spread() {
+double Simulation::get_mass_spread() const {
     return (num_particles - 2. * in_left) / num_particles;
 }
 
@@ -373,7 +376,7 @@ void Simulation::couple_bridge() {
 }
 
 
-bool Simulation::is_in_domain(const double &x, const double &y) {
+bool Simulation::is_in_domain(const double &x, const double &y) const{
     if (is_in_bridge(x, y) or is_in_second_bridge(x, y)) {
         return true;
     } else {
@@ -385,7 +388,7 @@ bool Simulation::is_in_domain(const double &x, const double &y) {
     }
 }
 
-bool Simulation::is_in_circle(const double &x, const double &y, const unsigned long &side) {
+bool Simulation::is_in_circle(const double &x, const double &y, const unsigned long &side) const {
     if (side == LEFT) {
         return (x - left_center_x) * (x - left_center_x) + y * y < circle_radius * circle_radius;
     } else {
@@ -394,14 +397,14 @@ bool Simulation::is_in_circle(const double &x, const double &y, const unsigned l
 }
 
 
-bool Simulation::is_in_bridge(const double &x, const double &y) {
+bool Simulation::is_in_bridge(const double &x, const double &y) const{
     /**
      * Note that these function is not mutually exclusive with left and right circle, and is not to be confused by `is_in_gate`.
      */
     return std::abs(x) <= bridge_length / 2 and std::abs(y) <= bridge_width / 2;
 }
 
-bool Simulation::is_in_second_bridge(const double &x, const double &y) {
+bool Simulation::is_in_second_bridge(const double &x, const double &y) const {
     /**
      * The same holds for this function, not mutually exclusive with left and right circle.
      */
@@ -474,7 +477,6 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
                directions[particle] / PI);
         printf("Bounding box: (%.2f,%.2f)\n", box_x_radius, box_y_radius);
         const int direction = px > 0 ? RIGHT : LEFT;
-        debug_write("Resetting particle " + std::to_string(particle));
         reset_particle(particle, direction);
         compute_next_impact(particle);
     } else {
@@ -567,7 +569,7 @@ double Simulation::time_to_hit_second_bridge(const unsigned long &particle, doub
     return min_t * max_path;
 }
 
-void Simulation::circle_intersections(const unsigned &particle, const double &center_x, double &t1, double &t2) {
+void Simulation::circle_intersections(const unsigned &particle, const double &center_x, double &t1, double &t2) const {
     double add_x = max_path * cos(directions[particle]);
     double add_y = max_path * sin(directions[particle]);
     const double t_pos_x = (px - center_x) / circle_radius;
@@ -585,7 +587,7 @@ void Simulation::circle_intersections(const unsigned &particle, const double &ce
     }
 }
 
-double Simulation::time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) {
+double Simulation::time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) const {
     /**
      * Compute the time until next impact with one of the circle boundaries
      */
@@ -619,17 +621,17 @@ double Simulation::time_to_hit_circle(const unsigned long &particle, const doubl
     return min_t * max_path;
 }
 
-double Simulation::get_reflection_angle(const double &angle_in, const double &normal_angle) {
+double Simulation::get_reflection_angle(const double &angle_in, const double &normal_angle) const {
     return fmod(2 * normal_angle - angle_in + PI, 2 * PI);
 }
 
-double Simulation::get_retraction_angle(const unsigned long &particle) {
+double Simulation::get_retraction_angle(const unsigned long &particle) const {
     if (explosion_direction_is_random) {
         int side = sgn(px);
         return ((*unif_real)(*rng) - 0.5) * PI + PI / 2 * (1 - sgn(side));
     } else {
         if (cos(directions[particle]) * x_pos[particle] < 0) {
-            return -directions[particle] + PI; // Fixme Sometimes exceeds bounds
+            return -directions[particle] + PI; // This might be cause for radical particle bug
         } else {
             return directions[particle];
         }

@@ -100,7 +100,7 @@ public:
      * @param y y-coordinate of the point
      * @return true if inside the domain, false otherwise.
      */
-    bool is_in_domain(const double &x, const double &y);
+    bool is_in_domain(const double &x, const double &y) const;
 
     /**
      * Check if the point (x,y) is in a circle on side `side`.
@@ -109,7 +109,7 @@ public:
      * @param side `LEFT` or `RIGHT`
      * @return `true` if point in circle, `false` otherwise
      */
-    bool is_in_circle(const double &x, const double &y, const unsigned long &side);
+    bool is_in_circle(const double &x, const double &y, const unsigned long &side) const;
 
     /**
      * Check if point is in the bridge
@@ -117,7 +117,7 @@ public:
      * @param y y-coordinate of the point
      * @return `true` if point in bridge, `false` otherwise
      */
-    bool is_in_bridge(const double &x, const double &y);
+    bool is_in_bridge(const double &x, const double &y) const;
 
     /**
      * Check if point is in the back channel
@@ -125,7 +125,7 @@ public:
      * @param y y-coordinate of the point
      * @return `true` if point in bridge, `false` otherwise
      */
-    bool is_in_second_bridge(const double &x, const double &y);
+    bool is_in_second_bridge(const double &x, const double &y) const;
 
     /**
      * Compute the intersections of a particle with an urn (on the x-axis)
@@ -134,7 +134,7 @@ public:
      * @param t1 First intersection
      * @param t2 Second intersection
      */
-    void circle_intersections(const unsigned &particle, const double &center_x, double &t1, double &t2);
+    void circle_intersections(const unsigned &particle, const double &center_x, double &t1, double &t2) const;
 
     /**
      * Compute the time it takes for a particle to reach the bridge.
@@ -144,7 +144,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with bridge
      */
-    double time_to_hit_bridge(const unsigned long &particle, double &normal_angle);
+    double time_to_hit_bridge(const unsigned long &particle, double &normal_angle) const;
 
     /**
      * Compute the time it takes for a particle to reach the horizontal lines of the back channel.
@@ -154,7 +154,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with bridge
      */
-    double time_to_hit_second_bridge(const unsigned long &particle, double &normal_angle);
+    double time_to_hit_second_bridge(const unsigned long &particle, double &normal_angle) const;
 
     /**
      * Computes the time it takes for a particle to reach the boundary of a reservoir
@@ -164,7 +164,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with circle
      */
-    double time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle);
+    double time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) const;
 
     /**
      * Computes the time it takes for a particle to hit the gate.
@@ -281,7 +281,7 @@ public:
      * @param particle Particle index
      * @return True if particle moves towards the center, false otherwise
      */
-    bool is_going_in(const unsigned long &particle);
+    bool is_going_in(const unsigned long &particle) const;
 
     /**
      * Remove a particle from the gate.
@@ -323,7 +323,7 @@ public:
      *
      * @return mass spread as a double between -1 and 1.
      */
-    double get_mass_spread();
+    double get_mass_spread() const;
 
     /**
      * Compute the reflection angle based on an ingoing angle and the normal angle of the surface.
@@ -331,14 +331,14 @@ public:
      * @param normal_angle normal angle of the surface
      * @return outgoing angle of the particle
      */
-    static double get_reflection_angle(const double &angle_in, const double &normal_angle);
+    double get_reflection_angle(const double &angle_in, const double &normal_angle) const;
 
     /**
      * Compute the angle a particle should have after a gate explosion (reverse/random)
      * @param particle Particle index
      * @return angle of the particle after exploding the gate
      */
-    double get_retraction_angle(const unsigned long &particle);
+    double get_retraction_angle(const unsigned long &particle) const;
 
     /**
      * Finish up simulation (write results, optional post-processing)
