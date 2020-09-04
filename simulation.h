@@ -76,6 +76,7 @@ public:
     bool explosion_direction_is_random;
     bool gate_is_flat;
     bool distance_as_channel_length = false;
+    unsigned long expected_collisions = 0;
 
     // There is a (geometrical) difference between the distance between the urns and the length of the channel
     // if the gate is flat. While the former is nicer from a modelling point of view,
@@ -172,21 +173,21 @@ public:
      * @param particle Particle index
      * @return time to next collision with gate
      */
-    double time_to_hit_gate(const unsigned long &particle);
+    double time_to_hit_gate(const unsigned long &particle) const;
 
     /**
      * Time for a particle to hit the central vertical axis
      * @param particle Particle index
      * @return time to passing middle
      */
-    double time_to_hit_middle(const unsigned long &particle);
+    double time_to_hit_middle(const unsigned long &particle) const;
 
     /**
      * Time for a particle to hit the outer vertical bounds
      * @param particle Particle index
      * @return time to passing middle
      */
-    double time_to_hit_bounds(const unsigned long &particle);
+    double time_to_hit_bounds(const unsigned long &particle) const;
 
     /**
      * Computes the next impact of a particle by finding the minimum impact time of all options.
@@ -219,7 +220,7 @@ public:
      * @param x output variable for x position
      * @param y output variable for y position
      */
-    void get_current_position(const unsigned long &particle, double &x, double &y);
+    void get_current_position(const unsigned long &particle, double &x, double &y) const;
 
 
     /**
@@ -274,7 +275,7 @@ public:
      * @param direction Side of gate
      * @return True if particle in that side of the gate, false otherwise
      */
-    bool is_in_gate(const double &x, const double &y, const unsigned long &direction);
+    bool is_in_gate(const double &x, const double &y, const unsigned long &direction) const;
 
     /**
      * Check if particle is moving towards the center or away from the center.
@@ -301,19 +302,19 @@ public:
     /**
      * Print the current status of the simulation to stdout
      */
-    void print_status();
+    void print_status() const;
 
     /**
      * Write the positions to file at a certain time, which *should* be between the current time and the next collision.
      * However, this is not enforced in this method.
      * @param time Time at which positions would be interpolated.
      */
-    void write_positions_to_file(const double &time);
+    void write_positions_to_file(const double &time) const;
 
     /**
      * Write bounce_map
      */
-    void write_bounce_map_to_file(const unsigned long &particle);
+    void write_bounce_map_to_file(const unsigned long &particle) const;
 
     /**
      * Compute the mass spread in the chamber.
@@ -364,7 +365,7 @@ private:
      * @param particle Particle index
      * @return Index of the particle where it fits.
      */
-    unsigned long find_index(const unsigned long &particle);
+    unsigned long find_index(const unsigned long &particle) const;
 
     /**
      * Updates the position of a particle in the sorted index list, based on its new collision time.

@@ -146,7 +146,7 @@ void Simulation::sort_indices() {
     });
 }
 
-unsigned long Simulation::find_index(const unsigned long &particle) {
+unsigned long Simulation::find_index(const unsigned long &particle) const {
     auto it = std::find(sorted_indices.begin(), sorted_indices.end(), particle);
     if (it != sorted_indices.end()) {
         return std::distance(sorted_indices.begin(), it);
@@ -191,7 +191,7 @@ void Simulation::reindex_particle(const unsigned long &particle, const bool &was
     insert_index(particle);
 }
 
-bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) {
+bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) const {
     if (gate_is_flat) {
         return ((int) direction * 2 - 1) * x >= 0 and std::fabs(x) <= bridge_length / 2;
     } else {
@@ -199,7 +199,7 @@ bool Simulation::is_in_gate(const double &x, const double &y, const unsigned lon
     }
 }
 
-bool Simulation::is_going_in(const unsigned long &particle) {
+bool Simulation::is_going_in(const unsigned long &particle) const {
     return px * cos(directions[particle]) <= 0;
 }
 
@@ -270,7 +270,7 @@ void Simulation::count_first_gate_crossing(const unsigned long &particle) {
     }
 }
 
-void Simulation::print_status() {
+void Simulation::print_status() const {
     printf("Time passed: %.2f\n", time);
     for (unsigned long particle = 0; particle < num_particles; particle++) {
         printf("Particle %d at \nPosition (%.4f, %.4f) at t=%.2f, angle %.2f pi\n", (int) particle, px, py,
@@ -284,7 +284,7 @@ void Simulation::print_status() {
            (int) currently_in_right_gate.size());
 }
 
-void Simulation::write_positions_to_file(const double &time) {
+void Simulation::write_positions_to_file(const double &time) const {
     std::string filename = "results.dat";
     std::ofstream file;
     if (time == 0) {
@@ -314,7 +314,7 @@ void Simulation::write_positions_to_file(const double &time) {
     file.close();
 }
 
-void Simulation::write_bounce_map_to_file(const unsigned long &particle) {
+void Simulation::write_bounce_map_to_file(const unsigned long &particle) const {
     std::string filename = "bounces.dat";
     std::ofstream file;
     file.open(filename, std::ios_base::app);
@@ -487,7 +487,7 @@ void Simulation::compute_next_impact(const unsigned long &particle) {
     }
 }
 
-void Simulation::get_current_position(const unsigned long &particle, double &x, double &y) {
+void Simulation::get_current_position(const unsigned long &particle, double &x, double &y) const {
     /**
      * Interpolate position at the current time. Returns in referenced variables
      */
@@ -502,7 +502,7 @@ void Simulation::get_current_position(const unsigned long &particle, double &x, 
     }
 }
 
-double Simulation::time_to_hit_bridge(const unsigned long &particle, double &normal_angle) {
+double Simulation::time_to_hit_bridge(const unsigned long &particle, double &normal_angle) const {
     /**
      * Check if we hit the bottom line, and check if we hit the top line, and return a float.
      */
@@ -531,7 +531,7 @@ double Simulation::time_to_hit_bridge(const unsigned long &particle, double &nor
     return min_t * max_path;
 }
 
-double Simulation::time_to_hit_second_bridge(const unsigned long &particle, double &normal_angle) {
+double Simulation::time_to_hit_second_bridge(const unsigned long &particle, double &normal_angle) const {
     /**
      * Check if we hit the bottom line, and check if we hit the top line, and return a float.
      */
@@ -638,7 +638,7 @@ double Simulation::get_retraction_angle(const unsigned long &particle) const {
     }
 }
 
-double Simulation::time_to_hit_gate(const unsigned long &particle) {
+double Simulation::time_to_hit_gate(const unsigned long &particle) const {
     /**
      * Compute time towards the gate.
      * If the gate is circular: transform the domain and solve a quadratic equation.
@@ -692,7 +692,7 @@ double Simulation::time_to_hit_gate(const unsigned long &particle) {
     return min_path;
 }
 
-double Simulation::time_to_hit_middle(const unsigned long &particle) {
+double Simulation::time_to_hit_middle(const unsigned long &particle) const {
     /**
      * Uses a line-line intersection algorithm (with identical nomenclature) from 
      * https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
@@ -713,7 +713,7 @@ double Simulation::time_to_hit_middle(const unsigned long &particle) {
     return min_t * max_path;
 }
 
-double Simulation::time_to_hit_bounds(const unsigned long &particle) {
+double Simulation::time_to_hit_bounds(const unsigned long &particle) const {
     double min_path = max_path;
     if (second_width > 0) {
         const double to_left_bound = (-box_x_radius - px) / cos(directions[particle]);

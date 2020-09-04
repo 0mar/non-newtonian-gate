@@ -14,7 +14,6 @@ BOOST_AUTO_TEST_SUITE(test_simulation)
         sim.right_gate_capacity = 1;
         sim.explosion_direction_is_random = false;
         sim.gate_is_flat = true;
-        sim.debug = false;
         return sim;
     }
 
