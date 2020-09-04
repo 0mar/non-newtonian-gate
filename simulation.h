@@ -36,10 +36,10 @@ public:
      * @param random_dir Whether bouncing back should happen randomly
      * @param flat_gate Whether the gate is fully rectangular or the chambers are fully circular.
      */
-    Simulation(const int &num_particles, const double &bridge_width, const double &circle_radius = 1.,
-               const double &circle_distance = 0.5, const int &left_gate_capacity = 3,
-               const int &right_gate_capacity = 3,
-               const bool &random_dir = false, const bool &flat_gate = false);
+    Simulation(int num_particles, double bridge_width, double circle_radius = 1.,
+               double circle_distance = 0.5, int left_gate_capacity = 3,
+               int right_gate_capacity = 3,
+               bool random_dir = false, bool flat_gate = false);
 
     // Important parameters
     const int num_particles;
@@ -93,7 +93,7 @@ public:
      * Start the simulation. Initialize particles and times, and compute the next (first) impact.
      * @param left_ratio ratio of particles that should be initiated on the left side.
      */
-    void start(const double &left_ratio);
+    void start(double left_ratio);
 
     /**
      * Check if the point (x,y) is in the domain (collection for saying it is either in the left, the right or the gate.
@@ -101,7 +101,7 @@ public:
      * @param y y-coordinate of the point
      * @return true if inside the domain, false otherwise.
      */
-    bool is_in_domain(const double &x, const double &y) const;
+    bool is_in_domain(double x, double y) const;
 
     /**
      * Check if the point (x,y) is in a circle on side `side`.
@@ -110,7 +110,7 @@ public:
      * @param side `LEFT` or `RIGHT`
      * @return `true` if point in circle, `false` otherwise
      */
-    bool is_in_circle(const double &x, const double &y, const unsigned long &side) const;
+    bool is_in_circle(double x, double y, const unsigned long &side) const;
 
     /**
      * Check if point is in the bridge
@@ -118,7 +118,7 @@ public:
      * @param y y-coordinate of the point
      * @return `true` if point in bridge, `false` otherwise
      */
-    bool is_in_bridge(const double &x, const double &y) const;
+    bool is_in_bridge(double x, double y) const;
 
     /**
      * Check if point is in the back channel
@@ -126,7 +126,7 @@ public:
      * @param y y-coordinate of the point
      * @return `true` if point in bridge, `false` otherwise
      */
-    bool is_in_second_bridge(const double &x, const double &y) const;
+    bool is_in_second_bridge(double x, double y) const;
 
     /**
      * Compute the intersections of a particle with an urn (on the x-axis)
@@ -135,7 +135,7 @@ public:
      * @param t1 First intersection
      * @param t2 Second intersection
      */
-    void circle_intersections(const unsigned &particle, const double &center_x, double &t1, double &t2) const;
+    void circle_intersections(const unsigned &particle, double center_x, double &t1, double &t2) const;
 
     /**
      * Compute the time it takes for a particle to reach the bridge.
@@ -165,7 +165,7 @@ public:
      * Only well-defined for not-exceeding-maximum-time collision time
      * @return time to next collision with circle
      */
-    double time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) const;
+    double time_to_hit_circle(const unsigned long &particle, double center_x, double &normal_angle) const;
 
     /**
      * Computes the time it takes for a particle to hit the gate.
@@ -275,7 +275,7 @@ public:
      * @param direction Side of gate
      * @return True if particle in that side of the gate, false otherwise
      */
-    bool is_in_gate(const double &x, const double &y, const unsigned long &direction) const;
+    bool is_in_gate(double x, double y, const unsigned long &direction) const;
 
     /**
      * Check if particle is moving towards the center or away from the center.
@@ -297,7 +297,7 @@ public:
      * @param write_dt If positive, interpolate and write the positions of particles every `write_dt` to file.
      * If zero, don't write at all.
      */
-    void update(const double &write_dt);
+    void update(double write_dt);
 
     /**
      * Print the current status of the simulation to stdout
@@ -309,7 +309,7 @@ public:
      * However, this is not enforced in this method.
      * @param time Time at which positions would be interpolated.
      */
-    void write_positions_to_file(const double &time) const;
+    void write_positions_to_file(double time) const;
 
     /**
      * Write bounce_map
@@ -332,7 +332,7 @@ public:
      * @param normal_angle normal angle of the surface
      * @return outgoing angle of the particle
      */
-    double get_reflection_angle(const double &angle_in, const double &normal_angle) const;
+    double get_reflection_angle(double angle_in, double normal_angle) const;
 
     /**
      * Compute the angle a particle should have after a gate explosion (reverse/random)
@@ -372,7 +372,7 @@ private:
      * @param particle Particle index
      * @param was_minimum If the particle was at the base of the list, no need to search its old position.
      */
-    void reindex_particle(const unsigned long &particle, const bool &was_minimum);
+    void reindex_particle(const unsigned long &particle, bool was_minimum);
 
     /**
      * Insert a particle in the list where it belongs, submethod.

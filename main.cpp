@@ -103,7 +103,6 @@ void mass_spread_demo(const int &num_res) {
         simulation.circle_distance = 0.5;
         simulation.circle_radius = 0.7;
         simulation.distance_as_channel_length = true;
-        simulation.write_bounces = false;
         simulation.setup();
         simulation.start(0.7);
         simulation.write_positions_to_file(0);

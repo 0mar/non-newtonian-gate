@@ -3,8 +3,7 @@
 //
 
 #include "simulation.h"
-/* Todo: Remove const & for primitives
- * Add const for functions that don't move
+/* Todo:
  * Add Enums
  */
 
@@ -18,14 +17,11 @@ int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-Simulation::Simulation(const int &num_particles, const double &bridge_width, const double &circle_radius,
-                       const double &circle_distance, const int &left_gate_capacity,
-                       const int &right_gate_capacity, const bool &random_dir, const bool &flat_gate)
-        : num_particles(num_particles), circle_radius(circle_radius),
-          circle_distance(circle_distance), bridge_width(bridge_width),
-          second_width(0), second_length(0),
-          left_gate_capacity(left_gate_capacity), right_gate_capacity(right_gate_capacity),
-          explosion_direction_is_random(random_dir), gate_is_flat(flat_gate) {
+Simulation::Simulation(int num_particles, double bridge_width, double circle_radius, double circle_distance,
+                       int left_gate_capacity, int right_gate_capacity, bool random_dir, bool flat_gate)
+        : num_particles(num_particles), circle_radius(circle_radius), circle_distance(circle_distance),
+          bridge_width(bridge_width), second_width(0), second_length(0), left_gate_capacity(left_gate_capacity),
+          right_gate_capacity(right_gate_capacity), explosion_direction_is_random(random_dir), gate_is_flat(flat_gate) {
     rd = std::make_shared<std::random_device>();
     rng = std::make_shared<std::mt19937>((*rd)());
     unif_real = std::make_shared<std::uniform_real_distribution<double>>(0, 1);
@@ -65,7 +61,7 @@ void Simulation::reset_particle(const unsigned long &particle, const unsigned lo
     directions.at(particle) = ((*unif_real)(*rng) - 0.5) * 2 * PI;
 }
 
-void Simulation::start(const double &left_ratio) {
+void Simulation::start(double left_ratio) {
     /**
      * Initiate all particles, ratio based on the method argument
      */
@@ -90,7 +86,7 @@ void Simulation::start(const double &left_ratio) {
     sort_indices();
 }
 
-void Simulation::update(const double &write_dt) {
+void Simulation::update(double write_dt) {
     // Find next event: the first particle that has a new impact
     // If we really need more optimization, this is where to get it.
     unsigned long particle = sorted_indices[0];
@@ -181,7 +177,7 @@ void Simulation::insert_index(const unsigned long &particle) {
     sorted_indices.insert(sorted_indices.begin() + l, particle);
 }
 
-void Simulation::reindex_particle(const unsigned long &particle, const bool &was_minimum) {
+void Simulation::reindex_particle(const unsigned long &particle, bool was_minimum) {
     if (was_minimum) {
         sorted_indices.erase(sorted_indices.begin());
     } else {
@@ -191,7 +187,7 @@ void Simulation::reindex_particle(const unsigned long &particle, const bool &was
     insert_index(particle);
 }
 
-bool Simulation::is_in_gate(const double &x, const double &y, const unsigned long &direction) const {
+bool Simulation::is_in_gate(double x, double y, const unsigned long &direction) const {
     if (gate_is_flat) {
         return ((int) direction * 2 - 1) * x >= 0 and std::fabs(x) <= bridge_length / 2;
     } else {
@@ -284,7 +280,7 @@ void Simulation::print_status() const {
            (int) currently_in_right_gate.size());
 }
 
-void Simulation::write_positions_to_file(const double &time) const {
+void Simulation::write_positions_to_file(double time) const {
     std::string filename = "results.dat";
     std::ofstream file;
     if (time == 0) {
@@ -376,7 +372,7 @@ void Simulation::couple_bridge() {
 }
 
 
-bool Simulation::is_in_domain(const double &x, const double &y) const{
+bool Simulation::is_in_domain(double x, double y) const {
     if (is_in_bridge(x, y) or is_in_second_bridge(x, y)) {
         return true;
     } else {
@@ -388,7 +384,7 @@ bool Simulation::is_in_domain(const double &x, const double &y) const{
     }
 }
 
-bool Simulation::is_in_circle(const double &x, const double &y, const unsigned long &side) const {
+bool Simulation::is_in_circle(double x, double y, const unsigned long &side) const {
     if (side == LEFT) {
         return (x - left_center_x) * (x - left_center_x) + y * y < circle_radius * circle_radius;
     } else {
@@ -397,14 +393,14 @@ bool Simulation::is_in_circle(const double &x, const double &y, const unsigned l
 }
 
 
-bool Simulation::is_in_bridge(const double &x, const double &y) const{
+bool Simulation::is_in_bridge(double x, double y) const {
     /**
      * Note that these function is not mutually exclusive with left and right circle, and is not to be confused by `is_in_gate`.
      */
     return std::abs(x) <= bridge_length / 2 and std::abs(y) <= bridge_width / 2;
 }
 
-bool Simulation::is_in_second_bridge(const double &x, const double &y) const {
+bool Simulation::is_in_second_bridge(double x, double y) const {
     /**
      * The same holds for this function, not mutually exclusive with left and right circle.
      */
@@ -569,7 +565,7 @@ double Simulation::time_to_hit_second_bridge(const unsigned long &particle, doub
     return min_t * max_path;
 }
 
-void Simulation::circle_intersections(const unsigned &particle, const double &center_x, double &t1, double &t2) const {
+void Simulation::circle_intersections(const unsigned &particle, double center_x, double &t1, double &t2) const {
     double add_x = max_path * cos(directions[particle]);
     double add_y = max_path * sin(directions[particle]);
     const double t_pos_x = (px - center_x) / circle_radius;
@@ -587,7 +583,8 @@ void Simulation::circle_intersections(const unsigned &particle, const double &ce
     }
 }
 
-double Simulation::time_to_hit_circle(const unsigned long &particle, const double &center_x, double &normal_angle) const {
+double
+Simulation::time_to_hit_circle(const unsigned long &particle, double center_x, double &normal_angle) const {
     /**
      * Compute the time until next impact with one of the circle boundaries
      */
@@ -621,7 +618,7 @@ double Simulation::time_to_hit_circle(const unsigned long &particle, const doubl
     return min_t * max_path;
 }
 
-double Simulation::get_reflection_angle(const double &angle_in, const double &normal_angle) const {
+double Simulation::get_reflection_angle(double angle_in, double normal_angle) const {
     return fmod(2 * normal_angle - angle_in + PI, 2 * PI);
 }
 
