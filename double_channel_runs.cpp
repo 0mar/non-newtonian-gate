@@ -24,14 +24,12 @@
  * @param left_ratio Initial ratio of number of particles in the left chamber
  * @param M_t Transient time, measured in number of collisions
  * @param M_f Final time, measured in number of collisions
- * @param id File identifier to write auxiliary results to.
  * @param av_chi Average mass spread, return value
  * @param currents Average currents counted per instance, return value
  */
-void get_chi(const double channel_length, const double channel_width, const int threshold, const double radius,
-             const double second_length, const double second_width, const int num_particles, const double left_ratio,
-             const unsigned long M_t, const unsigned long M_f, const std::string &id, double &av_chi,
-             std::vector<double> &currents) {
+void get_mass_spread(double channel_length, double channel_width, int threshold, double radius, double second_length,
+             double second_width, int num_particles, double left_ratio, unsigned long M_t, unsigned long M_f,
+             double &av_chi, std::vector<double> &currents) {
     Simulation sim = Simulation(num_particles, channel_width, radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
@@ -82,11 +80,9 @@ void get_chi(const double channel_length, const double channel_width, const int 
  * @param av_chi Average mass spread, return value
  * @param current Average current, return value
  */
-void get_chi_evo(const double channel_length, const double channel_width, const double radius, const int threshold,
-                 const double second_length, const double second_width, const int num_particles,
-                 const double left_ratio, const unsigned long M_t, const unsigned long M_f, const std::string &id,
-                 double &av_chi, double &current) {
-
+void get_mass_spread_evo(double channel_length, double channel_width, double radius, int threshold, double second_length,
+                 double second_width, int num_particles, double left_ratio, unsigned long M_t, unsigned long M_f,
+                 const std::string &id, double &av_chi, double &current) {
     av_chi = 0;
     current = 0;
     const int num_points = 500;
@@ -127,7 +123,6 @@ void get_chi_evo(const double channel_length, const double channel_width, const 
     result_file.close();
 }
 
-
 /**
  * Find the thermalisation times for a specific set of parameters. Executable, takes command line values.
  *
@@ -157,45 +152,21 @@ void mass_spread_and_current_for(int argc, char *argv[]) {
     const double initial_ratio = std::stod(argv[8]);
     const int M_t = std::stoi(argv[9]);
     const int M_f = std::stoi(argv[10]);
-    const std::string id = argv[11];
+    const std::string file_id = argv[11];
+    const std::string sim_id = argv[12];
     double av_chi = 0;
     std::vector<double> currents;
-    get_chi(channel_length, channel_width, threshold, radius, second_length, second_width, num_particles,
-            initial_ratio, M_t, M_f, id, av_chi, currents);
+    get_mass_spread(channel_length, channel_width, threshold, radius, second_length, second_width, num_particles,
+            initial_ratio, M_t, M_f, av_chi, currents);
     std::ostringstream s;
-    s << threshold << "," << second_length << "," << second_width << "," << initial_ratio << "," << av_chi;
+    s << sim_id << "," << av_chi;
     for (unsigned int i = 0; i < 4; i++) {
         s << ", " << currents.at(i);
     }
     s << std::endl;
-    std::ofstream result_file(id + ".out", std::ios::app);
+    std::ofstream result_file(file_id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
-}
-
-void reconfirm_current_behaviour() {
-    const double channel_length = 1;
-    const double channel_width = 0.3;
-    const double radius = 1;
-    const std::vector<double> rel_thresholds{0.001, 0.01, 0.02};
-    const double second_length = 1.;
-    const double second_width = 0.02;
-    const int M_t = 1E7;
-    const int M_f = 5E7;
-    const double initial_ratio = 0.25;
-    const std::vector<int> nums_particles{1000, 10000};
-    double av_chi = 0;
-    double current = 0;
-    for (int num_particles : nums_particles) {
-        for (double rel_threshold : rel_thresholds) {
-            const int threshold = int(rel_threshold * num_particles);
-            const std::string id = "double_channel_data/confirmation_" + std::to_string(num_particles) + "_" +
-                                   std::to_string(threshold);
-            std::cout << "Running " << id << std::endl;
-            get_chi_evo(channel_length, channel_width, radius, threshold, second_length, second_width, num_particles,
-                        initial_ratio, M_t, M_f, id, av_chi, current);
-        }
-    }
 }
 
 int main(int argc, char *argv[]) {

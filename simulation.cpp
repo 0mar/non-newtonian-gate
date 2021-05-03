@@ -3,11 +3,8 @@
 //
 
 #include "simulation.h"
-/* Todo:
- * Add Enums
- */
 
-const double PI = 3.14159265358979323;
+const double PI = 3.14159265358979324;
 const double EPS = 1E-14;
 #define px x_pos[particle]
 #define py y_pos[particle]

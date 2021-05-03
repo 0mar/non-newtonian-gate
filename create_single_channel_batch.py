@@ -2,7 +2,12 @@
 import numpy as np
 import json
 import sys
+import subprocess
 
+def run_simulation(params):
+    executable = 'echo'
+    output_line = subprocess.check_output([executable]+params)
+    return output_line
 
 def single_channel_param_set(param_coupling, default, identifier):
     values = default.copy()
@@ -19,8 +24,8 @@ def single_channel_param_set(param_coupling, default, identifier):
             for y_val in y_values:
                 values[y] = y_val
                 cmd = ["%.4f" % values[name] for name in default.keys()] + [identifier]
-                cmd_string = " ".join(cmd)
-                f.write(cmd_string + "\n")
+                result = run_simulation(cmd)
+                print(result)
 
 
 def single_channel_exploration_set(parameter_sets):
@@ -56,7 +61,6 @@ if __name__ == '__main__':
     with open(filename, 'r') as param_file:
         parameter_sets = json.load(param_file)
     single_channel_exploration_set(parameter_sets)
-    exit(0)
     for size in parameter_sets.keys():
         default_values = parameter_sets[size]['defaults']
         for i, param in enumerate(parameter_sets[size]['relations']):

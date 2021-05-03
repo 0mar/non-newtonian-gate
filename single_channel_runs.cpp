@@ -25,17 +25,17 @@
  * @return Average mass spread
  */
 
-double get_chi(const unsigned long M_t, const unsigned long M_f, const double channel_length,
-               const double channel_width, const double urn_radius, const int threshold, const int num_particles,
-               const std::string &id) {
-    double chi = 0;
+double
+get_mass_spread(unsigned long M_t, unsigned long M_f, double channel_length, double channel_width, double urn_radius,
+                int threshold, int num_particles) {
+    double chi = 0; // mass spread
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
     sim.gate_is_flat = true;
     sim.distance_as_channel_length = true;
     sim.expected_collisions = M_f;
 
     std::ostringstream s;
-    const double left_ratio = 0.75; // Not random atm
+    const double left_ratio = 0.75;
     try {
         sim.setup();
     } catch (const std::invalid_argument &ex) {
@@ -56,7 +56,7 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
 }
 
 /**
- * Obtain the mass spread as a function of the parameters below, and write its value 500 times during the proces .
+ * Obtain the mass spread as a function of the parameters below, and write its value 500 times during the process
  * For a definition of the mass spread, see simulation.h.
  *
  * @param M_t Transient time, measured in number of collisions
@@ -66,14 +66,14 @@ double get_chi(const unsigned long M_t, const unsigned long M_f, const double ch
  * @param urn_radius Radius of the chamber
  * @param threshold Number of particles that can at the same time in the channel
  * @param num_particles Number of particles in the system
- * @param id File identifier to write auxiliary results to.
+ * @param file_id File identifier to write auxiliary results to.
+ * @param sim_id Simulation identifier to couple with input parameters.
  * @return Average mass spread
  */
-double get_chi_development(const unsigned long M_t, const unsigned long M_f, const double channel_length,
-                           const double channel_width, const double urn_radius, const int threshold,
-                           const int num_particles, const std::string &id) {
-
-    double chi = 0;
+double get_mass_spread_evo(unsigned long M_t, unsigned long M_f, double channel_length, double channel_width,
+                           double urn_radius, int threshold, int num_particles, std::string &file_id,
+                           std::string &sim_id) {
+    double chi = 0; // mass spread
     const int num_points = 500;
     const unsigned long step_size = M_f / num_points;
     Simulation sim = Simulation(num_particles, channel_width, urn_radius, channel_length, threshold, threshold);
@@ -85,7 +85,7 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
     std::mt19937 re(rd());
     std::uniform_real_distribution<double> unif(0.5, 1);
     std::ostringstream s;
-    const double left_ratio = 0.25; // Not random atm
+    const double left_ratio = 0.25;
     try {
         sim.start(left_ratio);
         sim.write_positions_to_file(0);
@@ -101,7 +101,7 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
               << std::endl;
         }
     }
-    std::ofstream result_file(id + ".chi", std::ios::app);
+    std::ofstream result_file(file_id + ".chi", std::ios::app);
     result_file << s.str();
     result_file.close();
     return chi;
@@ -116,13 +116,14 @@ double get_chi_development(const unsigned long M_t, const unsigned long M_f, con
  * @param urn_radius
  * @param threshold
  * @param num_particles
- * @param id
+ * @param file_id
+ * @param sim_id
  * @param chi_diff Tolerance for difference in mass spreads
  * @return Time for the two systems to reach the same mass spread
  */
-unsigned long find_sandwich_time(const double channel_length,
-                                 const double channel_width, const double urn_radius, const int threshold,
-                                 const int num_particles, const std::string &id, double &chi_diff) {
+unsigned long find_sandwich_time(double channel_length, double channel_width, double urn_radius, int threshold,
+                                 int num_particles, const std::string &file_id, const std::string &sim_id,
+                                 double &chi_diff) {
     double chi = 0;
     const int num_points = 500;
     const unsigned long M_t = 1E5;
@@ -150,12 +151,12 @@ unsigned long find_sandwich_time(const double channel_length,
         sim_top.update(0.0);
         sim_bottom.update(0.0);
         if (sim_top.num_collisions % step_size == 0) {
-            s << sim_top.num_collisions << "," << std::fabs(sim_top.get_mass_spread()) << ", "
+            s << sim_id << "," << sim_top.num_collisions << "," << std::fabs(sim_top.get_mass_spread()) << ","
               << std::fabs(sim_bottom.get_mass_spread()) << std::endl;
         }
         chi_diff = std::fabs(std::fabs(sim_top.get_mass_spread()) - std::fabs(sim_bottom.get_mass_spread()));
     }
-    std::ofstream result_file(id + ".chi", std::ios::app);
+    std::ofstream result_file(file_id + ".chi", std::ios::app);
     result_file << s.str();
     result_file.close();
     return sim_top.num_collisions;
@@ -177,21 +178,21 @@ void find_relation_time(int argc, char *argv[]) {
         std::cout << std::endl;
         throw std::invalid_argument(
                 "Please provide (in order) (1) channel length, (2) width, (3) urn radius, (4) threshold, "
-                "(5) number of particles, (6) start point, (7) end point, (8) ID");
+                "(5) number of particles, (6) file ID, (7) simulation ID");
     }
     const double channel_length = std::stod(argv[1]);
     const double channel_width = std::stod(argv[2]);
     const double urn_radius = std::stod(argv[3]);
     const int threshold = std::stoi(argv[4]);
     const int num_particles = std::stoi(argv[5]);
-    const std::string id = argv[6];
+    const std::string file_id = argv[6];
+    const std::string sim_id = argv[7];
     double chi_diff = 0;
     unsigned long convergence_time = find_sandwich_time(channel_length, channel_width, urn_radius, threshold,
-                                                        num_particles, id, chi_diff);
+                                                        num_particles, file_id, sim_id, chi_diff);
     std::ostringstream s;
-    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << convergence_time
-      << "," << chi_diff << std::endl;
-    std::ofstream result_file(id + ".out", std::ios::app);
+    s << sim_id << "," << convergence_time << "," << chi_diff << std::endl;
+    std::ofstream result_file(file_id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
 }
@@ -214,7 +215,7 @@ void average_mass_spread_for(int argc, char *argv[]) {
         std::cout << std::endl;
         throw std::invalid_argument(
                 "Please provide (in order) (1) channel length, (2) width, (3) urn radius, (4) threshold, "
-                "(5) number of particles, (6) start point, (7) end point, (8) ID");
+                "(5) number of particles, (6) start point, (7) end point, (8) file ID, (9) simulation ID");
     }
     const double channel_length = std::stod(argv[1]);
     const double channel_width = std::stod(argv[2]);
@@ -223,16 +224,16 @@ void average_mass_spread_for(int argc, char *argv[]) {
     const int num_particles = std::stoi(argv[5]);
     const int M_t = std::stoi(argv[6]);
     const int M_f = std::stoi(argv[7]);
-    const std::string id = argv[8];
+    const std::string file_id = argv[8];
+    const std::string sim_id = argv[9];
     double av_chi = 0;
     for (unsigned int i = 0; i < num_runs; i++) {
-        av_chi += get_chi(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles, id) /
+        av_chi += get_mass_spread(M_t, M_f, channel_length, channel_width, urn_radius, threshold, num_particles) /
                   num_runs;
     }
     std::ostringstream s;
-    s << channel_length << "," << channel_width << "," << urn_radius << "," << threshold << "," << av_chi
-      << std::endl;
-    std::ofstream result_file(id + ".out", std::ios::app);
+    s << sim_id << "," << av_chi << std::endl;
+    std::ofstream result_file(file_id + ".out", std::ios::app);
     result_file << s.str();
     result_file.close();
 }
