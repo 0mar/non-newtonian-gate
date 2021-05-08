@@ -46,6 +46,7 @@ This code has a test suite that mainly tests the computational geometry and the 
 
 ## CI/CD
 As you can see there is a GitLab Continuous Integration file in the repo. When pushed to a suitably equipped GitLab repo, this specifies the configurations of a [test runner][5]. Convenient, because it builds a container in which it runs the tests, so you know for each pushed commit if the setup still works. However, I never took the time how to translate that to the supposedly equivalent GitHub Actions so in this repo it has no function.
+
 [1]: https://doi.org/10.1088/1751-8121/ab94ec
 [2]: https://doi.org/10.1103/PhysRevE.103.032119
 [3]: https://www.boost.org/
